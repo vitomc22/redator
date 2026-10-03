@@ -11,7 +11,17 @@ public final class DocumentTranscriptionService {
 
     private static final Pattern WORD_PATTERN = Pattern.compile("[\\p{L}\\p{N}]+(?:[\\-'][\\p{L}\\p{N}]+)*");
     private static final Pattern SUSPICIOUS_TOKEN_PATTERN = Pattern.compile("\\[[^\\]]+\\]|\\?+|[\\p{L}\\p{N}]+(?:[\\-'][\\p{L}\\p{N}]+)*");
-    private static volatile VisionTranscriptionProvider defaultProvider = new LocalVisionTranscriptionProvider();
+    private static volatile VisionTranscriptionProvider defaultProvider = new RealVisionTranscriptionProvider();
+    private static final String[] PDF_SPECIAL_ESCAPES = {
+            "\\n", "\n",
+            "\\r", "\r",
+            "\\t", "\t",
+            "\\b", "\b",
+            "\\f", "\f",
+            "\\(", "(",
+            "\\)", ")",
+            "\\\\", "\\"
+    };
 
     private DocumentTranscriptionService() {
     }
@@ -49,12 +59,22 @@ public final class DocumentTranscriptionService {
             Matcher matcher = Pattern.compile("\\((?:\\\\.|[^()\\\\])*\\)").matcher(raw);
             while (matcher.find()) {
                 String token = matcher.group();
+                String decoded = decodePdfLiteral(token.substring(1, token.length() - 1));
+                if (!decoded.isBlank()) {
+                    textSegments.add(decoded);
+                }
+            }
+
+            String joined = String.join(" ", textSegments).replaceAll("\\s+", " ").trim();
+            if (!joined.isBlank()) {
+                return joined;
+            }
+
+            Matcher fallbackMatcher = Pattern.compile("(?s)\\((?:[^()]|\\([^)]*\\))*\\)").matcher(raw);
+            while (fallbackMatcher.find()) {
+                String token = fallbackMatcher.group();
                 String decoded = token.substring(1, token.length() - 1)
                         .replace("\\n", " ")
-                        .replace("\\(", "(")
-                        .replace("\\)", ")")
-                        .replace("\\012", " ")
-                        .replace("\\015", " ")
                         .replace("\\r", " ")
                         .replace("\\t", " ");
                 if (!decoded.isBlank()) {
@@ -62,8 +82,63 @@ public final class DocumentTranscriptionService {
                 }
             }
 
-            String joined = String.join(" ", textSegments).replaceAll("\\s+", " ").trim();
-            return joined.isBlank() ? "" : joined;
+            String fallbackJoined = String.join(" ", textSegments).replaceAll("\\s+", " ").trim();
+            return fallbackJoined.isBlank() ? "" : fallbackJoined;
+        }
+
+        private String decodePdfLiteral(String literal) {
+            if (literal == null || literal.isBlank()) {
+                return "";
+            }
+
+            StringBuilder decoded = new StringBuilder();
+            for (int i = 0; i < literal.length(); i++) {
+                char ch = literal.charAt(i);
+                if (ch == '\\' && i + 1 < literal.length()) {
+                    char next = literal.charAt(i + 1);
+                    if (next == 'n' || next == 'r' || next == 't' || next == 'b' || next == 'f') {
+                        decoded.append(next == 'n' ? '\n' : next == 'r' ? '\r' : next == 't' ? '\t' : next == 'b' ? '\b' : '\f');
+                        i++;
+                        continue;
+                    }
+                    if (next == '(' || next == ')' || next == '\\') {
+                        decoded.append(next);
+                        i++;
+                        continue;
+                    }
+                    if (Character.isDigit(next)) {
+                        StringBuilder octal = new StringBuilder();
+                        int count = 0;
+                        while (i + 1 + count < literal.length() && count < 3 && Character.isDigit(literal.charAt(i + 1 + count))) {
+                            char digit = literal.charAt(i + 1 + count);
+                            if (digit >= '8') {
+                                break;
+                            }
+                            octal.append(digit);
+                            count++;
+                        }
+                        if (octal.length() > 0) {
+                            int codePoint = Integer.parseInt(octal.toString(), 8);
+                            decoded.append((char) codePoint);
+                            i += octal.length();
+                            continue;
+                        }
+                    }
+                    decoded.append(next);
+                    i++;
+                    continue;
+                }
+                if (ch == '\n' || ch == '\r' || ch == '\t') {
+                    decoded.append(' ');
+                    continue;
+                }
+                decoded.append(ch);
+            }
+
+            return decoded.toString().replace("\\012", " ")
+                    .replace("\\015", " ")
+                    .replace("\\000", " ")
+                    .trim();
         }
     }
 

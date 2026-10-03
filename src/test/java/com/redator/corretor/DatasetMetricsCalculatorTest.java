@@ -110,7 +110,7 @@ class DatasetMetricsCalculatorTest {
                 "redacao.pdf"
         );
 
-        assertThat(transcription).contains("educa").contains("direito");
+        assertThat(transcription).contains("educação").contains("direito");
     }
 
     @Test

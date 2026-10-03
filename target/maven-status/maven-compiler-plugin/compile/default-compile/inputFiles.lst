@@ -1,6 +1,7 @@
 /home/victor/Documentos/git/redator/src/main/java/com/redator/corretor/CorretorEnemApplication.java
 /home/victor/Documentos/git/redator/src/main/java/com/redator/corretor/cli/BenchmarkDatasetCli.java
 /home/victor/Documentos/git/redator/src/main/java/com/redator/corretor/cli/DatasetEvaluationCli.java
+/home/victor/Documentos/git/redator/src/main/java/com/redator/corretor/config/DocumentTranscriptionInitializer.java
 /home/victor/Documentos/git/redator/src/main/java/com/redator/corretor/config/InitialDataLoader.java
 /home/victor/Documentos/git/redator/src/main/java/com/redator/corretor/controller/EssayController.java
 /home/victor/Documentos/git/redator/src/main/java/com/redator/corretor/controller/GlobalExceptionHandler.java
@@ -21,6 +22,7 @@
 /home/victor/Documentos/git/redator/src/main/java/com/redator/corretor/service/EssayService.java
 /home/victor/Documentos/git/redator/src/main/java/com/redator/corretor/service/LlmCallResult.java
 /home/victor/Documentos/git/redator/src/main/java/com/redator/corretor/service/LlmGateway.java
+/home/victor/Documentos/git/redator/src/main/java/com/redator/corretor/service/RealVisionTranscriptionProvider.java
 /home/victor/Documentos/git/redator/src/main/java/com/redator/corretor/service/ResponseSchemaValidator.java
 /home/victor/Documentos/git/redator/src/main/java/com/redator/corretor/service/RubricEngine.java
 /home/victor/Documentos/git/redator/src/main/java/com/redator/corretor/service/TranscriptionQualityMetricsCalculator.java
