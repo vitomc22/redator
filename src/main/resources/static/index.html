@@ -3,248 +3,722 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Avalie redações ENEM com revisão humana, análise documental e comparação de perfis." />
     <title>Corretor ENEM IA</title>
     <style>
+      :root {
+        --bg: #f4f7fb;
+        --panel: #ffffff;
+        --panel-alt: #f8fafc;
+        --primary: #183a7a;
+        --primary-strong: #0d2c5a;
+        --accent: #f2c34d;
+        --accent-soft: #fff5d6;
+        --success: #1f7a4d;
+        --danger: #b63b3b;
+        --text: #1d2a3a;
+        --muted: #53657f;
+        --border: #dfe7f3;
+        --shadow: 0 18px 40px rgba(14, 33, 58, 0.08);
+      }
+
+      * { box-sizing: border-box; }
+
+      html { scroll-behavior: smooth; }
+
       body {
         margin: 0;
-        font-family: Arial, sans-serif;
-        background: #f4f7fb;
-        color: #1c2430;
+        font-family: "Segoe UI", Roboto, Arial, sans-serif;
+        background: linear-gradient(180deg, #edf4ff 0%, var(--bg) 20%, var(--bg) 100%);
+        color: var(--text);
       }
+
+      img { max-width: 100%; }
+
+      button, input, select, textarea {
+        font: inherit;
+      }
+
       .container {
-        max-width: 1000px;
-        margin: 48px auto;
-        padding: 20px;
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 32px 20px 64px;
       }
-      .card {
-        background: white;
-        border-radius: 12px;
-        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.06);
-        padding: 24px;
-      }
-      h1 { margin-top: 0; }
-      form { display: grid; gap: 16px; }
-      label { font-weight: 600; }
-      textarea, select, button, input { font: inherit; }
-      textarea {
-        min-height: 180px;
-        width: 100%;
-        padding: 12px;
-        box-sizing: border-box;
-        border-radius: 8px;
-        border: 1px solid #d3d7df;
-      }
-      button {
-        border: none;
-        border-radius: 8px;
-        background: #244b9a;
-        color: white;
-        padding: 12px 18px;
-        cursor: pointer;
-      }
-      .secondary {
-        background: #e3e9f5;
-        color: #243a60;
-      }
-      .review-panel {
-        margin-top: 24px;
-        display: none;
-        background: #fffaf1;
-        border: 1px solid #f2d69b;
-        border-radius: 12px;
-        padding: 16px;
-      }
-      .review-layout {
-        display: grid;
-        grid-template-columns: minmax(220px, 320px) minmax(0, 1fr);
-        gap: 20px;
-        margin-top: 16px;
-      }
-      .review-document-preview {
-        background: #fff;
-        border: 1px solid #e8d7a4;
-        border-radius: 10px;
-        padding: 12px;
-        min-height: 160px;
-      }
-      .review-document-preview img {
-        width: 100%;
-        max-height: 260px;
-        object-fit: contain;
-        border-radius: 8px;
-        display: block;
-      }
-      .review-document-preview .doc-meta {
-        margin-top: 12px;
-        font-size: 0.9rem;
-        color: #4b5563;
-      }
-      .result {
-        margin-top: 20px;
-        background: #eef5ff;
-        border: 1px solid #cfe0ff;
-        border-radius: 8px;
-        padding: 16px;
-      }
-      .meta {
-        display: flex;
-        gap: 16px;
-        flex-wrap: wrap;
-      }
-      .badge {
-        background: #dfeafc;
-        color: #25448d;
-        border-radius: 999px;
-        padding: 6px 12px;
-        font-size: 12px;
-        font-weight: 700;
-      }
-      .quality-box {
-        margin-top: 12px;
-        padding: 12px;
-        border-radius: 8px;
-        background: #f5f7fc;
-        border: 1px solid #dfe5f1;
-      }
-      .quality-box strong {
-        display: block;
-        margin-bottom: 6px;
-      }
-      mark {
-        background: #ffe28a;
-        color: #1d2b36;
-        padding: 0 3px;
-        border-radius: 4px;
-      }
-      .highlight-preview {
-        margin-top: 12px;
-        padding: 12px;
-        background: white;
-        border: 1px solid #e2e8f0;
-        border-radius: 8px;
-        line-height: 1.5;
-        white-space: pre-wrap;
-      }
-      .doc-preview {
-        margin-top: 12px;
-        display: none;
-        background: #f8fafc;
-        border: 1px solid #d7e0ef;
-        border-radius: 8px;
-        padding: 12px;
-      }
-      .doc-preview img {
-        max-width: 100%;
-        max-height: 260px;
-        border-radius: 8px;
-        display: block;
-      }
-      .review-blocks {
-        display: grid;
-        gap: 12px;
-        margin-top: 16px;
-      }
-      .review-block {
-        background: #fff;
-        border: 1px solid #dfe7f5;
-        border-radius: 10px;
-        padding: 12px;
-      }
-      .review-block.suspicious {
-        border-color: #f0c75d;
-        background: #fffaf0;
-      }
-      .review-block-header {
+
+      .topbar {
         display: flex;
         justify-content: space-between;
         align-items: center;
-        margin-bottom: 8px;
-        font-size: 12px;
-        font-weight: 700;
-        color: #3b4a63;
+        gap: 16px;
+        margin-bottom: 20px;
       }
-      .review-block textarea {
-        min-height: 100px;
+
+      .brand {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        font-weight: 800;
+        color: var(--primary-strong);
       }
-      .suspicious-pill {
-        background: #ffeb99;
-        color: #6d4c00;
+
+      .brand-mark {
+        width: 42px;
+        height: 42px;
+        border-radius: 12px;
+        background: linear-gradient(135deg, var(--primary), #4073cf);
+        display: grid;
+        place-items: center;
+        color: white;
+        font-weight: 800;
+      }
+
+      .status-pill {
+        background: rgba(24, 58, 122, 0.08);
+        color: var(--primary);
+        border: 1px solid rgba(24, 58, 122, 0.12);
         border-radius: 999px;
+        padding: 8px 14px;
+        font-size: 0.8rem;
+        font-weight: 700;
+      }
+
+      .card {
+        background: var(--panel);
+        border: 1px solid var(--border);
+        border-radius: 22px;
+        box-shadow: var(--shadow);
+        overflow: hidden;
+      }
+
+      .hero {
+        display: grid;
+        grid-template-columns: 1.6fr 1fr;
+        gap: 32px;
+        padding: 28px;
+        background: linear-gradient(135deg, rgba(24,58,122,0.04), rgba(78,122,203,0.03));
+      }
+
+      .hero h1 {
+        margin: 0 0 8px;
+        font-size: clamp(2rem, 3vw, 3rem);
+        line-height: 1.1;
+        color: var(--primary-strong);
+      }
+
+      .hero p {
+        margin: 0;
+        color: var(--muted);
+        line-height: 1.6;
+        font-size: 1rem;
+      }
+
+      .hero-metrics {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(90px, 1fr));
+        gap: 12px;
+        margin-top: 18px;
+      }
+
+      .metric {
+        background: rgba(255, 255, 255, 0.85);
+        border: 1px solid var(--border);
+        border-radius: 16px;
+        padding: 12px 14px;
+      }
+
+      .metric strong {
+        display: block;
+        font-size: 1.3rem;
+        color: var(--primary-strong);
+      }
+
+      .metric span {
+        color: var(--muted);
+        font-size: 0.8rem;
+      }
+
+      .hero-panel {
+        background: linear-gradient(180deg, rgba(24,58,122,0.08), rgba(24,58,122,0.02));
+        border: 1px solid rgba(24,58,122,0.12);
+        border-radius: 18px;
+        padding: 20px;
+      }
+
+      .hero-panel h2 {
+        margin: 0 0 12px;
+        font-size: 1rem;
+        color: var(--primary-strong);
+      }
+
+      .check-list {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+        display: grid;
+        gap: 10px;
+      }
+
+      .check-list li {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        color: var(--text);
+      }
+
+      .check-list li::before {
+        content: "✓";
+        display: inline-grid;
+        place-items: center;
+        width: 22px;
+        height: 22px;
+        background: rgba(31, 122, 77, 0.1);
+        color: var(--success);
+        border-radius: 50%;
+        font-weight: 800;
+      }
+
+      .workspace {
+        display: grid;
+        grid-template-columns: 1.1fr 0.9fr;
+        gap: 20px;
+        margin-top: 22px;
+      }
+
+      .panel {
+        background: var(--panel);
+        border: 1px solid var(--border);
+        border-radius: 20px;
+        box-shadow: var(--shadow);
+        padding: 22px;
+      }
+
+      .panel h2 {
+        margin: 0 0 16px;
+        color: var(--primary-strong);
+        font-size: 1.35rem;
+      }
+
+      form { display: grid; gap: 18px; }
+
+      .field {
+        display: grid;
+        gap: 8px;
+      }
+
+      label {
+        font-weight: 700;
+        color: var(--primary-strong);
+      }
+
+      textarea,
+      select,
+      input[type="file"],
+      button {
+        min-height: 46px;
+      }
+
+      select,
+      input[type="file"],
+      textarea {
+        width: 100%;
+        background: #fff;
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 12px 14px;
+        color: var(--text);
+      }
+
+      textarea {
+        min-height: 190px;
+        resize: vertical;
+      }
+
+      input[type="file"] {
+        padding: 10px 12px;
+      }
+
+      textarea:focus,
+      select:focus,
+      input:focus,
+      button:focus-visible {
+        outline: 3px solid rgba(59, 130, 246, 0.25);
+        outline-offset: 2px;
+      }
+
+      .button-row {
+        display: flex;
+        gap: 12px;
+        flex-wrap: wrap;
+      }
+
+      button {
+        border: none;
+        border-radius: 12px;
+        padding: 12px 18px;
+        font-weight: 700;
+        cursor: pointer;
+        transition: transform 0.15s ease, box-shadow 0.15s ease;
+      }
+
+      button:hover { transform: translateY(-1px); }
+
+      .primary-btn {
+        background: linear-gradient(135deg, var(--primary), #2e5bb3);
+        color: white;
+        box-shadow: 0 12px 20px rgba(24, 58, 122, 0.18);
+      }
+
+      .secondary-btn {
+        background: #edf3ff;
+        color: var(--primary-strong);
+      }
+
+      .danger-btn {
+        background: #ffe8e8;
+        color: var(--danger);
+      }
+
+      .doc-preview {
+        display: none;
+        background: var(--panel-alt);
+        border: 1px dashed var(--border);
+        border-radius: 12px;
+        padding: 14px;
+      }
+
+      .doc-preview.visible { display: block; }
+
+      .doc-preview img {
+        max-height: 200px;
+        object-fit: contain;
+        border-radius: 10px;
+        margin-top: 10px;
+      }
+
+      .review-panel {
+        margin-top: 20px;
+        display: none;
+        background: linear-gradient(180deg, rgba(242, 195, 77, 0.06), rgba(255, 255, 255, 0.4));
+        border: 1px solid rgba(242, 195, 77, 0.35);
+        border-radius: 18px;
+        padding: 18px;
+      }
+
+      .review-panel.visible { display: block; }
+
+      .review-layout {
+        display: grid;
+        grid-template-columns: minmax(180px, 280px) minmax(0, 1fr);
+        gap: 18px;
+        margin-top: 16px;
+      }
+
+      .review-document-preview {
+        min-height: 180px;
+        background: #fff;
+        border: 1px solid rgba(242, 195, 77, 0.4);
+        border-radius: 14px;
+        padding: 12px;
+      }
+
+      .review-document-preview img {
+        border-radius: 10px;
+        max-height: 220px;
+        width: 100%;
+        object-fit: contain;
+        display: block;
+      }
+
+      .doc-meta {
+        color: var(--muted);
+        font-size: 0.9rem;
+        margin-top: 8px;
+        line-height: 1.5;
+      }
+
+      .quality-box {
+        background: rgba(255,255,255,0.8);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 12px 14px;
+        font-size: 0.95rem;
+        line-height: 1.5;
+      }
+
+      .quality-box strong {
+        display: block;
+        margin-bottom: 4px;
+        color: var(--primary-strong);
+      }
+
+      .review-blocks {
+        display: grid;
+        gap: 12px;
+        margin-top: 12px;
+      }
+
+      .review-block {
+        background: var(--panel);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 12px;
+      }
+
+      .review-block.suspicious {
+        border-color: rgba(242,195,77,0.6);
+        background: var(--accent-soft);
+      }
+
+      .review-block-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+        font-size: 0.75rem;
+        color: var(--muted);
+        font-weight: 700;
+        margin-bottom: 8px;
+      }
+
+      .suspicious-pill {
         padding: 4px 8px;
-        font-size: 11px;
+        border-radius: 999px;
+        background: rgba(242,195,77,0.2);
+        color: #7a5600;
+      }
+
+      .review-block textarea {
+        min-height: 96px;
+        width: 100%;
+      }
+
+      .highlight-preview {
+        background: #fff;
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 12px;
+        margin-top: 12px;
+        line-height: 1.7;
+        white-space: pre-wrap;
+        color: var(--text);
+      }
+
+      mark {
+        background: rgba(242,195,77,0.55);
+        color: var(--text);
+        border-radius: 6px;
+        padding: 2px 4px;
+      }
+
+      .result-box {
+        margin-top: 22px;
+        display: none;
+        background: linear-gradient(180deg, rgba(30,122,77,0.04), rgba(255,255,255,0.7));
+        border: 1px solid rgba(31,122,77,0.15);
+        border-radius: 18px;
+        padding: 18px;
+      }
+
+      .result-box.visible { display: block; }
+
+      .meta-row {
+        display: flex;
+        gap: 12px;
+        flex-wrap: wrap;
+        margin-bottom: 12px;
+      }
+
+      .badge {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        background: rgba(24,58,122,0.08);
+        color: var(--primary-strong);
+        border: 1px solid rgba(24,58,122,0.08);
+        border-radius: 999px;
+        padding: 8px 12px;
+        font-size: 0.75rem;
+        font-weight: 800;
+      }
+
+      .badge.success {
+        background: rgba(31,122,77,0.08);
+        color: var(--success);
+      }
+
+      .badge.warn {
+        background: rgba(242,195,77,0.14);
+        color: #7a5600;
+      }
+
+      pre {
+        margin: 0;
+        white-space: pre-wrap;
+        word-break: break-word;
+        background: rgba(255,255,255,0.75);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 12px;
+        font-size: 0.92rem;
+      }
+
+      .benchmark-panel {
+        margin-top: 22px;
+        background: var(--panel);
+        border: 1px solid var(--border);
+        border-radius: 20px;
+        box-shadow: var(--shadow);
+        padding: 22px;
+      }
+
+      .benchmark-grid {
+        display: grid;
+        grid-template-columns: 1.1fr 0.9fr;
+        gap: 18px;
+      }
+
+      .profile-options {
+        display: flex;
+        gap: 12px;
+        flex-wrap: wrap;
+      }
+
+      .profile-option {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 12px;
+        background: #f5f8ff;
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        color: var(--primary-strong);
+        font-weight: 700;
+      }
+
+      .benchmark-output {
+        margin-top: 12px;
+        display: none;
+      }
+
+      .benchmark-output.visible { display: block; }
+
+      .benchmark-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 10px;
+      }
+
+      .benchmark-table th,
+      .benchmark-table td {
+        border: 1px solid var(--border);
+        padding: 10px 12px;
+        text-align: left;
+      }
+
+      .sr-only {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        padding: 0;
+        margin: -1px;
+        overflow: hidden;
+        clip: rect(0, 0, 0, 0);
+        white-space: nowrap;
+        border: 0;
+      }
+
+      @media (max-width: 900px) {
+        .hero,
+        .workspace,
+        .benchmark-grid,
+        .review-layout {
+          grid-template-columns: 1fr;
+        }
+
+        .topbar {
+          flex-direction: column;
+          align-items: flex-start;
+        }
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        html { scroll-behavior: auto; }
+        * { transition: none !important; }
       }
     </style>
   </head>
   <body>
     <div class="container">
-      <div class="card">
-        <h1>Corretor Automatizado de Redações ENEM</h1>
-        <form id="essayForm">
-          <div>
-            <label for="temaId">Tema</label>
-            <select id="temaId" name="temaId"></select>
-          </div>
-          <div>
-            <label for="sourceType">Origem da redação</label>
-            <select id="sourceType" name="sourceType">
-              <option value="text">Texto digitado</option>
-              <option value="upload">Upload / revisão humana</option>
-            </select>
-          </div>
-          <div>
-            <label for="text">Texto da redação</label>
-            <textarea id="text" placeholder="Digite ou cole a redação..." required></textarea>
-          </div>
-          <div>
-            <label for="fileInput">Arquivo auxiliar (opcional)</label>
-            <input id="fileInput" type="file" accept=".pdf,image/png,image/jpeg,image/jpg" />
-            <div id="docPreview" class="doc-preview" aria-live="polite"></div>
-          </div>
-          <button type="submit">Enviar para avaliação</button>
-        </form>
+      <header class="topbar" aria-label="Cabeçalho do corretor">
+        <div class="brand">
+          <div class="brand-mark">E</div>
+          <span>Corretor ENEM IA</span>
+        </div>
+        <div class="status-pill">MVP de avaliação com revisão humana</div>
+      </header>
 
-        <div id="reviewPanel" class="review-panel">
-          <h2>Revisão humana</h2>
-          <p>O texto precisa ser revisado antes da avaliação quando a origem é upload ou imagem.</p>
-          <div id="qualitySummary" class="quality-box">
-            <strong>Qualidade da transcrição: aguardando análise</strong>
+      <main class="card">
+        <section class="hero" aria-label="Resumo do sistema">
+          <div>
+            <h1>Corrija, revise e compare desempenho de redações</h1>
+            <p>
+              Este MVP reúne a triagem documental, a revisão humana obrigatória, a avaliação por competência
+              e a comparação de perfis de custo/latência em um único fluxo acessível.
+            </p>
+            <div class="hero-metrics" aria-label="Indicadores gerais do sistema">
+              <div class="metric">
+                <strong>1</strong>
+                <span>fluxo principal</span>
+              </div>
+              <div class="metric">
+                <strong>3</strong>
+                <span>perfis de custo</span>
+              </div>
+              <div class="metric">
+                <strong>100%</strong>
+                <span>gate humano</span>
+              </div>
+            </div>
           </div>
 
-          <div class="review-layout">
-            <div id="reviewDocumentPreview" class="review-document-preview" aria-live="polite">
-              <div class="doc-meta">Nenhum documento selecionado.</div>
+          <aside class="hero-panel" aria-label="Funcionalidades principais">
+            <h2>Inclui</h2>
+            <ul class="check-list">
+              <li>Texto direto e upload de PDF/imagem</li>
+              <li>Qualidade documental com tokens suspeitos</li>
+              <li>Revisão por blocos e destaque visual</li>
+              <li>Benchmark entre perfis cheap/normal/premium</li>
+            </ul>
+          </aside>
+        </section>
+
+        <section class="workspace" aria-label="Área de avaliação">
+          <div class="panel">
+            <h2>Avaliar redação</h2>
+            <form id="essayForm" novalidate>
+              <div class="field">
+                <label for="temaId">Tema</label>
+                <select id="temaId" name="temaId" aria-label="Selecione o tema"></select>
+              </div>
+
+              <div class="field">
+                <label for="sourceType">Origem da redação</label>
+                <select id="sourceType" name="sourceType" aria-label="Origem da redação">
+                  <option value="text">Texto digitado</option>
+                  <option value="upload">Upload / revisão humana</option>
+                </select>
+              </div>
+
+              <div class="field">
+                <label for="text">Texto da redação</label>
+                <textarea id="text" aria-label="Texto da redação" placeholder="Digite ou cole a redação..." required></textarea>
+              </div>
+
+              <div class="field">
+                <label for="fileInput">Arquivo auxiliar (opcional)</label>
+                <input id="fileInput" type="file" accept=".pdf,image/png,image/jpeg,image/jpg" aria-label="Arquivo auxiliar" />
+                <div id="docPreview" class="doc-preview" aria-live="polite"></div>
+              </div>
+
+              <div class="button-row">
+                <button type="submit" class="primary-btn">Enviar para avaliação</button>
+              </div>
+            </form>
+
+            <div id="reviewPanel" class="review-panel" aria-live="polite" aria-label="Painel de revisão humana">
+              <h2>Revisão humana</h2>
+              <p>O texto precisa ser validado antes da avaliação final quando há transcrição documental.</p>
+
+              <div id="qualitySummary" class="quality-box">
+                <strong>Qualidade da transcrição: aguardando análise</strong>
+              </div>
+
+              <div class="review-layout">
+                <div id="reviewDocumentPreview" class="review-document-preview" aria-live="polite">
+                  <div class="doc-meta">Nenhum documento selecionado.</div>
+                </div>
+
+                <div>
+                  <label for="reviewText">Texto revisado</label>
+                  <textarea id="reviewText" aria-label="Texto revisado" placeholder="Revise o texto antes de aprovar..."></textarea>
+                  <div id="reviewBlocks" class="review-blocks" aria-live="polite"></div>
+                  <div id="highlightPreview" class="highlight-preview" aria-live="polite"></div>
+                </div>
+              </div>
+
+              <div class="button-row" style="margin-top: 14px;">
+                <button type="button" id="approveReview" class="primary-btn">Aprovar e avaliar</button>
+                <button type="button" id="rejectReview" class="secondary-btn">Rejeitar para revisão</button>
+              </div>
+            </div>
+
+            <div id="resultBox" class="result-box" aria-live="polite">
+              <div class="meta-row">
+                <span id="runBadge" class="badge">RUN</span>
+                <span id="total" class="badge">Total: 0</span>
+                <span id="reviewStatus" class="badge">REVISAR</span>
+              </div>
+              <pre id="resultJson"></pre>
+            </div>
+          </div>
+
+          <aside class="panel">
+            <h2>Fluxo do MVP</h2>
+            <div class="quality-box" style="margin-bottom: 12px;">
+              <strong>1. Entrada</strong>
+              Texto direto ou upload de PDF/imagem.
+            </div>
+            <div class="quality-box" style="margin-bottom: 12px;">
+              <strong>2. Revisão</strong>
+              O editor valida trechos suspeitos e aprova o texto antes da avaliação.
+            </div>
+            <div class="quality-box" style="margin-bottom: 12px;">
+              <strong>3. Avaliação</strong>
+              Score total por competência e gatilho de revisão em caso de risco.
+            </div>
+            <div class="quality-box">
+              <strong>4. Comparação</strong>
+              Benchmark entre cheap, normal e premium para decidir melhor custo/benefício.
+            </div>
+          </aside>
+        </section>
+
+        <section class="benchmark-panel" aria-label="Benchmark e comparação de perfis">
+          <h2>Benchmark de perfis</h2>
+          <div class="benchmark-grid">
+            <div>
+              <div class="field">
+                <label for="benchmarkText">Textos para comparação</label>
+                <textarea id="benchmarkText" aria-label="Textos de benchmark" placeholder="Cole um texto por linha ou deixe em branco para usar amostra padrão."></textarea>
+              </div>
             </div>
 
             <div>
-              <label for="reviewText">Texto revisado</label>
-              <textarea id="reviewText" placeholder="Revise o texto antes de aprovar..."></textarea>
-              <div id="reviewBlocks" class="review-blocks" aria-live="polite"></div>
-              <div id="highlightPreview" class="highlight-preview" aria-live="polite"></div>
+              <div class="field">
+                <label>Perfis</label>
+                <div class="profile-options" aria-label="Perfis de benchmark">
+                  <label class="profile-option"><input type="checkbox" value="cheap" checked /> cheap</label>
+                  <label class="profile-option"><input type="checkbox" value="normal" checked /> normal</label>
+                  <label class="profile-option"><input type="checkbox" value="premium" /> premium</label>
+                </div>
+              </div>
+
+              <div class="button-row" style="margin-top: 14px;">
+                <button type="button" id="runBenchmark" class="primary-btn">Executar benchmark</button>
+              </div>
             </div>
           </div>
 
-          <div class="meta" style="margin-top: 12px;">
-            <button type="button" id="approveReview">Aprovar e avaliar</button>
-            <button type="button" class="secondary" id="rejectReview">Rejeitar para revisão</button>
-          </div>
-        </div>
-
-        <div id="result" class="result" style="display:none;">
-          <div class="meta">
-            <span id="runBadge" class="badge">RUN</span>
-            <span id="total" class="badge">Total: 0</span>
-            <span id="review" class="badge">REVISAR</span>
-          </div>
-          <pre id="resultJson" style="white-space: pre-wrap; margin-top: 16px;"></pre>
-        </div>
-      </div>
+          <div id="benchmarkOutput" class="benchmark-output" aria-live="polite"></div>
+        </section>
+      </main>
     </div>
 
     <script>
       const temaSelect = document.getElementById('temaId');
       const form = document.getElementById('essayForm');
       const sourceType = document.getElementById('sourceType');
-      const resultBox = document.getElementById('result');
+      const resultBox = document.getElementById('resultBox');
       const resultJson = document.getElementById('resultJson');
       const reviewPanel = document.getElementById('reviewPanel');
       const reviewText = document.getElementById('reviewText');
@@ -254,16 +728,18 @@
       const qualitySummary = document.getElementById('qualitySummary');
       const highlightPreview = document.getElementById('highlightPreview');
       const reviewDocumentPreview = document.getElementById('reviewDocumentPreview');
+      const benchmarkText = document.getElementById('benchmarkText');
+      const benchmarkOutput = document.getElementById('benchmarkOutput');
       let currentEssayId = null;
       let selectedDocumentPreview = null;
       let reviewBlocksRefreshTimer = null;
 
       function escapeHtml(value) {
-        return value
+        return String(value || '')
           .replace(/&/g, '&amp;')
           .replace(/</g, '&lt;')
           .replace(/>/g, '&gt;')
-          .replace(/"/g, '&quot;');
+          .replace(/\"/g, '&quot;');
       }
 
       function renderSuspiciousPreview(text) {
@@ -274,11 +750,7 @@
 
       function splitReviewTextIntoBlocks(text) {
         const paragraphs = (text || '').split(/\n\s*\n+/).map((block) => block.trim()).filter(Boolean);
-        if (paragraphs.length === 0) {
-          return [''];
-        }
-
-        return paragraphs;
+        return paragraphs.length ? paragraphs : [''];
       }
 
       function renderReviewBlocks() {
@@ -291,7 +763,7 @@
                 <span>Bloco ${index + 1}</span>
                 ${suspicious ? '<span class="suspicious-pill">Trecho suspeito</span>' : ''}
               </div>
-              <textarea class="review-block-editor" data-block-index="${index}">${escapeHtml(block)}</textarea>
+              <textarea class="review-block-editor" data-block-index="${index}" aria-label="Editar bloco ${index + 1}">${escapeHtml(block)}</textarea>
             </div>
           `;
         }).join('');
@@ -321,7 +793,7 @@
       function renderDocumentPreview(file) {
         if (!file) {
           selectedDocumentPreview = null;
-          docPreview.style.display = 'none';
+          docPreview.classList.remove('visible');
           docPreview.innerHTML = '';
           renderReviewDocumentPreview();
           return;
@@ -333,7 +805,7 @@
           reader.onload = () => {
             selectedDocumentPreview = { type: 'image', src: reader.result, name: file.name };
             docPreview.innerHTML = `<strong>Pré-visualização da imagem</strong><img src="${reader.result}" alt="Pré-visualização da imagem" />`;
-            docPreview.style.display = 'block';
+            docPreview.classList.add('visible');
             renderReviewDocumentPreview();
           };
           reader.readAsDataURL(file);
@@ -341,8 +813,8 @@
         }
 
         selectedDocumentPreview = { type: 'pdf', name: file.name };
-        docPreview.innerHTML = `<strong>Arquivo PDF</strong><div>${escapeHtml(file.name)}</div>`;
-        docPreview.style.display = 'block';
+        docPreview.innerHTML = `<strong>Arquivo PDF</strong><div class="doc-meta">${escapeHtml(file.name)}</div>`;
+        docPreview.classList.add('visible');
         renderReviewDocumentPreview();
       }
 
@@ -395,18 +867,19 @@
       }
 
       async function evaluateEssay(essayId) {
-        const evaluationResponse = await fetch(`/api/essays/${essayId}/evaluate?profile=cheap`, { method: 'POST' });
-        if (!evaluationResponse.ok) {
-          const error = await evaluationResponse.text();
+        const response = await fetch(`/api/essays/${essayId}/evaluate?profile=cheap`, { method: 'POST' });
+        if (!response.ok) {
+          const error = await response.text();
           throw new Error(error || 'Avaliação bloqueada');
         }
 
-        const evaluation = await evaluationResponse.json();
-        resultBox.style.display = 'block';
+        const evaluation = await response.json();
+        resultBox.classList.add('visible');
         resultJson.textContent = JSON.stringify(evaluation, null, 2);
         document.getElementById('total').textContent = `Total: ${evaluation.total}`;
         document.getElementById('runBadge').textContent = `RUN ${evaluation.runId}`;
-        document.getElementById('review').textContent = evaluation.needsReview ? 'REVISAR' : 'OK';
+        document.getElementById('reviewStatus').textContent = evaluation.needsReview ? 'REVISAR' : 'OK';
+        document.getElementById('reviewStatus').className = `badge ${evaluation.needsReview ? 'warn' : 'success'}`;
       }
 
       async function createEssayFromForm() {
@@ -415,45 +888,25 @@
         if (sourceType.value === 'upload') {
           const formData = new FormData();
           formData.append('temaId', String(temaSelect.value));
-          if (text) {
-            formData.append('text', text);
-          }
+          if (text) formData.append('text', text);
 
           const file = fileInput.files && fileInput.files[0];
-          if (file) {
-            formData.append('file', file, file.name);
-          }
+          if (file) formData.append('file', file, file.name);
 
-          const response = await fetch('/api/essays', {
-            method: 'POST',
-            body: formData
-          });
-
+          const response = await fetch('/api/essays', { method: 'POST', body: formData });
           const data = await response.json();
-          if (!response.ok) {
-            throw new Error(data.message || 'Não foi possível criar a redação com upload');
-          }
-
+          if (!response.ok) throw new Error(data.message || 'Não foi possível criar a redação com upload');
           return data.essay;
         }
 
-        const payload = {
-          temaId: Number(temaSelect.value),
-          text,
-          sourceType: sourceType.value
-        };
-
+        const payload = { temaId: Number(temaSelect.value), text, sourceType: sourceType.value };
         const response = await fetch('/api/essays', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(payload)
         });
-
         const data = await response.json();
-        if (!response.ok) {
-          throw new Error(data.message || 'Não foi possível criar a redação');
-        }
-
+        if (!response.ok) throw new Error(data.message || 'Não foi possível criar a redação');
         return data.essay;
       }
 
@@ -466,8 +919,8 @@
 
           if (essay.status === 'NEEDS_REVIEW') {
             reviewText.value = essay.text;
-            reviewPanel.style.display = 'block';
-            resultBox.style.display = 'none';
+            reviewPanel.classList.add('visible');
+            resultBox.classList.remove('visible');
             renderReviewDocumentPreview();
             renderReviewBlocks();
             await refreshQuality(essay.id);
@@ -477,11 +930,12 @@
 
           await evaluateEssay(essay.id);
         } catch (error) {
-          resultBox.style.display = 'block';
+          resultBox.classList.add('visible');
           resultJson.textContent = `Erro: ${error.message}`;
           document.getElementById('total').textContent = 'Total: -';
           document.getElementById('runBadge').textContent = 'ERRO';
-          document.getElementById('review').textContent = 'REVISAR';
+          document.getElementById('reviewStatus').textContent = 'REVISAR';
+          document.getElementById('reviewStatus').className = 'badge warn';
         }
       });
 
@@ -493,11 +947,7 @@
       document.getElementById('approveReview').addEventListener('click', async () => {
         if (!currentEssayId) return;
 
-        const request = {
-          reviewedText: reviewText.value.trim(),
-          approved: true
-        };
-
+        const request = { reviewedText: reviewText.value.trim(), approved: true };
         const response = await fetch(`/api/essays/${currentEssayId}/review`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -511,7 +961,7 @@
         }
 
         await refreshQuality(currentEssayId);
-        reviewPanel.style.display = 'none';
+        reviewPanel.classList.remove('visible');
         await evaluateEssay(currentEssayId);
       });
 
@@ -525,11 +975,12 @@
         });
 
         if (response.ok) {
-          resultBox.style.display = 'block';
+          resultBox.classList.add('visible');
           resultJson.textContent = 'Redação enviada para nova revisão humana.';
           document.getElementById('total').textContent = 'Total: -';
           document.getElementById('runBadge').textContent = 'PENDENTE';
-          document.getElementById('review').textContent = 'REVISAR';
+          document.getElementById('reviewStatus').textContent = 'REVISAR';
+          document.getElementById('reviewStatus').className = 'badge warn';
         }
       });
 
@@ -540,6 +991,70 @@
       fileInput.addEventListener('change', (event) => {
         const file = event.target.files && event.target.files[0];
         renderDocumentPreview(file);
+      });
+
+      document.getElementById('runBenchmark').addEventListener('click', async () => {
+        const temaId = Number(temaSelect.value);
+        const selectedProfiles = [...document.querySelectorAll('.profile-option input:checked')].map((input) => input.value);
+        const texts = benchmarkText.value
+          .split(/\n+/)
+          .map((value) => value.trim())
+          .filter(Boolean);
+
+        if (!selectedProfiles.length) {
+          benchmarkOutput.innerHTML = '<div class="quality-box"><strong>Selecione ao menos um perfil.</strong></div>';
+          benchmarkOutput.classList.add('visible');
+          return;
+        }
+
+        const payload = {
+          temaId,
+          profiles: selectedProfiles,
+          texts: texts.length ? texts : ['A educação é um direito fundamental para todos.']
+        };
+
+        const response = await fetch('/api/benchmark/compare', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+
+        const data = await response.json();
+        if (!response.ok) {
+          benchmarkOutput.innerHTML = `<div class="quality-box"><strong>Erro no benchmark:</strong> ${escapeHtml(data.message || 'Não foi possível comparar os perfis.')}</div>`;
+          benchmarkOutput.classList.add('visible');
+          return;
+        }
+
+        const comparisons = data.comparisons || {};
+        const rows = Object.entries(comparisons)
+          .map(([name, summary]) => `
+            <tr>
+              <td>${name}</td>
+              <td>${summary.averageTotal ?? 0}</td>
+              <td>${summary.totalCostUsd ?? 0}</td>
+              <td>${summary.averageLatencyMs ?? 0}</td>
+            </tr>
+          `)
+          .join('');
+
+        benchmarkOutput.innerHTML = `
+          <div class="quality-box">
+            <strong>Melhor perfil:</strong> ${data.bestProfile || 'n/a'}
+          </div>
+          <table class="benchmark-table">
+            <thead>
+              <tr>
+                <th>Perfil</th>
+                <th>Média total</th>
+                <th>Custo total</th>
+                <th>Latência média</th>
+              </tr>
+            </thead>
+            <tbody>${rows}</tbody>
+          </table>
+        `;
+        benchmarkOutput.classList.add('visible');
       });
 
       loadTemas();
