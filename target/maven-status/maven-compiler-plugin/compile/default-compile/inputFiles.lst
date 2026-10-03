@@ -1,0 +1,15 @@
+/home/victor/Documentos/git/redator/src/main/java/com/redator/corretor/CorretorEnemApplication.java
+/home/victor/Documentos/git/redator/src/main/java/com/redator/corretor/config/InitialDataLoader.java
+/home/victor/Documentos/git/redator/src/main/java/com/redator/corretor/controller/EssayController.java
+/home/victor/Documentos/git/redator/src/main/java/com/redator/corretor/controller/GlobalExceptionHandler.java
+/home/victor/Documentos/git/redator/src/main/java/com/redator/corretor/model/CompetenceResult.java
+/home/victor/Documentos/git/redator/src/main/java/com/redator/corretor/model/CreateEssayRequest.java
+/home/victor/Documentos/git/redator/src/main/java/com/redator/corretor/model/EssayResponse.java
+/home/victor/Documentos/git/redator/src/main/java/com/redator/corretor/model/EvaluationProfile.java
+/home/victor/Documentos/git/redator/src/main/java/com/redator/corretor/model/EvaluationResult.java
+/home/victor/Documentos/git/redator/src/main/java/com/redator/corretor/model/Tema.java
+/home/victor/Documentos/git/redator/src/main/java/com/redator/corretor/service/DeterministicEssayAnalysis.java
+/home/victor/Documentos/git/redator/src/main/java/com/redator/corretor/service/EssayService.java
+/home/victor/Documentos/git/redator/src/main/java/com/redator/corretor/service/LlmCallResult.java
+/home/victor/Documentos/git/redator/src/main/java/com/redator/corretor/service/LlmGateway.java
+/home/victor/Documentos/git/redator/src/main/java/com/redator/corretor/service/RubricEngine.java
