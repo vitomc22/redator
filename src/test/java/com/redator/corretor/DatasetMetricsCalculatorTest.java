@@ -68,6 +68,26 @@ class DatasetMetricsCalculatorTest {
     }
 
     @Test
+    void shouldGenerateB0AndB1BaselinesAndDeltaSummary() {
+        List<Integer> goldScores = List.of(200, 400, 600, 800);
+
+        List<Integer> b0 = BaselineComparisonService.generateB0(goldScores);
+        List<Integer> b1 = BaselineComparisonService.generateB1(goldScores);
+
+        assertThat(b0).containsExactly(500, 500, 500, 500);
+        assertThat(b1).containsExactly(500, 500, 500, 500);
+
+        Map<String, Object> deltas = BaselineComparisonService.compareWithDelta(
+                goldScores,
+                Map.of("B0", b0, "B1", b1, "B2", goldScores)
+        );
+
+        assertThat(deltas).containsKeys("B0", "B1", "B2");
+        assertThat(((Map<String, Object>) deltas.get("B0")).get("deltaQwk")).isEqualTo(0.0);
+        assertThat(((Map<String, Object>) deltas.get("B2")).get("deltaQwk")).isEqualTo(1.0);
+    }
+
+    @Test
     void shouldMeasureTranscriptionQualityForGoNoGoDecision() {
         String goldText = "A educacao e fundamental para o futuro dos jovens.";
         String transcribedText = "A educação é fundamental para o futuro dos jovens.";
