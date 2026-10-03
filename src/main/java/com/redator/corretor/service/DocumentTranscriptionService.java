@@ -225,7 +225,7 @@ public final class DocumentTranscriptionService {
 
         List<String> suspiciousTokens = findSuspiciousSegments(text);
         double ratio = words.isEmpty() ? 0.0 : (double) suspiciousTokens.size() / words.size();
-        String quality = (ilegiveis > 0 || ratio > 0.06 || suspiciousTokens.size() >= 3) ? "REVISAR" : "OK";
+        String quality = requiresReview(words.size(), ilegiveis, suspiciousTokens.size(), ratio) ? "REVISAR" : "OK";
 
         return new Summary(
                 words.size(),
@@ -263,6 +263,21 @@ public final class DocumentTranscriptionService {
         }
 
         return new ArrayList<>(suspiciousTokens);
+    }
+
+    private static boolean requiresReview(int wordCount, int illegibleCount, int suspiciousCount, double suspiciousRatio) {
+        if (illegibleCount > 0) {
+            return true;
+        }
+
+        if (wordCount <= 0) {
+            return false;
+        }
+
+        int absoluteThreshold = (wordCount < 80) ? 2 : (wordCount < 200) ? 3 : (wordCount < 500) ? 5 : 6;
+        double ratioThreshold = (wordCount < 80) ? 0.12 : (wordCount < 200) ? 0.08 : (wordCount < 500) ? 0.04 : 0.025;
+
+        return suspiciousCount >= absoluteThreshold || suspiciousRatio > ratioThreshold;
     }
 
     private static boolean shouldFlagAsSuspicious(String token) {

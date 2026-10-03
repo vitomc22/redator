@@ -90,6 +90,17 @@ class DatasetMetricsCalculatorTest {
     }
 
     @Test
+    void shouldAllowSmallNoiseInLongerDocuments() {
+        String sentence = "A educacao e um direito fundamental para a cidadania e para a formacao de jovens criticos e ativos na sociedade. ";
+        String text = sentence.repeat(20) + " qwerty " + " zzzzz " + " asdf " + sentence.repeat(2);
+
+        DocumentTranscriptionService.Summary quality = DocumentTranscriptionService.analyze(text);
+
+        assertThat(quality.quality()).isEqualTo("OK");
+        assertThat(quality.suspiciousTokens()).hasSizeGreaterThanOrEqualTo(3);
+    }
+
+    @Test
     void shouldTranscribePdfContentBeforeHumanReview() {
         String pdfContent = "%PDF-1.4\nBT\n/F1 12 Tf\n72 720 Td\n(A educacao e um direito fundamental.) Tj\nET\n%%EOF";
 
