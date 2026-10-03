@@ -38,9 +38,41 @@ public final class TranscriptionQualityMetricsCalculator {
         double cer = (double) charDistance / Math.max(1, goldNormalized.length());
         double wer = (double) wordDistance / Math.max(1, normalizeWords(goldText).size());
         double preservationRate = calculatePreservationRate(goldText, transcribedText);
-        boolean goNoGo = cer <= CER_LIMIT && wer <= WER_LIMIT && preservationRate >= PRESERVATION_LIMIT;
+        boolean suspiciousNoise = hasSuspiciousOcrNoise(transcribedText, normalizeWords(transcribedText).size());
+        boolean goNoGo = cer <= CER_LIMIT && wer <= WER_LIMIT && preservationRate >= PRESERVATION_LIMIT && !suspiciousNoise;
 
         return new Summary(cer, wer, preservationRate, goNoGo);
+    }
+
+    private static boolean hasSuspiciousOcrNoise(String text, int wordCount) {
+        if (text == null || text.isBlank()) {
+            return false;
+        }
+
+        List<String> suspiciousTokens = DocumentTranscriptionService.findSuspiciousSegments(text);
+        if (suspiciousTokens.isEmpty()) {
+            return false;
+        }
+
+        for (String token : suspiciousTokens) {
+            String normalized = token.toLowerCase(Locale.ROOT).replaceAll("[^a-z0-9]", "");
+            if (normalized.isBlank()) {
+                continue;
+            }
+            if (normalized.matches("(?i)(qwerty|asdf|zxcv|uiop|lkj|mnbv|poiu|qazwsx|yuiop|zzzz|aaaa|bbbb|cccc|dddd|ffff)")
+                    || token.contains("[") || token.contains("]") || token.contains("?")) {
+                return true;
+            }
+        }
+
+        if (wordCount == 0) {
+            return false;
+        }
+
+        double suspiciousRatio = (double) suspiciousTokens.size() / wordCount;
+        int absoluteThreshold = (wordCount < 80) ? 2 : (wordCount < 200) ? 3 : (wordCount < 500) ? 5 : 6;
+        double ratioThreshold = (wordCount < 80) ? 0.12 : (wordCount < 200) ? 0.08 : (wordCount < 500) ? 0.04 : 0.025;
+        return suspiciousTokens.size() >= absoluteThreshold || suspiciousRatio > ratioThreshold;
     }
 
     private static double calculatePreservationRate(String goldText, String transcribedText) {

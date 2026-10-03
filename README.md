@@ -1,47 +1,67 @@
 # Corretor ENEM IA
 
-Projeto de MVP para avaliação automatizada de redações do ENEM, com foco em arquitetura enxuta, medição objetiva e fluxo de revisão humana antes da avaliação final. O objetivo é transformar uma redação em uma nota estimada com evidências, riscos, métricas e persistência do histórico de execução.
+Projeto MVP para avaliação automatizada de redações do ENEM com foco em: arquitetura enxuta, medição objetiva, revisão humana obrigatória antes da avaliação e documentação de qualidade do pipeline.
 
-Este repositório implementa a base funcional do plano descrito em [plano_corretor_enem_ia_mvp_v2.md](plano_corretor_enem_ia_mvp_v2.md), mantendo o MVP robótico, sem microserviços e com baixa infraestrutura.
-
----
-
-## 1. Visão geral
-
-O sistema hoje já cobre os elementos centrais da arquitetura planejada:
-
-- entrada de texto e upload de arquivo
-- revisão humana obrigatória para texto originado em imagem/PDF
-- avaliação por perfil (`cheap`, `normal`, `premium`)
-- persistência local em SQLite
-- métrica de qualidade de transcrição
-- comparação e relatórios de dataset
-- fluxo de benchmark e comparação de baselines
-
-O produto continua sendo um MVP experimental, não um substituto da correção oficial do ENEM.
+O repositório já cobre a maior parte do fluxo funcional do plano descrito em [plano_corretor_enem_ia_mvp_v2.md](plano_corretor_enem_ia_mvp_v2.md), com foco em um monólito Java + Spring Boot simples e executável localmente.
 
 ---
 
-## 2. Status do projeto
+## Status atual
 
 ### Implementado
 
 - backend Spring Boot em Java 21
 - SQLite + Flyway
-- API REST para criação, revisão e avaliação de redações
-- gatilho de `NEEDS_REVIEW` para redações de upload/documento
-- validação de upload de PDF/JPG/PNG
-- qualidade de transcrição com tokens suspeitos e análise de CER/WER/preservação
-- benchmark de dataset e comparação entre modelos/baselines
-- frontend estático com fluxo de revisão humana
+- API REST para criação, revisão, avaliação e benchmark
+- avaliação por perfil (`cheap`, `normal`, `premium`)
+- gate de revisão humana para documentos e uploads
+- validação de PDF/JPG/PNG
+- qualidade de transcrição com CER/WER/preservation e detecção de ruído OCR
+- comparação de baselines e métricas de dataset
+- frontend estático com revisão visual, destaque de trechos suspeitos e preview de documento
 
-### Fase atual
+### Fase ativa
 
-A etapa ativa do plano é a integração do pipeline documental com um provedor real de OCR/visão, sem quebrar o gate humano anterior à avaliação. O código já separa bem a camada de transcrição e o gateway, deixando o ponto de extensão limpo para integração com um OCR real.
+A fase ativa do roadmap é a etapa de entrada documental realista do F3:
+
+- calibração da qualidade de OCR/PDF e imagens
+- reforço do gate de revisão humana para ruído documental
+- melhoria da experiência de revisão com blocos editáveis e destaque de trechos suspeitos
+
+O projeto já passou do MVP texto-only e está validando o passo seguinte: fluxo de imagem/PDF com revisão e qualidade documental mais realista.
 
 ---
 
-## 3. Arquitetura
+## Fluxo funcional atual
+
+### Texto direto
+
+1. o usuário envia texto e tema
+2. a redação é persistida
+3. a avaliação pode seguir sem revisão humana
+
+### Upload de PDF / imagem
+
+1. o arquivo é validado por tipo e conteúdo
+2. a transcrição literal é extraída/gerada pelo gateway de visão
+3. a redação apenas entra no pipeline após revisão humana
+4. o editor pode aprovar ou rejeitar o texto
+5. só depois da revisão o sistema libera a avaliação final
+
+### Gate de qualidade documental
+
+A regra atual considera:
+
+- CER
+- WER
+- preservation rate
+- presença de ruído OCR/gibberish em texto revisado
+
+Se o texto tiver sinal de transcrição comprometida, a redação continua em `NEEDS_REVIEW` mesmo que os números gerais pareçam aceitáveis.
+
+---
+
+## Arquitetura
 
 ```text
 Browser / UI
@@ -70,84 +90,17 @@ Spring Boot App
 
 ### Componentes principais
 
-- `EssayController`: endpoints públicos para criação, upload, revisão e avaliação
-- `EssayService`: orquestração de regras de negócio, persistência e gate de revisão
-- `DocumentTranscriptionService`: validação, análise e transcrição literal de documentos
-- `VisionTranscriptionGateway`: seam de integração para provedor de visão/OCR
-- `TranscriptionQualityMetricsCalculator`: CER, WER, preservation rate e go/no-go
-- `DatasetMetricsCalculator`: cálculo de QWK, MAE, RMSE, acordo exato e adjacente
-- `BaselineComparisonService`: comparação de modelos e baselines
+- `EssayController`: endpoints da API
+- `EssayService`: regras de negócio, review gate e persistência
+- `DocumentTranscriptionService`: análise de documento, suspeitas e revisão
+- `VisionTranscriptionGateway`: fronteira para OCR/visão
+- `TranscriptionQualityMetricsCalculator`: gate documental
+- `DatasetMetricsCalculator`: métricas do dataset
+- `BaselineComparisonService`: comparação e benchmark
 
 ---
 
-## 4. Fluxo funcional atual
-
-### 4.1 Texto direto
-
-1. usuário envia texto e tema
-2. a redação é salva como `READY`
-3. a avaliação pode ir direto para o pipeline sem revisão humana
-
-### 4.2 Upload de PDF / imagem
-
-1. arquivo é validado por tamanho e magic bytes
-2. a transcrição literal é extraída ou produzida pelo gateway de visão
-3. o texto não é aceito como válido sem revisão humana
-4. o editor revisa o texto e decide aprovar ou rejeitar
-5. só depois da revisão o sistema permite a avaliação final
-
-### 4.3 Gate de qualidade
-
-O gate humano depende de métrica de qualidade de transcrição. A lógica atual compara o texto revisado com o texto extraído e valida:
-
-- CER
-- WER
-- preservation rate
-- presença de tokens suspeitos
-
-Se a qualidade não for suficiente, a redação continua em `NEEDS_REVIEW`.
-
----
-
-## 5. Roadmap em fases
-
-### Fase 1 — infraestrutura local
-
-- Java + Spring Boot
-- SQLite + Flyway
-- tema, essay, run, competence_result, llm_call
-
-### Fase 2 — avaliação de redação
-
-- análise determinística
-- rubrica por competência
-- perfis de custo e latência
-- persistência do resultado
-
-### Fase 3 — benchmark e qualidade
-
-- métricas de dataset
-- QWK, MAE, RMSE, agreement, bias
-- comparação de baselines
-- relatórios em Markdown/CSV
-
-### Fase 4 — documento e revisão humana
-
-- upload de PDF/imagem
-- validação documental
-- transcrição literal
-- marcação de tokens suspeitos
-- revisão humana obrigatória antes da avaliação
-
-### Fase 5 — OCR/visão real
-
-- prover um backend documental real (OCR/vision)
-- manter a revisão humana como gate obrigatório
-- registrar métricas de qualidade da transcrição e custo por página
-
----
-
-## 6. Principais endpoints
+## Endpoints principais
 
 ### Temas
 
@@ -201,13 +154,13 @@ POST /api/essays/{id}/evaluate?profile=cheap
 ### Benchmark
 
 ```http
-POST /api/essays/benchmark
+POST /api/benchmark
 ```
 
 ### Comparação de perfis
 
 ```http
-POST /api/essays/compare
+POST /api/benchmark/compare
 ```
 
 ### Qualidade da transcrição
@@ -218,20 +171,78 @@ GET /api/essays/{id}/quality
 
 ---
 
-## 7. Fluxo de avaliação e revisão
+## Roadmap em sequência
 
-A regra atual do sistema é simples e explícita:
+### Fase 0 — concluída
 
-- texto puro = pode ser avaliado
-- upload/documento = precisa de revisão humana
-- revisão aprovada + qualidade de transcrição aceitável = `READY`
-- revisão rejeitada ou qualidade ruim = `NEEDS_REVIEW`
+- projeto Spring Boot e estrutura local
+- SQLite + Flyway
+- gateway LLM, cache e budget guard
+- schema validation
+- baselines e métricas
+- CI e testes básicos
 
-Isso evita conflitar o erro de OCR/comportamento do modelo com o erro de avaliação da redação.
+### Fase 1 — concluída
+
+- pipeline texto → nota
+- rubricas por competência
+- perfis de avaliação
+- persistência e API pública
+
+### Fase 2 — concluída
+
+- dataset benchmarks e relatórios
+- comparação de baselines
+- comparação entre profiles
+- validação de qualidade e review gate
+
+### Fase 3 — em andamento
+
+- OCR/PDF e qualidade documental
+- revisão humana com destaque de trechos suspeitos
+- refinamento da experiência de edição
+- guardar critérios de go/no-go com dados documentais reais
+
+### Fase 4 — pendente
+
+- endurecimento operacional
+- segurança, LGPD e retenção
+- suite adversarial e E2E
+- README/report final e limites do MVP
 
 ---
 
-## 8. Estrutura do projeto
+## Como rodar localmente
+
+### Requisitos
+
+- Java 21+
+- Maven 3.8+
+- Git
+
+### Executar a aplicação
+
+```bash
+cd /home/victor/Documentos/git/redator
+mvn spring-boot:run
+```
+
+A aplicação fica em:
+
+```text
+http://localhost:8080/
+```
+
+### Rodar testes
+
+```bash
+cd /home/victor/Documentos/git/redator
+mvn test
+```
+
+---
+
+## Estrutura do projeto
 
 ```text
 redator/
@@ -246,8 +257,8 @@ redator/
 │   │       └── db/migration/
 │   └── test/java/com/redator/corretor/
 ├── data/
-├── eval/
 ├── sample-data/
+├── src/main/resources/static/index.html
 ├── README.md
 ├── plano_corretor_enem_ia_mvp_v2.md
 ├── pom.xml
@@ -256,7 +267,25 @@ redator/
 
 ---
 
-## 9. Como rodar localmente
+## Observações importantes
+
+- este projeto é um MVP experimental e não substitui a correção oficial do ENEM
+- a revisão humana é obrigatória para textos originados em imagem/PDF
+- o sistema prioriza evidência, rastreabilidade e medida objetiva sobre sofisticação de infraestrutura
+- a próxima etapa de desenvolvimento é a calibração da qualidade documental e a refinamento da revisão visual
+
+---
+
+## Verificação atual
+
+A suíte de testes do projeto foi validada com sucesso com:
+
+```bash
+cd /home/victor/Documentos/git/redator
+mvn -q test
+```
+
+Resultado verificado: `EXIT:0`.
 
 ```bash
 cd /home/victor/Documentos/git/redator

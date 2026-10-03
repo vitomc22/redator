@@ -123,6 +123,16 @@ class DatasetMetricsCalculatorTest {
     }
 
     @Test
+    void shouldRejectGarbledOcrNoiseEvenWhenTextLooksAlmostValid() {
+        String goldText = "A educação é um direito fundamental para todos. " + "A cidadania exige responsabilidade e participação ativa. ".repeat(20);
+        String transcribedText = goldText + "qwerty";
+
+        TranscriptionQualityMetricsCalculator.Summary summary = TranscriptionQualityMetricsCalculator.calculate(goldText, transcribedText);
+
+        assertThat(summary.goNoGo()).isFalse();
+    }
+
+    @Test
     void shouldAllowSmallNoiseInLongerDocuments() {
         String sentence = "A educacao e um direito fundamental para a cidadania e para a formacao de jovens criticos e ativos na sociedade. ";
         String text = sentence.repeat(20) + " qwerty " + " zzzzz " + " asdf " + sentence.repeat(2);
