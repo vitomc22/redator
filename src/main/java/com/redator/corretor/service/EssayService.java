@@ -11,6 +11,7 @@ import java.sql.Statement;
 import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import org.springframework.http.HttpStatus;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -21,6 +22,7 @@ import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
 
 @Service
 public class EssayService {
@@ -66,6 +68,32 @@ public class EssayService {
         return findEssayById(essayId);
     }
 
+    public EssayResponse createUploadedEssay(Long temaId, String text, String sourceType) {
+        if (temaId == null || text == null || text.isBlank()) {
+            throw new IllegalArgumentException("temaId e text sao obrigatorios");
+        }
+
+        String normalizedSourceType = sourceType == null ? "upload" : sourceType.trim().toLowerCase();
+        String status = "upload".equals(normalizedSourceType) || "image".equals(normalizedSourceType) || "pdf".equals(normalizedSourceType)
+                ? "NEEDS_REVIEW"
+                : "READY";
+
+        String now = OffsetDateTime.now().format(DateTimeFormatter.ISO_OFFSET_DATE_TIME);
+        KeyHolder keyHolder = new GeneratedKeyHolder();
+        jdbcTemplate.update(connection -> {
+            PreparedStatement preparedStatement = connection.prepareStatement(
+                    "INSERT INTO essay (tema_id, text, status, created_at) VALUES (?, ?, ?, ?)", Statement.RETURN_GENERATED_KEYS);
+            preparedStatement.setLong(1, temaId);
+            preparedStatement.setString(2, text);
+            preparedStatement.setString(3, status);
+            preparedStatement.setString(4, now);
+            return preparedStatement;
+        }, keyHolder);
+
+        Long essayId = keyHolder.getKey() == null ? 1L : keyHolder.getKey().longValue();
+        return findEssayById(essayId);
+    }
+
     public EssayResponse updateEssayText(Long essayId, String text) {
         if (text == null || text.isBlank()) {
             throw new IllegalArgumentException("texto nao pode ser vazio");
@@ -74,9 +102,23 @@ public class EssayService {
         return findEssayById(essayId);
     }
 
+    public EssayResponse reviewEssay(Long essayId, String reviewedText, boolean approved) {
+        if (reviewedText == null || reviewedText.isBlank()) {
+            throw new IllegalArgumentException("reviewedText obrigatorio");
+        }
+
+        String status = approved ? "READY" : "NEEDS_REVIEW";
+        jdbcTemplate.update("UPDATE essay SET text = ?, status = ? WHERE id = ?", reviewedText, status, essayId);
+        return findEssayById(essayId);
+    }
+
     @Transactional
     public EvaluationResult evaluateEssay(Long essayId, String profile) {
         EssayResponse essay = findEssayById(essayId);
+        if ("NEEDS_REVIEW".equalsIgnoreCase(essay.status())) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "redacao precisa de revisão humana antes da avaliacao");
+        }
+
         DeterministicEssayAnalysis analysis = DeterministicEssayAnalysis.analyze(essay.text());
         Map<String, CompetenceResult> baseCompetences = RubricEngine.evaluate(analysis);
         EvaluationProfile evaluationProfile = EvaluationProfile.from(profile);

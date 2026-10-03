@@ -25,7 +25,7 @@
       h1 { margin-top: 0; }
       form { display: grid; gap: 16px; }
       label { font-weight: 600; }
-      textarea, select, button { font: inherit; }
+      textarea, select, button, input { font: inherit; }
       textarea {
         min-height: 180px;
         width: 100%;
@@ -41,6 +41,18 @@
         color: white;
         padding: 12px 18px;
         cursor: pointer;
+      }
+      .secondary {
+        background: #e3e9f5;
+        color: #243a60;
+      }
+      .review-panel {
+        margin-top: 24px;
+        display: none;
+        background: #fffaf1;
+        border: 1px solid #f2d69b;
+        border-radius: 12px;
+        padding: 16px;
       }
       .result {
         margin-top: 20px;
@@ -74,11 +86,32 @@
             <select id="temaId" name="temaId"></select>
           </div>
           <div>
+            <label for="sourceType">Origem da redação</label>
+            <select id="sourceType" name="sourceType">
+              <option value="text">Texto digitado</option>
+              <option value="upload">Upload / revisão humana</option>
+            </select>
+          </div>
+          <div>
             <label for="text">Texto da redação</label>
             <textarea id="text" placeholder="Digite ou cole a redação..." required></textarea>
           </div>
+          <div>
+            <label for="fileInput">Arquivo auxiliar (opcional)</label>
+            <input id="fileInput" type="file" accept=".pdf,image/png,image/jpeg,image/jpg" />
+          </div>
           <button type="submit">Enviar para avaliação</button>
         </form>
+
+        <div id="reviewPanel" class="review-panel">
+          <h2>Revisão humana</h2>
+          <p>O texto precisa ser revisado antes da avaliação quando a origem é upload ou imagem.</p>
+          <textarea id="reviewText" placeholder="Revise o texto antes de aprovar..."></textarea>
+          <div class="meta" style="margin-top: 12px;">
+            <button type="button" id="approveReview">Aprovar e avaliar</button>
+            <button type="button" class="secondary" id="rejectReview">Rejeitar para revisão</button>
+          </div>
+        </div>
 
         <div id="result" class="result" style="display:none;">
           <div class="meta">
@@ -94,8 +127,13 @@
     <script>
       const temaSelect = document.getElementById('temaId');
       const form = document.getElementById('essayForm');
+      const sourceType = document.getElementById('sourceType');
       const resultBox = document.getElementById('result');
       const resultJson = document.getElementById('resultJson');
+      const reviewPanel = document.getElementById('reviewPanel');
+      const reviewText = document.getElementById('reviewText');
+      const fileInput = document.getElementById('fileInput');
+      let currentEssayId = null;
 
       async function loadTemas() {
         const response = await fetch('/api/temas');
@@ -108,30 +146,112 @@
         });
       }
 
-      form.addEventListener('submit', async (event) => {
-        event.preventDefault();
-        const payload = {
-          temaId: Number(temaSelect.value),
-          text: document.getElementById('text').value
-        };
-
-        const createdResponse = await fetch('/api/essays', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload)
-        });
-
-        const created = await createdResponse.json();
-        const essayId = created.essay.id;
-
+      async function evaluateEssay(essayId) {
         const evaluationResponse = await fetch(`/api/essays/${essayId}/evaluate?profile=cheap`, { method: 'POST' });
-        const evaluation = await evaluationResponse.json();
+        if (!evaluationResponse.ok) {
+          const error = await evaluationResponse.text();
+          throw new Error(error || 'Avaliação bloqueada');
+        }
 
+        const evaluation = await evaluationResponse.json();
         resultBox.style.display = 'block';
         resultJson.textContent = JSON.stringify(evaluation, null, 2);
         document.getElementById('total').textContent = `Total: ${evaluation.total}`;
         document.getElementById('runBadge').textContent = `RUN ${evaluation.runId}`;
         document.getElementById('review').textContent = evaluation.needsReview ? 'REVISAR' : 'OK';
+      }
+
+      async function createEssayFromForm() {
+        const text = document.getElementById('text').value.trim();
+        const payload = {
+          temaId: Number(temaSelect.value),
+          text,
+          sourceType: sourceType.value
+        };
+
+        const endpoint = sourceType.value === 'upload' ? '/api/essays/upload' : '/api/essays';
+        const response = await fetch(endpoint, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+
+        const data = await response.json();
+        if (!response.ok) {
+          throw new Error(data.message || 'Não foi possível criar a redação');
+        }
+
+        return data.essay;
+      }
+
+      form.addEventListener('submit', async (event) => {
+        event.preventDefault();
+
+        try {
+          const essay = await createEssayFromForm();
+          currentEssayId = essay.id;
+
+          if (essay.status === 'NEEDS_REVIEW') {
+            reviewText.value = essay.text;
+            reviewPanel.style.display = 'block';
+            resultBox.style.display = 'none';
+            return;
+          }
+
+          await evaluateEssay(essay.id);
+        } catch (error) {
+          resultBox.style.display = 'block';
+          resultJson.textContent = `Erro: ${error.message}`;
+          document.getElementById('total').textContent = 'Total: -';
+          document.getElementById('runBadge').textContent = 'ERRO';
+          document.getElementById('review').textContent = 'REVISAR';
+        }
+      });
+
+      document.getElementById('approveReview').addEventListener('click', async () => {
+        if (!currentEssayId) return;
+
+        const request = {
+          reviewedText: reviewText.value.trim(),
+          approved: true
+        };
+
+        const response = await fetch(`/api/essays/${currentEssayId}/review`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(request)
+        });
+
+        if (!response.ok) {
+          const text = await response.text();
+          resultJson.textContent = `Erro na revisão: ${text}`;
+          return;
+        }
+
+        reviewPanel.style.display = 'none';
+        await evaluateEssay(currentEssayId);
+      });
+
+      document.getElementById('rejectReview').addEventListener('click', async () => {
+        if (!currentEssayId) return;
+
+        const response = await fetch(`/api/essays/${currentEssayId}/review`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ reviewedText: reviewText.value.trim(), approved: false })
+        });
+
+        if (response.ok) {
+          resultBox.style.display = 'block';
+          resultJson.textContent = 'Redação enviada para nova revisão humana.';
+          document.getElementById('total').textContent = 'Total: -';
+          document.getElementById('runBadge').textContent = 'PENDENTE';
+          document.getElementById('review').textContent = 'REVISAR';
+        }
+      });
+
+      sourceType.addEventListener('change', () => {
+        fileInput.disabled = sourceType.value !== 'upload';
       });
 
       loadTemas();

@@ -129,4 +129,61 @@ class EssayControllerIntegrationTest {
         assertThat(((Map<?, ?>) comparison.getBody().get("comparisons")).containsKey("cheap")).isTrue();
         assertThat(((Map<?, ?>) comparison.getBody().get("comparisons")).containsKey("normal")).isTrue();
     }
+
+    @Test
+    void shouldRequireHumanReviewForUploadedText() {
+        ResponseEntity<Map> created = restTemplate.postForEntity(
+                "/api/essays/upload",
+                Map.of(
+                        "temaId", 1,
+                        "text", "A educacao e um direito fundamental.",
+                        "sourceType", "upload"
+                ),
+                Map.class
+        );
+
+        assertThat(created.getStatusCode()).isEqualTo(HttpStatus.CREATED);
+        Map essay = (Map) created.getBody().get("essay");
+        Number essayId = (Number) essay.get("id");
+
+        ResponseEntity<Map> reviewed = restTemplate.postForEntity(
+                "/api/essays/{id}/review",
+                Map.of(
+                        "reviewedText", "A educação é um direito fundamental.",
+                        "approved", true
+                ),
+                Map.class,
+                essayId.longValue()
+        );
+
+        assertThat(reviewed.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(reviewed.getBody()).containsKey("status");
+        assertThat(reviewed.getBody().get("status")).isEqualTo("READY");
+    }
+
+    @Test
+    void shouldRejectEvaluationWhenEssayNeedsHumanReview() {
+        ResponseEntity<Map> created = restTemplate.postForEntity(
+                "/api/essays/upload",
+                Map.of(
+                        "temaId", 1,
+                        "text", "A educacao e um direito fundamental.",
+                        "sourceType", "upload"
+                ),
+                Map.class
+        );
+
+        assertThat(created.getStatusCode()).isEqualTo(HttpStatus.CREATED);
+        Map essay = (Map) created.getBody().get("essay");
+        Number essayId = (Number) essay.get("id");
+
+        ResponseEntity<String> evaluation = restTemplate.postForEntity(
+                "/api/essays/{id}/evaluate?profile=cheap",
+                null,
+                String.class,
+                essayId.longValue()
+        );
+
+        assertThat(evaluation.getStatusCode()).isEqualTo(HttpStatus.CONFLICT);
+    }
 }

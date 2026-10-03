@@ -44,6 +44,21 @@ public class EssayController {
         return ResponseEntity.status(HttpStatus.CREATED).body(Map.of("essay", essay));
     }
 
+    @PostMapping("/essays/upload")
+    public ResponseEntity<Map<String, Object>> createUploadedEssay(@RequestBody Map<String, Object> payload) {
+        if (!payload.containsKey("temaId") || !(payload.get("temaId") instanceof Number)
+                || !payload.containsKey("text") || payload.get("text") == null || String.valueOf(payload.get("text")).isBlank()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "temaId e text sao obrigatorios");
+        }
+
+        String sourceType = payload.get("sourceType") == null ? "upload" : String.valueOf(payload.get("sourceType"));
+        Long temaId = ((Number) payload.get("temaId")).longValue();
+        String text = String.valueOf(payload.get("text"));
+
+        EssayResponse essay = essayService.createUploadedEssay(temaId, text, sourceType);
+        return ResponseEntity.status(HttpStatus.CREATED).body(Map.of("essay", essay));
+    }
+
     @PutMapping("/essays/{id}/text")
     public ResponseEntity<Map<String, Object>> updateEssayText(@PathVariable Long id, @RequestBody Map<String, String> payload) {
         if (!payload.containsKey("text") || payload.get("text") == null || payload.get("text").isBlank()) {
@@ -51,6 +66,25 @@ public class EssayController {
         }
         EssayResponse essay = essayService.updateEssayText(id, payload.get("text"));
         return ResponseEntity.ok(Map.of("essay", essay));
+    }
+
+    @PostMapping("/essays/{id}/review")
+    public ResponseEntity<Map<String, Object>> reviewEssay(@PathVariable Long id, @RequestBody Map<String, Object> payload) {
+        if (!payload.containsKey("reviewedText") || payload.get("reviewedText") == null || String.valueOf(payload.get("reviewedText")).isBlank()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "reviewedText obrigatorio");
+        }
+
+        boolean approved = payload.containsKey("approved") && payload.get("approved") instanceof Boolean
+                ? (Boolean) payload.get("approved")
+                : Boolean.parseBoolean(String.valueOf(payload.getOrDefault("approved", false)));
+
+        EssayResponse essay = essayService.reviewEssay(id, String.valueOf(payload.get("reviewedText")), approved);
+        return ResponseEntity.ok(Map.of(
+                "essayId", essay.id(),
+                "status", essay.status(),
+                "approved", approved,
+                "text", essay.text()
+        ));
     }
 
     @PostMapping("/essays/{id}/evaluate")
