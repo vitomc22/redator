@@ -88,6 +88,18 @@ class DatasetMetricsCalculatorTest {
     }
 
     @Test
+    void shouldReuseCachedLlmResponsesForDuplicateCalls() {
+        var gateway = new com.redator.corretor.service.LlmGateway(new com.redator.corretor.service.BudgetGuard(1.0), new com.redator.corretor.service.ResponseSchemaValidator());
+
+        var first = gateway.generate("C2", "A educação é um direito fundamental.", com.redator.corretor.model.EvaluationProfile.CHEAP);
+        var second = gateway.generate("C2", "A educação é um direito fundamental.", com.redator.corretor.model.EvaluationProfile.CHEAP);
+
+        assertThat(second.summary()).isEqualTo(first.summary());
+        assertThat(second.costUsd()).isZero();
+        assertThat(gateway.cacheHitCount()).isEqualTo(1);
+    }
+
+    @Test
     void shouldMeasureTranscriptionQualityForGoNoGoDecision() {
         String goldText = "A educacao e fundamental para o futuro dos jovens.";
         String transcribedText = "A educação é fundamental para o futuro dos jovens.";

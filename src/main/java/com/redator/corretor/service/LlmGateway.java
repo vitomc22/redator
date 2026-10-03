@@ -2,6 +2,9 @@ package com.redator.corretor.service;
 
 import com.redator.corretor.model.EvaluationProfile;
 import java.util.Locale;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicLong;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -9,6 +12,8 @@ public class LlmGateway {
 
     private final BudgetGuard budgetGuard;
     private final ResponseSchemaValidator schemaValidator;
+    private final Map<String, LlmCallResult> responseCache = new ConcurrentHashMap<>();
+    private final AtomicLong cacheHitCount = new AtomicLong();
 
     public LlmGateway(BudgetGuard budgetGuard, ResponseSchemaValidator schemaValidator) {
         this.budgetGuard = budgetGuard;
@@ -16,6 +21,25 @@ public class LlmGateway {
     }
 
     public LlmCallResult generate(String competence, String essayText, EvaluationProfile profile) {
+        String promptHash = Integer.toHexString((competence + essayText + profile.name()).hashCode());
+        String schemaHash = Integer.toHexString(("essay-eval-v1" + competence).hashCode());
+        String cacheKey = promptHash + ":" + schemaHash;
+
+        LlmCallResult cached = responseCache.get(cacheKey);
+        if (cached != null) {
+            cacheHitCount.incrementAndGet();
+            return new LlmCallResult(
+                    cached.provider(),
+                    cached.model(),
+                    cached.promptHash(),
+                    cached.schemaHash(),
+                    0.0,
+                    0,
+                    "cached",
+                    cached.summary()
+            );
+        }
+
         double cost = budgetGuard.reserve(profile);
 
         String provider = switch (profile) {
@@ -36,9 +60,6 @@ public class LlmGateway {
             case PREMIUM -> 1200;
         };
 
-        String promptHash = Integer.toHexString((competence + essayText + profile.name()).hashCode());
-        String schemaHash = Integer.toHexString(("essay-eval-v1" + competence).hashCode());
-
         String payload = "{"
                 + "\"competencia\":\"" + competence + "\","
                 + "\"score\":" + 160 + ","
@@ -49,7 +70,7 @@ public class LlmGateway {
 
         schemaValidator.validate(payload);
 
-        return new LlmCallResult(
+        LlmCallResult result = new LlmCallResult(
                 provider,
                 model,
                 promptHash,
@@ -59,5 +80,15 @@ public class LlmGateway {
                 "ok",
                 payload
         );
+        responseCache.put(cacheKey, result);
+        return result;
+    }
+
+    public long cacheHitCount() {
+        return cacheHitCount.get();
+    }
+
+    public int cacheSize() {
+        return responseCache.size();
     }
 }
