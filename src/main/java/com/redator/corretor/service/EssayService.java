@@ -107,9 +107,28 @@ public class EssayService {
             throw new IllegalArgumentException("reviewedText obrigatorio");
         }
 
-        String status = approved ? "READY" : "NEEDS_REVIEW";
+        EssayResponse essay = findEssayById(essayId);
+        String status = approved && passesTranscriptionQualityGate(essayId, reviewedText) ? "READY" : "NEEDS_REVIEW";
         jdbcTemplate.update("UPDATE essay SET text = ?, status = ? WHERE id = ?", reviewedText, status, essayId);
         return findEssayById(essayId);
+    }
+
+    public boolean passesTranscriptionQualityGate(Long essayId, String reviewedText) {
+        EssayResponse essay = findEssayById(essayId);
+        if (essay.text() == null || essay.text().isBlank() || reviewedText == null || reviewedText.isBlank()) {
+            return false;
+        }
+
+        try {
+            return TranscriptionQualityMetricsCalculator.calculate(essay.text(), reviewedText).goNoGo();
+        } catch (IllegalArgumentException ignored) {
+            return false;
+        }
+    }
+
+    public DocumentTranscriptionService.Summary analyzeTranscriptionQuality(Long essayId) {
+        EssayResponse essay = findEssayById(essayId);
+        return DocumentTranscriptionService.analyze(essay.text());
     }
 
     @Transactional

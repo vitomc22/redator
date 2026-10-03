@@ -74,6 +74,46 @@
         font-size: 12px;
         font-weight: 700;
       }
+      .quality-box {
+        margin-top: 12px;
+        padding: 12px;
+        border-radius: 8px;
+        background: #f5f7fc;
+        border: 1px solid #dfe5f1;
+      }
+      .quality-box strong {
+        display: block;
+        margin-bottom: 6px;
+      }
+      mark {
+        background: #ffe28a;
+        color: #1d2b36;
+        padding: 0 3px;
+        border-radius: 4px;
+      }
+      .highlight-preview {
+        margin-top: 12px;
+        padding: 12px;
+        background: white;
+        border: 1px solid #e2e8f0;
+        border-radius: 8px;
+        line-height: 1.5;
+        white-space: pre-wrap;
+      }
+      .doc-preview {
+        margin-top: 12px;
+        display: none;
+        background: #f8fafc;
+        border: 1px solid #d7e0ef;
+        border-radius: 8px;
+        padding: 12px;
+      }
+      .doc-preview img {
+        max-width: 100%;
+        max-height: 260px;
+        border-radius: 8px;
+        display: block;
+      }
     </style>
   </head>
   <body>
@@ -99,6 +139,7 @@
           <div>
             <label for="fileInput">Arquivo auxiliar (opcional)</label>
             <input id="fileInput" type="file" accept=".pdf,image/png,image/jpeg,image/jpg" />
+            <div id="docPreview" class="doc-preview" aria-live="polite"></div>
           </div>
           <button type="submit">Enviar para avaliação</button>
         </form>
@@ -106,7 +147,11 @@
         <div id="reviewPanel" class="review-panel">
           <h2>Revisão humana</h2>
           <p>O texto precisa ser revisado antes da avaliação quando a origem é upload ou imagem.</p>
+          <div id="qualitySummary" class="quality-box">
+            <strong>Qualidade da transcrição: aguardando análise</strong>
+          </div>
           <textarea id="reviewText" placeholder="Revise o texto antes de aprovar..."></textarea>
+          <div id="highlightPreview" class="highlight-preview" aria-live="polite"></div>
           <div class="meta" style="margin-top: 12px;">
             <button type="button" id="approveReview">Aprovar e avaliar</button>
             <button type="button" class="secondary" id="rejectReview">Rejeitar para revisão</button>
@@ -133,7 +178,62 @@
       const reviewPanel = document.getElementById('reviewPanel');
       const reviewText = document.getElementById('reviewText');
       const fileInput = document.getElementById('fileInput');
+      const docPreview = document.getElementById('docPreview');
+      const qualitySummary = document.getElementById('qualitySummary');
+      const highlightPreview = document.getElementById('highlightPreview');
       let currentEssayId = null;
+
+      function escapeHtml(value) {
+        return value
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;')
+          .replace(/"/g, '&quot;');
+      }
+
+      function renderSuspiciousPreview(text) {
+        const escaped = escapeHtml(text || '');
+        const highlighted = escaped.replace(/\[[^\]]+\]|\?+/g, '<mark>$&</mark>');
+        highlightPreview.innerHTML = highlighted || 'Nenhum token suspeito detectado.';
+      }
+
+      function renderDocumentPreview(file) {
+        if (!file) {
+          docPreview.style.display = 'none';
+          docPreview.innerHTML = '';
+          return;
+        }
+
+        const isImage = file.type.startsWith('image/');
+        if (isImage) {
+          const reader = new FileReader();
+          reader.onload = () => {
+            docPreview.innerHTML = `<strong>Pré-visualização da imagem</strong><img src="${reader.result}" alt="Pré-visualização da imagem" />`;
+            docPreview.style.display = 'block';
+          };
+          reader.readAsDataURL(file);
+          return;
+        }
+
+        docPreview.innerHTML = `<strong>Arquivo PDF</strong><div>${escapeHtml(file.name)}</div>`;
+        docPreview.style.display = 'block';
+      }
+
+      async function refreshQuality(essayId) {
+        if (!essayId) return;
+
+        const response = await fetch(`/api/essays/${essayId}/quality`);
+        if (!response.ok) return;
+
+        const quality = await response.json();
+        const suspicious = quality.tokensSuspeitos?.length ? quality.tokensSuspeitos.join(', ') : 'nenhum';
+        qualitySummary.innerHTML = `
+          <strong>Qualidade da transcrição: ${quality.qualidade}</strong>
+          <div>Palavras: ${quality.palavras} · Linhas: ${quality.linhas} · Ilegíveis: ${quality.ilegiveis}</div>
+          <div>Tokens suspeitos: ${suspicious}</div>
+        `;
+        renderSuspiciousPreview(reviewText.value || '');
+      }
 
       async function loadTemas() {
         const response = await fetch('/api/temas');
@@ -163,14 +263,39 @@
 
       async function createEssayFromForm() {
         const text = document.getElementById('text').value.trim();
+
+        if (sourceType.value === 'upload') {
+          const formData = new FormData();
+          formData.append('temaId', String(temaSelect.value));
+          if (text) {
+            formData.append('text', text);
+          }
+
+          const file = fileInput.files && fileInput.files[0];
+          if (file) {
+            formData.append('file', file, file.name);
+          }
+
+          const response = await fetch('/api/essays', {
+            method: 'POST',
+            body: formData
+          });
+
+          const data = await response.json();
+          if (!response.ok) {
+            throw new Error(data.message || 'Não foi possível criar a redação com upload');
+          }
+
+          return data.essay;
+        }
+
         const payload = {
           temaId: Number(temaSelect.value),
           text,
           sourceType: sourceType.value
         };
 
-        const endpoint = sourceType.value === 'upload' ? '/api/essays/upload' : '/api/essays';
-        const response = await fetch(endpoint, {
+        const response = await fetch('/api/essays', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(payload)
@@ -195,6 +320,8 @@
             reviewText.value = essay.text;
             reviewPanel.style.display = 'block';
             resultBox.style.display = 'none';
+            await refreshQuality(essay.id);
+            renderSuspiciousPreview(reviewText.value || '');
             return;
           }
 
@@ -206,6 +333,10 @@
           document.getElementById('runBadge').textContent = 'ERRO';
           document.getElementById('review').textContent = 'REVISAR';
         }
+      });
+
+      reviewText.addEventListener('input', () => {
+        renderSuspiciousPreview(reviewText.value || '');
       });
 
       document.getElementById('approveReview').addEventListener('click', async () => {
@@ -228,6 +359,7 @@
           return;
         }
 
+        await refreshQuality(currentEssayId);
         reviewPanel.style.display = 'none';
         await evaluateEssay(currentEssayId);
       });
@@ -252,6 +384,11 @@
 
       sourceType.addEventListener('change', () => {
         fileInput.disabled = sourceType.value !== 'upload';
+      });
+
+      fileInput.addEventListener('change', (event) => {
+        const file = event.target.files && event.target.files[0];
+        renderDocumentPreview(file);
       });
 
       loadTemas();

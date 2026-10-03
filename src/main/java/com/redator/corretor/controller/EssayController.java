@@ -7,10 +7,12 @@ import com.redator.corretor.model.EssayResponse;
 import com.redator.corretor.model.EvaluationProfile;
 import com.redator.corretor.model.EvaluationResult;
 import com.redator.corretor.model.Tema;
+import com.redator.corretor.service.DocumentTranscriptionService;
 import com.redator.corretor.service.EssayService;
 import java.util.List;
 import java.util.Map;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -20,7 +22,9 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 
 @RestController
@@ -41,6 +45,21 @@ public class EssayController {
     @PostMapping("/essays")
     public ResponseEntity<Map<String, Object>> createEssay(@Validated @RequestBody CreateEssayRequest request) {
         EssayResponse essay = essayService.createEssay(request);
+        return ResponseEntity.status(HttpStatus.CREATED).body(Map.of("essay", essay));
+    }
+
+    @PostMapping(value = "/essays", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<Map<String, Object>> createEssayMultipart(
+            @RequestParam("temaId") Long temaId,
+            @RequestParam(value = "text", required = false) String text,
+            @RequestPart(value = "file", required = false) MultipartFile file) {
+
+        String finalText = resolveUploadedText(text, file);
+        if (finalText == null || finalText.isBlank()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "text ou arquivo sao obrigatorios");
+        }
+
+        EssayResponse essay = essayService.createUploadedEssay(temaId, finalText, file != null && !file.isEmpty() ? "upload" : "text");
         return ResponseEntity.status(HttpStatus.CREATED).body(Map.of("essay", essay));
     }
 
@@ -68,6 +87,43 @@ public class EssayController {
         return ResponseEntity.ok(Map.of("essay", essay));
     }
 
+    private String resolveUploadedText(String text, MultipartFile file) {
+        if (text != null && !text.isBlank()) {
+            return text.trim();
+        }
+        if (file == null || file.isEmpty()) {
+            return null;
+        }
+
+        if (file.getSize() > 8L * 1024 * 1024) {
+            throw new ResponseStatusException(HttpStatus.PAYLOAD_TOO_LARGE, "arquivo excede o limite de 8 MB");
+        }
+
+        byte[] content;
+        String fileName;
+        try {
+            content = file.getBytes();
+            fileName = file.getOriginalFilename() == null ? "arquivo" : file.getOriginalFilename();
+            String normalizedFileName = fileName.toLowerCase();
+            if (normalizedFileName.endsWith(".pdf") && !(content.length >= 4 && content[0] == '%' && content[1] == 'P' && content[2] == 'D' && content[3] == 'F')) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "arquivo PDF invalido");
+            }
+            if (normalizedFileName.endsWith(".png") && !(content.length >= 8 && content[0] == (byte) 0x89 && content[1] == 0x50 && content[2] == 0x4E && content[3] == 0x47)) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "arquivo PNG invalido");
+            }
+            if ((normalizedFileName.endsWith(".jpg") || normalizedFileName.endsWith(".jpeg")) && !(content.length >= 3 && content[0] == (byte) 0xFF && content[1] == (byte) 0xD8 && content[2] == (byte) 0xFF)) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "arquivo JPG invalido");
+            }
+        } catch (Exception e) {
+            if (e instanceof ResponseStatusException rse) {
+                throw rse;
+            }
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "arquivo invalido");
+        }
+
+        return DocumentTranscriptionService.transcribeDocument(content, fileName);
+    }
+
     @PostMapping("/essays/{id}/review")
     public ResponseEntity<Map<String, Object>> reviewEssay(@PathVariable Long id, @RequestBody Map<String, Object> payload) {
         if (!payload.containsKey("reviewedText") || payload.get("reviewedText") == null || String.valueOf(payload.get("reviewedText")).isBlank()) {
@@ -78,12 +134,40 @@ public class EssayController {
                 ? (Boolean) payload.get("approved")
                 : Boolean.parseBoolean(String.valueOf(payload.getOrDefault("approved", false)));
 
-        EssayResponse essay = essayService.reviewEssay(id, String.valueOf(payload.get("reviewedText")), approved);
+        String reviewedText = String.valueOf(payload.get("reviewedText"));
+        EssayResponse essay = essayService.reviewEssay(id, reviewedText, approved);
+        DocumentTranscriptionService.Summary quality = essayService.analyzeTranscriptionQuality(id);
+        boolean qualityGatePassed = essayService.passesTranscriptionQualityGate(id, reviewedText);
         return ResponseEntity.ok(Map.of(
                 "essayId", essay.id(),
                 "status", essay.status(),
                 "approved", approved,
-                "text", essay.text()
+                "qualityGatePassed", qualityGatePassed,
+                "text", essay.text(),
+                "transcriptionQuality", Map.of(
+                        "palavras", quality.palavras(),
+                        "linhas", quality.linhas(),
+                        "paragrafos", quality.paragrafos(),
+                        "ilegiveis", quality.ilegiveis(),
+                        "tokensForaDoDicionario", quality.tokensForaDoDicionario(),
+                        "qualidade", quality.quality(),
+                        "tokensSuspeitos", quality.suspiciousTokens()
+                )
+        ));
+    }
+
+    @GetMapping("/essays/{id}/quality")
+    public ResponseEntity<Map<String, Object>> getTranscriptionQuality(@PathVariable Long id) {
+        DocumentTranscriptionService.Summary quality = essayService.analyzeTranscriptionQuality(id);
+        return ResponseEntity.ok(Map.of(
+                "essayId", id,
+                "palavras", quality.palavras(),
+                "linhas", quality.linhas(),
+                "paragrafos", quality.paragrafos(),
+                "ilegiveis", quality.ilegiveis(),
+                "tokensForaDoDicionario", quality.tokensForaDoDicionario(),
+                "qualidade", quality.quality(),
+                "tokensSuspeitos", quality.suspiciousTokens()
         ));
     }
 

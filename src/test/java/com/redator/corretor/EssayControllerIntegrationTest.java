@@ -6,14 +6,22 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import com.redator.corretor.model.EvaluationProfile;
 import com.redator.corretor.service.BudgetGuard;
 import com.redator.corretor.service.ResponseSchemaValidator;
+import java.nio.charset.StandardCharsets;
 import java.util.Map;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
+import org.springframework.core.io.ByteArrayResource;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 class EssayControllerIntegrationTest {
@@ -185,5 +193,70 @@ class EssayControllerIntegrationTest {
         );
 
         assertThat(evaluation.getStatusCode()).isEqualTo(HttpStatus.CONFLICT);
+    }
+
+    @Test
+    void shouldRequireQualityGateBeforeApprovingUploadedText() {
+        ResponseEntity<Map> created = restTemplate.postForEntity(
+                "/api/essays/upload",
+                Map.of(
+                        "temaId", 1,
+                        "text", "A educacao e um direito fundamental.",
+                        "sourceType", "upload"
+                ),
+                Map.class
+        );
+
+        assertThat(created.getStatusCode()).isEqualTo(HttpStatus.CREATED);
+        Map essay = (Map) created.getBody().get("essay");
+        Number essayId = (Number) essay.get("id");
+
+        ResponseEntity<Map> reviewed = restTemplate.postForEntity(
+                "/api/essays/{id}/review",
+                Map.of(
+                        "reviewedText", "A educação é um direito universal e essencial.",
+                        "approved", true
+                ),
+                Map.class,
+                essayId.longValue()
+        );
+
+        assertThat(reviewed.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(reviewed.getBody()).containsKey("status");
+        assertThat(reviewed.getBody().get("status")).isEqualTo("NEEDS_REVIEW");
+    }
+
+    @Test
+    void shouldAcceptMultipartUploadForEssay() {
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.MULTIPART_FORM_DATA);
+
+        MultiValueMap<String, Object> form = new LinkedMultiValueMap<>();
+        form.add("temaId", "1");
+        form.add("text", "");
+        form.add("file", new HttpEntity<>(new ByteArrayResource("%PDF-1.4\n1 0 obj\n<<>>\nendobj\ntrailer\n<<>>\n%%EOF".getBytes(StandardCharsets.UTF_8)) {
+            @Override
+            public String getFilename() {
+                return "redacao.pdf";
+            }
+        }, createPdfHeaders()));
+
+        ResponseEntity<Map> created = restTemplate.exchange(
+                "/api/essays",
+                HttpMethod.POST,
+                new HttpEntity<>(form, headers),
+                Map.class
+        );
+
+        assertThat(created.getStatusCode()).isEqualTo(HttpStatus.CREATED);
+        assertThat(created.getBody()).containsKey("essay");
+        Map essay = (Map) created.getBody().get("essay");
+        assertThat(essay.get("status")).isEqualTo("NEEDS_REVIEW");
+    }
+
+    private HttpHeaders createPdfHeaders() {
+        HttpHeaders pdfHeaders = new HttpHeaders();
+        pdfHeaders.setContentType(MediaType.APPLICATION_PDF);
+        return pdfHeaders;
     }
 }

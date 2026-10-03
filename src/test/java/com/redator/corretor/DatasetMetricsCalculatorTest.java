@@ -5,7 +5,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 import com.redator.corretor.service.BaselineComparisonService;
 import com.redator.corretor.service.DatasetMetricsCalculator;
 import com.redator.corretor.service.DatasetReportGenerator;
+import com.redator.corretor.service.DocumentTranscriptionService;
 import com.redator.corretor.service.TranscriptionQualityMetricsCalculator;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
@@ -75,5 +77,40 @@ class DatasetMetricsCalculatorTest {
         assertThat(summary.wer()).isLessThan(0.20);
         assertThat(summary.preservationRate()).isGreaterThan(0.70);
         assertThat(summary.goNoGo()).isTrue();
+    }
+
+    @Test
+    void shouldFlagSuspiciousTokensInTranscriptionQuality() {
+        DocumentTranscriptionService.Summary quality = DocumentTranscriptionService.analyze(
+                "A educacao [ilegivel] e fundamental para o futuro para [???]"
+        );
+
+        assertThat(quality.quality()).isEqualTo("REVISAR");
+        assertThat(quality.suspiciousTokens()).isNotEmpty();
+    }
+
+    @Test
+    void shouldTranscribePdfContentBeforeHumanReview() {
+        String pdfContent = "%PDF-1.4\nBT\n/F1 12 Tf\n72 720 Td\n(A educacao e um direito fundamental.) Tj\nET\n%%EOF";
+
+        String transcription = DocumentTranscriptionService.transcribeDocument(
+                pdfContent.getBytes(StandardCharsets.UTF_8),
+                "redacao.pdf"
+        );
+
+        assertThat(transcription).contains("educacao").contains("direito");
+    }
+
+    @Test
+    void shouldUseCustomVisionProviderForDocumentTranscription() {
+        DocumentTranscriptionService.VisionTranscriptionProvider provider = (content, fileName) -> "Transcricao literal validada por provider customizado";
+
+        String transcription = DocumentTranscriptionService.transcribeDocument(
+                "arquivo".getBytes(StandardCharsets.UTF_8),
+                "redacao.png",
+                provider
+        );
+
+        assertThat(transcription).isEqualTo("Transcricao literal validada por provider customizado");
     }
 }

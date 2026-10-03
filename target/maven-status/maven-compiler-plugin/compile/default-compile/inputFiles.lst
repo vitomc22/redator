@@ -17,6 +17,7 @@
 /home/victor/Documentos/git/redator/src/main/java/com/redator/corretor/service/DatasetMetricsCalculator.java
 /home/victor/Documentos/git/redator/src/main/java/com/redator/corretor/service/DatasetReportGenerator.java
 /home/victor/Documentos/git/redator/src/main/java/com/redator/corretor/service/DeterministicEssayAnalysis.java
+/home/victor/Documentos/git/redator/src/main/java/com/redator/corretor/service/DocumentTranscriptionService.java
 /home/victor/Documentos/git/redator/src/main/java/com/redator/corretor/service/EssayService.java
 /home/victor/Documentos/git/redator/src/main/java/com/redator/corretor/service/LlmCallResult.java
 /home/victor/Documentos/git/redator/src/main/java/com/redator/corretor/service/LlmGateway.java
