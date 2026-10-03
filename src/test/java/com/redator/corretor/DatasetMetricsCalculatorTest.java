@@ -102,6 +102,18 @@ class DatasetMetricsCalculatorTest {
     }
 
     @Test
+    void shouldDecodeEscapedPdfTextWithAccentsBeforeHumanReview() {
+        String pdfContent = "%PDF-1.4\nBT\n/F1 12 Tf\n72 720 Td\n(A educa\\347\\343o e um direito fundamental.) Tj\nET\n%%EOF";
+
+        String transcription = DocumentTranscriptionService.transcribeDocument(
+                pdfContent.getBytes(StandardCharsets.ISO_8859_1),
+                "redacao.pdf"
+        );
+
+        assertThat(transcription).contains("educa").contains("direito");
+    }
+
+    @Test
     void shouldUseCustomVisionProviderForDocumentTranscription() {
         DocumentTranscriptionService.VisionTranscriptionProvider provider = (content, fileName) -> "Transcricao literal validada por provider customizado";
 

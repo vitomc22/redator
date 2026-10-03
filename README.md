@@ -1,51 +1,63 @@
 # Corretor ENEM IA
 
-Projeto de MVP para avaliação automatizada de redações do ENEM, com arquitetura simples, local, reutilizável e orientada a evidência. O objetivo principal é transformar uma redação em uma nota estimada, com análise por competência, indicadores de risco e persistência do histórico de execução.
+Projeto de MVP para avaliação automatizada de redações do ENEM, com foco em arquitetura enxuta, medição objetiva e fluxo de revisão humana antes da avaliação final. O objetivo é transformar uma redação em uma nota estimada com evidências, riscos, métricas e persistência do histórico de execução.
 
-Este repositório implementa a base funcional do plano de desenvolvimento descrito em [plano_corretor_enem_ia_mvp_v2.md](plano_corretor_enem_ia_mvp_v2.md), mantendo foco em um monólito Java + Spring Boot com SQLite e sem dependências pesadas de infraestrutura.
+Este repositório implementa a base funcional do plano descrito em [plano_corretor_enem_ia_mvp_v2.md](plano_corretor_enem_ia_mvp_v2.md), mantendo o MVP robótico, sem microserviços e com baixa infraestrutura.
 
 ---
 
 ## 1. Visão geral
 
-O sistema recebe uma redação em texto e a avalia em cinco competências, seguindo a lógica do ENEM, mas com um modelo experimental e auditável. A solução foi pensada para funcionar em ambiente local de desenvolvimento sem GPU e sem infraestrutura extra.
+O sistema hoje já cobre os elementos centrais da arquitetura planejada:
 
-### Objetivo principal
+- entrada de texto e upload de arquivo
+- revisão humana obrigatória para texto originado em imagem/PDF
+- avaliação por perfil (`cheap`, `normal`, `premium`)
+- persistência local em SQLite
+- métrica de qualidade de transcrição
+- comparação e relatórios de dataset
+- fluxo de benchmark e comparação de baselines
 
-- receber uma redação
-- identificar traços estruturais e problemas
-- classificar a competência pela rubrica
-- produzir uma nota total estimada
-- registrar evidências, problemas e histórico de execução
-- permitir comparação entre perfis de avaliação
-
-### Não objetivo do MVP
-
-- substituir a correção oficial do ENEM
-- exigir microserviços ou Kubernetes
-- depender de banco externo ou filas assíncronas
-- montar um produto multiusuário pronto para produção
-- processar OCR/PDF como funcionalidade central no início
+O produto continua sendo um MVP experimental, não um substituto da correção oficial do ENEM.
 
 ---
 
-## 2. Arquitetura do MVP
+## 2. Status do projeto
 
-A solução foi pensada como monólito modular em um único processo Java.
+### Implementado
+
+- backend Spring Boot em Java 21
+- SQLite + Flyway
+- API REST para criação, revisão e avaliação de redações
+- gatilho de `NEEDS_REVIEW` para redações de upload/documento
+- validação de upload de PDF/JPG/PNG
+- qualidade de transcrição com tokens suspeitos e análise de CER/WER/preservação
+- benchmark de dataset e comparação entre modelos/baselines
+- frontend estático com fluxo de revisão humana
+
+### Fase atual
+
+A etapa ativa do plano é a integração do pipeline documental com um provedor real de OCR/visão, sem quebrar o gate humano anterior à avaliação. O código já separa bem a camada de transcrição e o gateway, deixando o ponto de extensão limpo para integração com um OCR real.
+
+---
+
+## 3. Arquitetura
 
 ```text
-Cliente / Browser
+Browser / UI
       |
       v
 Spring Boot App
       |
-      +--> Controller REST
+      +--> EssayController
       |
       +--> EssayService
       |      |
       |      +--> DeterministicEssayAnalysis
       |      +--> RubricEngine
       |      +--> LlmGateway
+      |      +--> DocumentTranscriptionService
+      |      +--> TranscriptionQualityMetricsCalculator
       |
       +--> SQLite (arquivo local)
              |
@@ -54,210 +66,242 @@ Spring Boot App
              +--> run
              +--> competence_result
              +--> llm_call
-             +--> human_score
 ```
 
 ### Componentes principais
 
-- Spring Boot: API REST e orquestração do fluxo
-- SQLite: persistência local leve
-- Flyway: migração do schema
-- JdbcTemplate: acesso ao banco
-- DeterministicEssayAnalysis: regras livres e verificações automáticas
-- RubricEngine: cálculo da nota por competência
-- LlmGateway: camada para simular/provider de modelo
-- EvaluationProfile: perfis `cheap`, `normal`, `premium`
+- `EssayController`: endpoints públicos para criação, upload, revisão e avaliação
+- `EssayService`: orquestração de regras de negócio, persistência e gate de revisão
+- `DocumentTranscriptionService`: validação, análise e transcrição literal de documentos
+- `VisionTranscriptionGateway`: seam de integração para provedor de visão/OCR
+- `TranscriptionQualityMetricsCalculator`: CER, WER, preservation rate e go/no-go
+- `DatasetMetricsCalculator`: cálculo de QWK, MAE, RMSE, acordo exato e adjacente
+- `BaselineComparisonService`: comparação de modelos e baselines
 
 ---
 
-## 3. Entregas do MVP
+## 4. Fluxo funcional atual
 
-O MVP cobre as seguintes capacidades:
+### 4.1 Texto direto
 
-1. criação de redação com tema associado
-2. atualização do texto da redação
-3. execução de análise determinística
-4. cálculo por competências C1 a C5
-5. avaliação por perfil de custo/latência
-6. persistência de execução e resultados
-7. histórico de runs e detalhes por competência
-8. endpoints REST para consumo simples
-9. frontend estático para interação rápida
+1. usuário envia texto e tema
+2. a redação é salva como `READY`
+3. a avaliação pode ir direto para o pipeline sem revisão humana
 
----
+### 4.2 Upload de PDF / imagem
 
-## 4. Fluxo funcional
+1. arquivo é validado por tamanho e magic bytes
+2. a transcrição literal é extraída ou produzida pelo gateway de visão
+3. o texto não é aceito como válido sem revisão humana
+4. o editor revisa o texto e decide aprovar ou rejeitar
+5. só depois da revisão o sistema permite a avaliação final
 
-### Fluxo principal
+### 4.3 Gate de qualidade
 
-1. Usuário cria uma redação com tema e texto.
-2. O sistema valida campos obrigatórios.
-3. A redação é salva no banco.
-4. O endpoint de avaliação aceita o perfil de execução.
-5. O serviço realiza análise determinística.
-6. O motor de rubrica calcula nota por competência.
-7. O gateway registra a chamada do provedor/modelo.
-8. O resultado final é salvo em `run` e `competence_result`.
-9. A API responde com `runId`, `total`, `needsReview` e competências.
+O gate humano depende de métrica de qualidade de transcrição. A lógica atual compara o texto revisado com o texto extraído e valida:
 
-### Regras de análise
+- CER
+- WER
+- preservation rate
+- presença de tokens suspeitos
 
-A análise determinística cobre:
-
-- contagem de palavras
-- número de parágrafos e linhas
-- detecção de texto muito curto
-- sinais de oralidade ou estilo informal
-- detecção de instruções externas ou prompt injection
-- resumo estrutural da redação para evidência
+Se a qualidade não for suficiente, a redação continua em `NEEDS_REVIEW`.
 
 ---
 
-## 5. Rubrica implementada
+## 5. Roadmap em fases
 
-A avaliação atual funciona em um modelo híbrido simples:
+### Fase 1 — infraestrutura local
 
-- C1: domínio da modalidade escrita formal
-- C2: compreensão da proposta e tipo textual
-- C3: seleção, relação e organização de argumentos
-- C4: mecanismos de coesão e organização textual
-- C5: proposta de intervenção
+- Java + Spring Boot
+- SQLite + Flyway
+- tema, essay, run, competence_result, llm_call
 
-A lógica usa uma combinação de:
+### Fase 2 — avaliação de redação
 
-- heurísticas determinísticas
-- sinais de estrutura textual
-- avaliação mínima por competência
-- marcação de revisão obrigatória quando há risco
+- análise determinística
+- rubrica por competência
+- perfis de custo e latência
+- persistência do resultado
 
-> O MVP não pretende ser um modelo acadêmico final. Ele fornece um laboratório funcional para medir, calibrar e evoluir a partição de avaliação mais tarde.
+### Fase 3 — benchmark e qualidade
+
+- métricas de dataset
+- QWK, MAE, RMSE, agreement, bias
+- comparação de baselines
+- relatórios em Markdown/CSV
+
+### Fase 4 — documento e revisão humana
+
+- upload de PDF/imagem
+- validação documental
+- transcrição literal
+- marcação de tokens suspeitos
+- revisão humana obrigatória antes da avaliação
+
+### Fase 5 — OCR/visão real
+
+- prover um backend documental real (OCR/vision)
+- manter a revisão humana como gate obrigatório
+- registrar métricas de qualidade da transcrição e custo por página
 
 ---
 
-## 6. Perfis de avaliação
+## 6. Principais endpoints
 
-O projeto inclui o enum `EvaluationProfile`, com os perfis abaixo:
+### Temas
 
-- `cheap`: menor custo, menor latência
-- `normal`: custo intermediário
-- `premium`: maior custo, mais robustez e observabilidade
+```http
+GET /api/temas
+```
 
-A API aceita esse perfil via query param:
+### Criar redação em texto
+
+```http
+POST /api/essays
+Content-Type: application/json
+
+{
+  "temaId": 1,
+  "text": "A educação é um direito fundamental"
+}
+```
+
+### Criar redação por upload
+
+```http
+POST /api/essays
+Content-Type: multipart/form-data
+```
+
+Campos esperados:
+
+- `temaId`
+- `text` (opcional)
+- `file` (PDF/PNG/JPG)
+
+### Revisão humana
+
+```http
+POST /api/essays/{id}/review
+Content-Type: application/json
+
+{
+  "reviewedText": "Texto revisado pelo editor",
+  "approved": true
+}
+```
+
+### Avaliação
 
 ```http
 POST /api/essays/{id}/evaluate?profile=cheap
 ```
 
-Se o perfil não existir, a API devolve erro HTTP 400 com mensagem clara.
+### Benchmark
+
+```http
+POST /api/essays/benchmark
+```
+
+### Comparação de perfis
+
+```http
+POST /api/essays/compare
+```
+
+### Qualidade da transcrição
+
+```http
+GET /api/essays/{id}/quality
+```
 
 ---
 
-## 7. Estrutura do projeto
+## 7. Fluxo de avaliação e revisão
+
+A regra atual do sistema é simples e explícita:
+
+- texto puro = pode ser avaliado
+- upload/documento = precisa de revisão humana
+- revisão aprovada + qualidade de transcrição aceitável = `READY`
+- revisão rejeitada ou qualidade ruim = `NEEDS_REVIEW`
+
+Isso evita conflitar o erro de OCR/comportamento do modelo com o erro de avaliação da redação.
+
+---
+
+## 8. Estrutura do projeto
 
 ```text
 redator/
-├── data/
-│   └── redator.db
 ├── src/
 │   ├── main/
 │   │   ├── java/com/redator/corretor/
-│   │   │   ├── config/
-│   │   │   │   └── InitialDataLoader.java
 │   │   │   ├── controller/
-│   │   │   │   ├── EssayController.java
-│   │   │   │   └── GlobalExceptionHandler.java
 │   │   │   ├── model/
-│   │   │   │   ├── CompetenceResult.java
-│   │   │   │   ├── CreateEssayRequest.java
-│   │   │   │   ├── EssayResponse.java
-│   │   │   │   ├── EvaluationProfile.java
-│   │   │   │   ├── EvaluationResult.java
-│   │   │   │   └── Tema.java
 │   │   │   └── service/
-│   │   │       ├── DeterministicEssayAnalysis.java
-│   │   │       ├── EssayService.java
-│   │   │       ├── LlmCallResult.java
-│   │   │       ├── LlmGateway.java
-│   │   │       ├── RubricEngine.java
-│   │   │       └── CorretorEnemApplication.java
 │   │   └── resources/
-│   │       ├── application.properties
 │   │       ├── static/
-│   │       │   └── index.html
 │   │       └── db/migration/
-│   │           └── V1__init.sql
-│   └── test/
-│       └── java/com/redator/corretor/
-│           └── EssayControllerIntegrationTest.java
+│   └── test/java/com/redator/corretor/
+├── data/
+├── eval/
+├── sample-data/
+├── README.md
 ├── plano_corretor_enem_ia_mvp_v2.md
 ├── pom.xml
-├── README.md
 └── target/
 ```
 
 ---
 
-## 8. Banco de dados
+## 9. Como rodar localmente
 
-Os dados ficam em um arquivo SQLite local em:
-
-```text
-data/redator.db
+```bash
+cd /home/victor/Documentos/git/redator
+mvn spring-boot:run
 ```
 
-### Tabelas principais
+Depois, abra a interface em:
 
-- `tema`: temas disponíveis
-- `essay`: redações criadas
-- `run`: registros de execução de avaliação
-- `competence_result`: nota por competência
-- `llm_call`: metadados da chamada ao modelo
-- `human_score`: notas humanas futuras
+```text
+http://localhost:8080/
+```
 
-### Migração inicial
-
-A migração está em:
-
-- [src/main/resources/db/migration/V1__init.sql](src/main/resources/db/migration/V1__init.sql)
-
-O Flyway é responsável por garantir que o schema exista e seja consistente.
+ou use os endpoints diretamente pela API.
 
 ---
 
-## 9. API REST
+## 10. Como validar
 
-### Temas
-
-#### GET /api/temas
-
-Retorna a lista de temas cadastrados.
-
-### Redação
-
-#### POST /api/essays
-
-Cria uma redação.
-
-Body exemplo:
-
-```json
-{
-  "temaId": 1,
-  "text": "A educação é um direito fundamental..."
-}
+```bash
+cd /home/victor/Documentos/git/redator
+mvn -q -Dtest=DatasetMetricsCalculatorTest,EssayControllerIntegrationTest test
 ```
 
-#### PUT /api/essays/{id}/text
+A validação atual cobre:
 
-Atualiza o texto da redação.
+- métricas de dataset
+- comparação de baselines
+- qualidade da transcrição
+- gate de revisão humana
+- upload de documento
+- avaliação de fluxo completo
 
-#### POST /api/essays/{id}/evaluate?profile=cheap
+---
 
-Executa a análise e retorna o resumo da run.
+## 11. Próximo passo do plano
 
-#### GET /api/essays/{id}/result
+A próxima etapa do roadmap é a integração de um provedor real de OCR/visão para PDF e imagem, preservando a arquitetura atual:
 
-Retorna o resultado mais recente da redação.
+- manter `VisionTranscriptionGateway` como fronteira
+- facilitar a troca de provider sem mexer em regras de negócio
+- continuar exigindo revisão humana antes da avaliação
+- medir CER/WER e preservação antes de aceitar a transcrição como final
+
+Esse é o ponto exato em que o MVP deixa de ser apenas um fluxo local de texto e passa a cobrir o problema real de entrada documental do ENEM.
+
 
 #### GET /api/runs/{id}
 
