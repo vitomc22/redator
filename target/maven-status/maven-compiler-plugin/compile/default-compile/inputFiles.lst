@@ -22,3 +22,4 @@
 /home/victor/Documentos/git/redator/src/main/java/com/redator/corretor/service/LlmGateway.java
 /home/victor/Documentos/git/redator/src/main/java/com/redator/corretor/service/ResponseSchemaValidator.java
 /home/victor/Documentos/git/redator/src/main/java/com/redator/corretor/service/RubricEngine.java
+/home/victor/Documentos/git/redator/src/main/java/com/redator/corretor/service/TranscriptionQualityMetricsCalculator.java

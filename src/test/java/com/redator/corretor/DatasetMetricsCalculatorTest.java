@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import com.redator.corretor.service.BaselineComparisonService;
 import com.redator.corretor.service.DatasetMetricsCalculator;
 import com.redator.corretor.service.DatasetReportGenerator;
+import com.redator.corretor.service.TranscriptionQualityMetricsCalculator;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
@@ -61,5 +62,18 @@ class DatasetMetricsCalculatorTest {
         assertThat(summary.get("B2").mae()).isZero();
         assertThat(summary.get("B2").qwk()).isEqualTo(1.0);
         assertThat(summary.get("B0").mae()).isLessThan(summary.get("B1").mae());
+    }
+
+    @Test
+    void shouldMeasureTranscriptionQualityForGoNoGoDecision() {
+        String goldText = "A educacao e fundamental para o futuro dos jovens.";
+        String transcribedText = "A educação é fundamental para o futuro dos jovens.";
+
+        TranscriptionQualityMetricsCalculator.Summary summary = TranscriptionQualityMetricsCalculator.calculate(goldText, transcribedText);
+
+        assertThat(summary.cer()).isLessThan(0.20);
+        assertThat(summary.wer()).isLessThan(0.20);
+        assertThat(summary.preservationRate()).isGreaterThan(0.70);
+        assertThat(summary.goNoGo()).isTrue();
     }
 }
