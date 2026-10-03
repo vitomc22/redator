@@ -113,4 +113,14 @@ class DatasetMetricsCalculatorTest {
 
         assertThat(transcription).isEqualTo("Transcricao literal validada por provider customizado");
     }
+
+    @Test
+    void shouldRouteDocumentTranscriptionThroughVisionGateway() {
+        String pdfContent = "%PDF-1.4\nBT\n/F1 12 Tf\n72 720 Td\n(A educacao e um direito fundamental.) Tj\nET\n%%EOF";
+        var gateway = new com.redator.corretor.service.VisionTranscriptionGateway();
+
+        String transcription = gateway.transcribe(pdfContent.getBytes(StandardCharsets.UTF_8), "redacao.pdf");
+
+        assertThat(transcription).contains("educacao").contains("direito");
+    }
 }
