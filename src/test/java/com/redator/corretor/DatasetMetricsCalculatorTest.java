@@ -114,6 +114,16 @@ class DatasetMetricsCalculatorTest {
     }
 
     @Test
+    void shouldFlagGarbledOcrNoiseAsNeedsReview() {
+        String noisyText = "A educacao zzzzz qwerty zzzzz zzzzz e um direito fundamental para a cidadania.";
+
+        DocumentTranscriptionService.Summary quality = DocumentTranscriptionService.analyze(noisyText);
+
+        assertThat(quality.quality()).isEqualTo("REVISAR");
+        assertThat(quality.suspiciousTokens()).isNotEmpty();
+    }
+
+    @Test
     void shouldUseCustomVisionProviderForDocumentTranscription() {
         DocumentTranscriptionService.VisionTranscriptionProvider provider = (content, fileName) -> "Transcricao literal validada por provider customizado";
 

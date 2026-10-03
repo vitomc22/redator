@@ -139,6 +139,40 @@
         border-radius: 8px;
         display: block;
       }
+      .review-blocks {
+        display: grid;
+        gap: 12px;
+        margin-top: 16px;
+      }
+      .review-block {
+        background: #fff;
+        border: 1px solid #dfe7f5;
+        border-radius: 10px;
+        padding: 12px;
+      }
+      .review-block.suspicious {
+        border-color: #f0c75d;
+        background: #fffaf0;
+      }
+      .review-block-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 8px;
+        font-size: 12px;
+        font-weight: 700;
+        color: #3b4a63;
+      }
+      .review-block textarea {
+        min-height: 100px;
+      }
+      .suspicious-pill {
+        background: #ffeb99;
+        color: #6d4c00;
+        border-radius: 999px;
+        padding: 4px 8px;
+        font-size: 11px;
+      }
     </style>
   </head>
   <body>
@@ -184,6 +218,7 @@
             <div>
               <label for="reviewText">Texto revisado</label>
               <textarea id="reviewText" placeholder="Revise o texto antes de aprovar..."></textarea>
+              <div id="reviewBlocks" class="review-blocks" aria-live="polite"></div>
               <div id="highlightPreview" class="highlight-preview" aria-live="polite"></div>
             </div>
           </div>
@@ -213,6 +248,7 @@
       const resultJson = document.getElementById('resultJson');
       const reviewPanel = document.getElementById('reviewPanel');
       const reviewText = document.getElementById('reviewText');
+      const reviewBlocks = document.getElementById('reviewBlocks');
       const fileInput = document.getElementById('fileInput');
       const docPreview = document.getElementById('docPreview');
       const qualitySummary = document.getElementById('qualitySummary');
@@ -220,6 +256,7 @@
       const reviewDocumentPreview = document.getElementById('reviewDocumentPreview');
       let currentEssayId = null;
       let selectedDocumentPreview = null;
+      let reviewBlocksRefreshTimer = null;
 
       function escapeHtml(value) {
         return value
@@ -231,8 +268,54 @@
 
       function renderSuspiciousPreview(text) {
         const escaped = escapeHtml(text || '');
-        const highlighted = escaped.replace(/\[[^\]]+\]|\?+/g, '<mark>$&</mark>');
+        const highlighted = escaped.replace(/\[[^\]]+\]|\?+|\b(?:qwerty|asdf|zxcv|uiop|lkj|mnbv|poiu|qazwsx|yuiop|zzzz+|[a-z]{8,})\b/gi, '<mark>$&</mark>');
         highlightPreview.innerHTML = highlighted || 'Nenhum token suspeito detectado.';
+      }
+
+      function splitReviewTextIntoBlocks(text) {
+        const paragraphs = (text || '').split(/\n\s*\n+/).map((block) => block.trim()).filter(Boolean);
+        if (paragraphs.length === 0) {
+          return [''];
+        }
+
+        return paragraphs;
+      }
+
+      function renderReviewBlocks() {
+        const blocks = splitReviewTextIntoBlocks(reviewText.value);
+        reviewBlocks.innerHTML = blocks.map((block, index) => {
+          const suspicious = /\[[^\]]+\]|\?+|\b(?:qwerty|asdf|zxcv|uiop|lkj|mnbv|poiu|qazwsx|yuiop|zzzz+)\b/gi.test(block);
+          return `
+            <div class="review-block ${suspicious ? 'suspicious' : ''}">
+              <div class="review-block-header">
+                <span>Bloco ${index + 1}</span>
+                ${suspicious ? '<span class="suspicious-pill">Trecho suspeito</span>' : ''}
+              </div>
+              <textarea class="review-block-editor" data-block-index="${index}">${escapeHtml(block)}</textarea>
+            </div>
+          `;
+        }).join('');
+
+        reviewBlocks.querySelectorAll('.review-block-editor').forEach((textarea) => {
+          textarea.addEventListener('input', (event) => {
+            const index = Number(event.target.dataset.blockIndex);
+            const currentBlocks = splitReviewTextIntoBlocks(reviewText.value);
+            currentBlocks[index] = event.target.value;
+            reviewText.value = currentBlocks.join('\n\n');
+            renderSuspiciousPreview(reviewText.value);
+            scheduleReviewBlocksRefresh();
+          });
+        });
+      }
+
+      function scheduleReviewBlocksRefresh() {
+        if (reviewBlocksRefreshTimer) {
+          clearTimeout(reviewBlocksRefreshTimer);
+        }
+
+        reviewBlocksRefreshTimer = setTimeout(() => {
+          renderReviewBlocks();
+        }, 80);
       }
 
       function renderDocumentPreview(file) {
@@ -386,6 +469,7 @@
             reviewPanel.style.display = 'block';
             resultBox.style.display = 'none';
             renderReviewDocumentPreview();
+            renderReviewBlocks();
             await refreshQuality(essay.id);
             renderSuspiciousPreview(reviewText.value || '');
             return;
@@ -403,6 +487,7 @@
 
       reviewText.addEventListener('input', () => {
         renderSuspiciousPreview(reviewText.value || '');
+        scheduleReviewBlocksRefresh();
       });
 
       document.getElementById('approveReview').addEventListener('click', async () => {

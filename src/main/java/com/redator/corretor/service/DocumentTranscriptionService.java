@@ -2,8 +2,10 @@ package com.redator.corretor.service;
 
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -221,18 +223,9 @@ public final class DocumentTranscriptionService {
             ilegiveis++;
         }
 
-        List<String> suspiciousTokens = new ArrayList<>();
-        Matcher suspiciousMatcher = SUSPICIOUS_TOKEN_PATTERN.matcher(text);
-        while (suspiciousMatcher.find()) {
-            String token = suspiciousMatcher.group();
-            String normalized = token.toLowerCase(Locale.ROOT);
-            if (normalized.contains("[") || normalized.contains("]") || normalized.contains("?") || normalized.length() >= 12) {
-                suspiciousTokens.add(normalized);
-            }
-        }
-
+        List<String> suspiciousTokens = findSuspiciousSegments(text);
         double ratio = words.isEmpty() ? 0.0 : (double) suspiciousTokens.size() / words.size();
-        String quality = (ilegiveis > 0 || ratio > 0.06) ? "REVISAR" : "OK";
+        String quality = (ilegiveis > 0 || ratio > 0.06 || suspiciousTokens.size() >= 3) ? "REVISAR" : "OK";
 
         return new Summary(
                 words.size(),
@@ -243,5 +236,60 @@ public final class DocumentTranscriptionService {
                 quality,
                 suspiciousTokens
         );
+    }
+
+    public static List<String> findSuspiciousSegments(String text) {
+        if (text == null || text.isBlank()) {
+            return List.of();
+        }
+
+        Set<String> suspiciousTokens = new HashSet<>();
+        Matcher suspiciousMatcher = SUSPICIOUS_TOKEN_PATTERN.matcher(text);
+        while (suspiciousMatcher.find()) {
+            String token = suspiciousMatcher.group();
+            String normalized = token.toLowerCase(Locale.ROOT);
+            if (shouldFlagAsSuspicious(normalized)) {
+                suspiciousTokens.add(normalized);
+            }
+        }
+
+        Matcher wordMatcher = WORD_PATTERN.matcher(text);
+        while (wordMatcher.find()) {
+            String token = wordMatcher.group();
+            String normalized = token.toLowerCase(Locale.ROOT);
+            if (shouldFlagAsSuspicious(normalized)) {
+                suspiciousTokens.add(normalized);
+            }
+        }
+
+        return new ArrayList<>(suspiciousTokens);
+    }
+
+    private static boolean shouldFlagAsSuspicious(String token) {
+        if (token == null || token.isBlank()) {
+            return false;
+        }
+
+        String normalized = token.replaceAll("[^\\p{L}\\p{N}]", "").toLowerCase(Locale.ROOT);
+        if (normalized.isBlank()) {
+            return false;
+        }
+
+        if (token.contains("[") || token.contains("]") || token.contains("?")) {
+            return true;
+        }
+        if (normalized.matches("(?i)(qwerty|asdf|zxcv|uiop|lkj|mnbv|poiu|qazwsx|yuiop)")) {
+            return true;
+        }
+        if (normalized.matches(".*(.)\\1{2,}.*")) {
+            return true;
+        }
+        if (normalized.matches("(?i)(?:[bcdfghjklmnpqrstvwxyz]{4,}|[aeiou]{4,})")) {
+            return true;
+        }
+        if (normalized.length() >= 12) {
+            return true;
+        }
+        return false;
     }
 }
