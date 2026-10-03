@@ -194,6 +194,76 @@ public class EssayService {
         return run;
     }
 
+    public Map<String, Object> runBenchmark(Long temaId, List<String> texts, String profile) {
+        if (temaId == null) {
+            throw new IllegalArgumentException("temaId e obrigatorio");
+        }
+        if (texts == null || texts.isEmpty()) {
+            throw new IllegalArgumentException("texts nao pode ser vazio");
+        }
+
+        EvaluationProfile evaluationProfile = EvaluationProfile.from(profile);
+        List<Map<String, Object>> results = new ArrayList<>();
+        int totalScore = 0;
+        double totalCostUsd = 0.0;
+        long totalLatencyMs = 0L;
+
+        for (String text : texts) {
+            if (text == null || text.isBlank()) {
+                continue;
+            }
+
+            EssayResponse essay = createEssay(new CreateEssayRequest(temaId, text));
+            EvaluationResult evaluation = evaluateEssay(essay.id(), evaluationProfile.name().toLowerCase());
+            double cost = sumCostForRun(evaluation.runId());
+            long latency = averageLatencyMsForRun(evaluation.runId());
+            totalScore += evaluation.total();
+            totalCostUsd += cost;
+            totalLatencyMs += latency;
+
+            results.add(Map.of(
+                    "essayId", essay.id(),
+                    "total", evaluation.total(),
+                    "needsReview", evaluation.needsReview(),
+                    "profile", evaluation.profile(),
+                    "costUsd", round(cost),
+                    "averageLatencyMs", latency
+            ));
+        }
+
+        int count = results.size();
+        return Map.of(
+                "profile", evaluationProfile.name().toLowerCase(),
+                "count", count,
+                "averageTotal", count == 0 ? 0 : Math.round((double) totalScore / count),
+                "totalCostUsd", round(totalCostUsd),
+                "averageLatencyMs", count == 0 ? 0 : Math.round((double) totalLatencyMs / count),
+                "results", results
+        );
+    }
+
+    private double sumCostForRun(Long runId) {
+        Double value = jdbcTemplate.queryForObject(
+                "SELECT COALESCE(SUM(cost_usd), 0) FROM llm_call WHERE run_id = ?",
+                Double.class,
+                runId
+        );
+        return value == null ? 0.0 : value;
+    }
+
+    private long averageLatencyMsForRun(Long runId) {
+        Long value = jdbcTemplate.queryForObject(
+                "SELECT COALESCE(AVG(latency_ms), 0) FROM llm_call WHERE run_id = ?",
+                Long.class,
+                runId
+        );
+        return value == null ? 0L : value;
+    }
+
+    private double round(double value) {
+        return Math.round(value * 100.0) / 100.0;
+    }
+
     private EssayResponse findEssayById(Long essayId) {
         Map<String, Object> row = jdbcTemplate.queryForMap(
                 "SELECT id, tema_id, text, status, created_at FROM essay WHERE id = ?",

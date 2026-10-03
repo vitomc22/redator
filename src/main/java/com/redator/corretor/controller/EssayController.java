@@ -1,5 +1,6 @@
 package com.redator.corretor.controller;
 
+import com.redator.corretor.model.BenchmarkRequest;
 import com.redator.corretor.model.CreateEssayRequest;
 import com.redator.corretor.model.EssayResponse;
 import com.redator.corretor.model.EvaluationProfile;
@@ -72,5 +73,10 @@ public class EssayController {
     @GetMapping("/runs/{id}")
     public ResponseEntity<Map<String, Object>> getRunDetails(@PathVariable Long id) {
         return ResponseEntity.ok(essayService.getRunDetails(id));
+    }
+
+    @PostMapping("/benchmark")
+    public ResponseEntity<Map<String, Object>> runBenchmark(@Validated @RequestBody BenchmarkRequest request) {
+        return ResponseEntity.ok(essayService.runBenchmark(request.temaId(), request.texts(), request.profile()));
     }
 }

@@ -2,6 +2,7 @@
 /home/victor/Documentos/git/redator/src/main/java/com/redator/corretor/config/InitialDataLoader.java
 /home/victor/Documentos/git/redator/src/main/java/com/redator/corretor/controller/EssayController.java
 /home/victor/Documentos/git/redator/src/main/java/com/redator/corretor/controller/GlobalExceptionHandler.java
+/home/victor/Documentos/git/redator/src/main/java/com/redator/corretor/model/BenchmarkRequest.java
 /home/victor/Documentos/git/redator/src/main/java/com/redator/corretor/model/CompetenceResult.java
 /home/victor/Documentos/git/redator/src/main/java/com/redator/corretor/model/CreateEssayRequest.java
 /home/victor/Documentos/git/redator/src/main/java/com/redator/corretor/model/EssayResponse.java

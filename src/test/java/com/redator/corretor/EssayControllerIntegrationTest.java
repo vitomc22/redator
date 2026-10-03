@@ -88,4 +88,24 @@ class EssayControllerIntegrationTest {
                 .isInstanceOf(IllegalStateException.class)
                 .hasMessageContaining("orcamento");
     }
+
+    @Test
+    void shouldRunBenchmarkOnBatch() {
+        ResponseEntity<Map> benchmark = restTemplate.postForEntity(
+                "/api/benchmark",
+                Map.of(
+                        "temaId", 1,
+                        "profile", "cheap",
+                        "texts", java.util.List.of(
+                                "A educacao e um direito fundamental para o desenvolvimento humano.",
+                                "A tecnologia pode ampliar oportunidades, mas exige responsabilidade social."
+                        )
+                ),
+                Map.class
+        );
+
+        assertThat(benchmark.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(benchmark.getBody()).containsKey("count");
+        assertThat(((Number) benchmark.getBody().get("count")).intValue()).isEqualTo(2);
+    }
 }
