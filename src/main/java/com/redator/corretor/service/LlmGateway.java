@@ -7,7 +7,17 @@ import org.springframework.stereotype.Component;
 @Component
 public class LlmGateway {
 
+    private final BudgetGuard budgetGuard;
+    private final ResponseSchemaValidator schemaValidator;
+
+    public LlmGateway(BudgetGuard budgetGuard, ResponseSchemaValidator schemaValidator) {
+        this.budgetGuard = budgetGuard;
+        this.schemaValidator = schemaValidator;
+    }
+
     public LlmCallResult generate(String competence, String essayText, EvaluationProfile profile) {
+        double cost = budgetGuard.reserve(profile);
+
         String provider = switch (profile) {
             case CHEAP -> "fake";
             case NORMAL -> "fake";
@@ -20,12 +30,6 @@ public class LlmGateway {
             case PREMIUM -> "mock-premium";
         };
 
-        double cost = switch (profile) {
-            case CHEAP -> 0.002;
-            case NORMAL -> 0.008;
-            case PREMIUM -> 0.015;
-        };
-
         int latencyMs = switch (profile) {
             case CHEAP -> 250;
             case NORMAL -> 650;
@@ -34,6 +38,17 @@ public class LlmGateway {
 
         String promptHash = Integer.toHexString((competence + essayText + profile.name()).hashCode());
         String schemaHash = Integer.toHexString(("essay-eval-v1" + competence).hashCode());
+
+        String payload = "{"
+                + "\"competencia\":\"" + competence + "\","
+                + "\"score\":" + 160 + ","
+                + "\"evidence\":[\"" + competence + " validada por modelo simulado\"],"
+                + "\"problems\":[],"
+                + "\"needsReview\":false"
+                + "}";
+
+        schemaValidator.validate(payload);
+
         return new LlmCallResult(
                 provider,
                 model,
@@ -42,7 +57,7 @@ public class LlmGateway {
                 cost,
                 latencyMs,
                 "ok",
-                "Competencia " + competence + " validada com perfil " + profile.name().toLowerCase(Locale.ROOT)
+                payload
         );
     }
 }

@@ -1,7 +1,11 @@
 package com.redator.corretor;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import com.redator.corretor.model.EvaluationProfile;
+import com.redator.corretor.service.BudgetGuard;
+import com.redator.corretor.service.ResponseSchemaValidator;
 import java.util.Map;
 
 import org.junit.jupiter.api.Test;
@@ -64,5 +68,24 @@ class EssayControllerIntegrationTest {
         );
 
         assertThat(evaluation.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+    }
+
+    @Test
+    void shouldValidateModelResponseSchema() {
+        ResponseSchemaValidator validator = new ResponseSchemaValidator();
+
+        assertThatThrownBy(() -> validator.validate("{\"competencia\": 123, \"score\": \"x\"}"))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("schema");
+    }
+
+    @Test
+    void shouldRejectBudgetExceeded() {
+        BudgetGuard guard = new BudgetGuard(0.005);
+
+        guard.reserve(EvaluationProfile.CHEAP);
+        assertThatThrownBy(() -> guard.reserve(EvaluationProfile.NORMAL))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessageContaining("orcamento");
     }
 }
