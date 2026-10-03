@@ -108,4 +108,25 @@ class EssayControllerIntegrationTest {
         assertThat(benchmark.getBody()).containsKey("count");
         assertThat(((Number) benchmark.getBody().get("count")).intValue()).isEqualTo(2);
     }
+
+    @Test
+    void shouldCompareProfilesOnBatch() {
+        ResponseEntity<Map> comparison = restTemplate.postForEntity(
+                "/api/benchmark/compare",
+                Map.of(
+                        "temaId", 1,
+                        "profiles", java.util.List.of("cheap", "normal"),
+                        "texts", java.util.List.of(
+                                "A educacao e um direito fundamental para o desenvolvimento humano.",
+                                "A tecnologia pode ampliar oportunidades, mas exige responsabilidade social."
+                        )
+                ),
+                Map.class
+        );
+
+        assertThat(comparison.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(comparison.getBody()).containsKey("comparisons");
+        assertThat(((Map<?, ?>) comparison.getBody().get("comparisons")).containsKey("cheap")).isTrue();
+        assertThat(((Map<?, ?>) comparison.getBody().get("comparisons")).containsKey("normal")).isTrue();
+    }
 }

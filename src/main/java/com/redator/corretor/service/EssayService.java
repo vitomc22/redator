@@ -11,7 +11,9 @@ import java.sql.Statement;
 import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -239,6 +241,36 @@ public class EssayService {
                 "totalCostUsd", round(totalCostUsd),
                 "averageLatencyMs", count == 0 ? 0 : Math.round((double) totalLatencyMs / count),
                 "results", results
+        );
+    }
+
+    public Map<String, Object> compareProfiles(Long temaId, List<String> profiles, List<String> texts) {
+        if (temaId == null) {
+            throw new IllegalArgumentException("temaId e obrigatorio");
+        }
+        if (texts == null || texts.isEmpty()) {
+            throw new IllegalArgumentException("texts nao pode ser vazio");
+        }
+
+        List<String> selectedProfiles = profiles == null || profiles.isEmpty()
+                ? List.of("cheap", "normal", "premium")
+                : profiles.stream().filter(p -> p != null && !p.isBlank()).map(String::trim).toList();
+
+        Map<String, Map<String, Object>> comparisons = new LinkedHashMap<>();
+        for (String profile : selectedProfiles) {
+            comparisons.put(profile.toLowerCase(), runBenchmark(temaId, texts, profile));
+        }
+
+        String bestProfile = selectedProfiles.stream()
+                .map(String::toLowerCase)
+                .max(Comparator.comparingDouble(profile -> ((Number) comparisons.get(profile).get("averageTotal")).doubleValue()))
+                .orElse("cheap");
+
+        return Map.of(
+                "temaId", temaId,
+                "profiles", selectedProfiles,
+                "bestProfile", bestProfile,
+                "comparisons", comparisons
         );
     }
 

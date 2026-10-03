@@ -422,6 +422,21 @@ A sequência lógica sugerida para continuar o desenvolvimento é:
 6. introduzir provider real (cloud ou local)
 7. preparar relatórios comparativos de qualidade e custo
 
+### CLI de benchmark por dataset
+
+O repositório agora inclui um runner de benchmark em lote para rodar uma coleção de redações e obter um resumo consolidado de custo, latência e nota média.
+
+Execução:
+
+```bash
+mvn -q -DskipTests compile
+mvn -q -DskipTests exec:java \
+  -Dexec.mainClass=com.redator.corretor.cli.BenchmarkDatasetCli \
+  -Dexec.args="sample-data/benchmark-sample.json 1 cheap"
+```
+
+O arquivo JSON pode ser uma lista de textos ou um objeto com a chave `texts`.
+
 ---
 
 ## 17. Conclusão
