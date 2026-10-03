@@ -12,6 +12,7 @@
 /home/victor/Documentos/git/redator/src/main/java/com/redator/corretor/model/EvaluationProfile.java
 /home/victor/Documentos/git/redator/src/main/java/com/redator/corretor/model/EvaluationResult.java
 /home/victor/Documentos/git/redator/src/main/java/com/redator/corretor/model/Tema.java
+/home/victor/Documentos/git/redator/src/main/java/com/redator/corretor/service/BaselineComparisonService.java
 /home/victor/Documentos/git/redator/src/main/java/com/redator/corretor/service/BudgetGuard.java
 /home/victor/Documentos/git/redator/src/main/java/com/redator/corretor/service/DatasetMetricsCalculator.java
 /home/victor/Documentos/git/redator/src/main/java/com/redator/corretor/service/DatasetReportGenerator.java
