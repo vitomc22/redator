@@ -195,6 +195,16 @@ class DatasetMetricsCalculatorTest {
     }
 
     @Test
+    void shouldFlagShortKeyboardNoiseAsSuspicious() {
+        String noisyText = "A educacao e um direito fundamental para todos. qwe asd zxc e a participacao ativa.";
+
+        DocumentTranscriptionService.Summary quality = DocumentTranscriptionService.analyze(noisyText);
+
+        assertThat(quality.quality()).isEqualTo("REVISAR");
+        assertThat(quality.suspiciousTokens()).isNotEmpty();
+    }
+
+    @Test
     void shouldUseCustomVisionProviderForDocumentTranscription() {
         DocumentTranscriptionService.VisionTranscriptionProvider provider = (content, fileName) -> "Transcricao literal validada por provider customizado";
 

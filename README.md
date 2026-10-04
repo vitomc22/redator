@@ -27,6 +27,7 @@ A fase ativa do roadmap é a etapa de entrada documental realista do F3:
 - calibração da qualidade de OCR/PDF e imagens
 - reforço do gate de revisão humana para ruído documental
 - melhoria da experiência de revisão com blocos editáveis e destaque de trechos suspeitos
+- ajuste de ruído curto de OCR (sequências de teclado e tokens consonantais sem vogais)
 
 O projeto já passou do MVP texto-only e está validando o passo seguinte: fluxo de imagem/PDF com revisão e qualidade documental mais realista.
 

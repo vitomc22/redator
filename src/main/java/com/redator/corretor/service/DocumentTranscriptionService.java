@@ -293,15 +293,27 @@ public final class DocumentTranscriptionService {
         if (token.contains("[") || token.contains("]") || token.contains("?")) {
             return true;
         }
-        if (normalized.matches("(?i)(qwerty|asdf|zxcv|uiop|lkj|mnbv|poiu|qazwsx|yuiop)")) {
+
+        String keyboardNoise = "(?i)(?:qwe|asd|zxc|qaz|wsx|edc|rfv|tgb|yhn|ujm|mnb|vbn|poi|lkj|qwerty|asdf|zxcv|uiop|lkj|mnbv|poiu|qazwsx|yuiop)";
+        if (normalized.matches(keyboardNoise)) {
             return true;
         }
+
         if (normalized.matches(".*(.)\\1{2,}.*")) {
             return true;
         }
+
+        long vowelCount = normalized.chars()
+                .filter(ch -> "aeiou".indexOf(ch) >= 0)
+                .count();
+        if (normalized.length() >= 3 && vowelCount == 0) {
+            return true;
+        }
+
         if (normalized.matches("(?i)(?:[bcdfghjklmnpqrstvwxyz]{4,}|[aeiou]{4,})")) {
             return true;
         }
+
         if (normalized.length() >= 12) {
             return true;
         }
