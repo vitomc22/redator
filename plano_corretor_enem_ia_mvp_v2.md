@@ -958,8 +958,8 @@ Esforço em dias úteis de dedicação (**ESTIMATIVA**, dev solo). Cada fase ter
 ### Fontes reais incorporadas ao plano
 
 O catálogo [eval/real-essay-sources.json](eval/real-essay-sources.json) usa temas e páginas públicas do Brasil Escola e do UOL Banco de Redações como fontes de calibração. O projeto não copia redações integrais: textos reais só entram em avaliações locais quando houver autorização, acompanhados de URL, SHA-256 e notas humanas por competência, conforme o template [eval/real-essay-calibration-template.json](eval/real-essay-calibration-template.json).
-- [ ] Baseline **B0** (sem LLM)
-- [ ] CI básico (`ci.yml`)
+- [x] Baseline **B0** (sem LLM) — relatório local em `eval/reports/baseline-b0/`
+- [x] CI básico (`ci.yml`)
 
 **Gate F0:** `eval run` com B0 gera relatório no dev; unit + contrato verdes no CI; replay funciona sem rede.
 
@@ -977,7 +977,7 @@ O catálogo [eval/real-essay-sources.json](eval/real-essay-sources.json) usa tem
 
 ## Fase 2 — Avaliação e primeiro ciclo de melhoria (3–4 d)
 
-- [ ] Baseline **B1** (chamada única)
+- [x] Baseline **B1** (baseline estatística de referência) — relatório local em `eval/reports/baseline-b1/`
 - [ ] Experimentos E1–E4 no dev; ajustes de prompt e rubrica **olhando só o dev**
 - [ ] **Uma** rodada no split test (travado), com relatório
 - [ ] Decisão registrada: seguir para imagem ou refinar o texto
@@ -996,7 +996,7 @@ O catálogo [eval/real-essay-sources.json](eval/real-essay-sources.json) usa tem
 ## Fase 4 — Endurecimento (2–3 d)
 
 - [ ] `e2e.yml` (Playwright, replay) e `eval.yml` (com `--max-cost`)
-- [ ] Suíte adversarial (seção 14.6) integrada ao eval CLI
+- [x] Suíte adversarial (seção 14.6) integrada ao eval CLI — 5/5 casos aprovados em `eval/reports/adversarial-local/`
 - [ ] Segurança e LGPD (seção 13): testes de upload, logs sem texto, retenção
 - [ ] E5–E7 conforme orçamento restante
 - [ ] README, relatório final com custos, métricas e limitações
