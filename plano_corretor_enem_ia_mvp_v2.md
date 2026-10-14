@@ -952,7 +952,7 @@ Esforço em dias úteis de dedicação (**ESTIMATIVA**, dev solo). Cada fase ter
 - [ ] `LlmGateway`: interface, `FakeProvider`, `Cache`, `BudgetGuard`, `pricing.yaml`, tabela `llm_call`, modos `live|record|replay`
 - [ ] JSON Schemas + validador + testes de contrato (válidos e inválidos)
 - [ ] `RubricEngine` + `rubrics/enem-2026-mvp.yaml` + tabela-verdade de testes
-- [ ] Dataset: subconjunto do Essay-BR, `manifest.json`, splits dev/test
+- [x] Dataset: manifesto inicial com fontes reais e split dev em `dataset/manifest.json`; textos protegidos permanecem fora do repositório
 - [ ] Eval CLI: leitura do dataset, QWK, MAE, bootstrap pareado, relatório Markdown/CSV (com testes das métricas)
 
 ### Fontes reais incorporadas ao plano
