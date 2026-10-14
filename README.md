@@ -14,6 +14,7 @@ O repositório já cobre a maior parte do fluxo funcional do plano descrito em [
 - SQLite + Flyway
 - API REST para criação, revisão, avaliação e benchmark
 - avaliação por perfil (`cheap`, `normal`, `premium`)
+- gateway de avaliação estruturada com provider fake/replay para desenvolvimento
 - gate de revisão humana para documentos e uploads
 - validação de PDF/JPG/PNG
 - qualidade de transcrição com CER/WER/preservation e detecção de ruído OCR
@@ -30,6 +31,10 @@ A fase ativa do roadmap é a etapa de entrada documental realista do F3:
 - ajuste de ruído curto de OCR (sequências de teclado e tokens consonantais sem vogais)
 
 O projeto já passou do MVP texto-only e está validando o passo seguinte: fluxo de imagem/PDF com revisão e qualidade documental mais realista.
+
+### Importante sobre LLM
+
+O fluxo de avaliação possui um gateway compatível com a futura integração, mas o provider atualmente configurado é `fake`: ele valida o schema, registra custo/latência simulados e devolve uma resposta fixa de desenvolvimento. Não há, neste estado, correção real por OpenAI, Azure OpenAI ou outro modelo externo. Para uso educacional real, as notas devem ser tratadas como experimentais até conectar um provider real, calibrá-lo contra notas humanas e manter revisão humana.
 
 ---
 
@@ -98,6 +103,7 @@ Spring Boot App
 - `TranscriptionQualityMetricsCalculator`: gate documental
 - `DatasetMetricsCalculator`: métricas do dataset
 - `BaselineComparisonService`: comparação e benchmark
+- `LlmGateway`: fronteira do provider simulado; ainda requer provider real para produção
 
 ---
 

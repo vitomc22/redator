@@ -968,7 +968,7 @@ O catálogo [eval/real-essay-sources.json](eval/real-essay-sources.json) usa tem
 
 - [ ] Checks determinísticos + léxicos (`lexicons/*.txt`)
 - [ ] **C1** (LanguageTool embutido) + calibração dos limiares por grid search no dev
-- [ ] `CloudProvider` (1 fornecedor) com saída estruturada, retry, timeout, `record`
+- [ ] `CloudProvider` real (1 fornecedor) com saída estruturada, retry, timeout, `record` — atualmente há apenas provider `fake`
 - [ ] Validador de ancoragem das evidências (8.6)
 - [ ] Ordem das competências LLM, do menor risco ao maior: **C5 → C2 → C3 → C4**
 - [ ] Orquestrador paralelo (C2/C3/C4 → C5)
