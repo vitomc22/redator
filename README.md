@@ -216,6 +216,16 @@ java -cp "target/classes:$(cat target/classpath.txt)" \
 
 O relatório gera `summary.json`, `samples.csv` e `report.md`. O resultado agregado só é `GO` quando todas as amostras passam pelos limites do plano; uma amostra com ruído continua registrada como `NO-GO`.
 
+A suíte adversarial determinística pode ser executada sem rede:
+
+```bash
+java -cp "target/classes:$(cat target/classpath.txt)" \
+  com.redator.corretor.cli.EvalCli adversarial \
+  --output eval/reports/adversarial-local
+```
+
+Ela verifica injeção de prompt, JSON falso no texto, texto curto, ruído OCR e um texto longo seguro.
+
 ### Fase 4 — pendente
 
 - endurecimento operacional

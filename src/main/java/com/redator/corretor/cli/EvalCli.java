@@ -6,6 +6,7 @@ import com.redator.corretor.service.DatasetMetricsCalculator;
 import com.redator.corretor.service.DatasetReportGenerator;
 import com.redator.corretor.service.DocumentCalibrationReportGenerator;
 import com.redator.corretor.service.DocumentCalibrationService;
+import com.redator.corretor.service.AdversarialSuiteService;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -29,6 +30,7 @@ public class EvalCli {
             case "baseline" -> runBaseline(args);
             case "compare" -> runCompare(args);
             case "document-calibration" -> runDocumentCalibration(args);
+            case "adversarial" -> runAdversarial(args);
             default -> {
                 System.err.println("Comando desconhecido: " + command);
                 printUsage();
@@ -164,6 +166,30 @@ public class EvalCli {
         System.out.println(MAPPER.writerWithDefaultPrettyPrinter().writeValueAsString(result));
     }
 
+    private static void runAdversarial(String[] args) throws Exception {
+        String outputDir = null;
+        for (int i = 1; i < args.length; i++) {
+            if ("--output".equals(args[i]) && i + 1 < args.length) {
+                outputDir = args[++i];
+            } else {
+                System.err.println("Argumento desconhecido: " + args[i]);
+                printUsage();
+                return;
+            }
+        }
+
+        AdversarialSuiteService.Summary summary = AdversarialSuiteService.run(AdversarialSuiteService.defaultCases());
+        if (outputDir != null) {
+            Path dir = Path.of(outputDir);
+            Files.createDirectories(dir);
+            Files.writeString(dir.resolve("adversarial-report.json"), MAPPER.writerWithDefaultPrettyPrinter().writeValueAsString(summary), StandardCharsets.UTF_8);
+        }
+        System.out.println(MAPPER.writerWithDefaultPrettyPrinter().writeValueAsString(summary));
+        if (!summary.suitePassed()) {
+            throw new IllegalStateException("suite adversarial falhou: " + summary.failed() + " caso(s)");
+        }
+    }
+
     private static List<DocumentCalibrationService.Sample> readCalibrationSamples(Path inputPath) throws Exception {
         Object root = MAPPER.readValue(Files.readString(inputPath, StandardCharsets.UTF_8), Object.class);
         Object values = root instanceof Map<?, ?> map && map.containsKey("samples") ? map.get("samples") : root;
@@ -214,5 +240,6 @@ public class EvalCli {
         System.out.println("  EvalCli baseline --input <dataset.json> --kind B0|B1 [--output <dir>]");
         System.out.println("  EvalCli compare --input <dataset.json> [--output <dir>]");
         System.out.println("  EvalCli document-calibration --input <samples.json> [--output <dir>]");
+        System.out.println("  EvalCli adversarial [--output <dir>]");
     }
 }

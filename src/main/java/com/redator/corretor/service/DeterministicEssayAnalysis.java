@@ -103,7 +103,10 @@ public record DeterministicEssayAnalysis(
         String[] markers = {"vc", "pq", "tb", "ne", "tipo assim", "a gente", "ta", "da pra", "mano"};
         int count = 0;
         for (String marker : markers) {
-            if (lower.contains(marker)) {
+            String expression = marker.contains(" ")
+                    ? "\\b" + Pattern.quote(marker) + "\\b"
+                    : "\\b" + Pattern.quote(marker) + "\\b";
+            if (Pattern.compile(expression).matcher(lower).find()) {
                 count++;
             }
         }

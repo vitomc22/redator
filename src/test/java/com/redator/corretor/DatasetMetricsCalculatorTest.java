@@ -8,6 +8,7 @@ import com.redator.corretor.service.DatasetReportGenerator;
 import com.redator.corretor.service.DeterministicEssayAnalysis;
 import com.redator.corretor.service.DocumentCalibrationService;
 import com.redator.corretor.service.DocumentCalibrationReportGenerator;
+import com.redator.corretor.service.AdversarialSuiteService;
 import com.redator.corretor.service.DocumentTranscriptionService;
 import com.redator.corretor.service.TranscriptionQualityMetricsCalculator;
 import java.nio.charset.StandardCharsets;
@@ -236,6 +237,15 @@ class DatasetMetricsCalculatorTest {
         assertThat(reportDir.resolve("summary.json")).exists();
         assertThat(reportDir.resolve("samples.csv")).exists();
         assertThat(Files.readString(reportDir.resolve("report.md"))).contains("Document calibration report");
+    }
+
+    @Test
+    void shouldPassDefaultAdversarialSuite() {
+        AdversarialSuiteService.Summary summary = AdversarialSuiteService.run(AdversarialSuiteService.defaultCases());
+
+        assertThat(summary.total()).isEqualTo(5);
+        assertThat(summary.failed()).isZero();
+        assertThat(summary.suitePassed()).isTrue();
     }
 
     @Test

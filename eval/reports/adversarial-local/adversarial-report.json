@@ -1,0 +1,36 @@
+{
+  "total" : 5,
+  "passed" : 5,
+  "failed" : 0,
+  "results" : [ {
+    "name" : "injecao-direta",
+    "expectedSignal" : "prompt_injection",
+    "detected" : true,
+    "pass" : true,
+    "detail" : "Entrada suspeita de injecao de prompt; Texto muito curto para uma avaliacao robusta"
+  }, {
+    "name" : "injecao-estruturada",
+    "expectedSignal" : "prompt_injection",
+    "detected" : true,
+    "pass" : true,
+    "detail" : "Entrada suspeita de injecao de prompt; Texto muito curto para uma avaliacao robusta"
+  }, {
+    "name" : "texto-curto",
+    "expectedSignal" : "short_text",
+    "detected" : true,
+    "pass" : true,
+    "detail" : "Texto muito curto para uma avaliacao robusta"
+  }, {
+    "name" : "ruido-ocr",
+    "expectedSignal" : "suspicious_token",
+    "detected" : true,
+    "pass" : true,
+    "detail" : "Texto muito curto para uma avaliacao robusta"
+  }, {
+    "name" : "texto-longo-seguro",
+    "expectedSignal" : "long_safe_text",
+    "detected" : true,
+    "pass" : true,
+    "detail" : "nenhum sinal"
+  } ]
+}
