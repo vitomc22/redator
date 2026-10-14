@@ -254,9 +254,63 @@ class EssayControllerIntegrationTest {
         assertThat(essay.get("status")).isEqualTo("NEEDS_REVIEW");
     }
 
+    @Test
+    void shouldRejectMultipartUploadWithInvalidImageContent() {
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.MULTIPART_FORM_DATA);
+
+        MultiValueMap<String, Object> form = new LinkedMultiValueMap<>();
+        form.add("temaId", "1");
+        form.add("file", new HttpEntity<>(new ByteArrayResource(new byte[] {(byte) 0x89, 'P', 'N', 'G'}) {
+            @Override
+            public String getFilename() {
+                return "redacao.png";
+            }
+        }, createImageHeaders()));
+
+        ResponseEntity<String> response = restTemplate.exchange(
+                "/api/essays",
+                HttpMethod.POST,
+                new HttpEntity<>(form, headers),
+                String.class
+        );
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+    }
+
+    @Test
+    void shouldRejectMultipartUploadWithUnsupportedExtension() {
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.MULTIPART_FORM_DATA);
+
+        MultiValueMap<String, Object> form = new LinkedMultiValueMap<>();
+        form.add("temaId", "1");
+        form.add("file", new HttpEntity<>(new ByteArrayResource("texto".getBytes(StandardCharsets.UTF_8)) {
+            @Override
+            public String getFilename() {
+                return "redacao.txt";
+            }
+        }, createImageHeaders()));
+
+        ResponseEntity<String> response = restTemplate.exchange(
+                "/api/essays",
+                HttpMethod.POST,
+                new HttpEntity<>(form, headers),
+                String.class
+        );
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+    }
+
     private HttpHeaders createPdfHeaders() {
         HttpHeaders pdfHeaders = new HttpHeaders();
         pdfHeaders.setContentType(MediaType.APPLICATION_PDF);
         return pdfHeaders;
+    }
+
+    private HttpHeaders createImageHeaders() {
+        HttpHeaders imageHeaders = new HttpHeaders();
+        imageHeaders.setContentType(MediaType.IMAGE_PNG);
+        return imageHeaders;
     }
 }

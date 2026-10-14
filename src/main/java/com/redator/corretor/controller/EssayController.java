@@ -9,6 +9,7 @@ import com.redator.corretor.model.EvaluationResult;
 import com.redator.corretor.model.Tema;
 import com.redator.corretor.service.DocumentTranscriptionService;
 import com.redator.corretor.service.EssayService;
+import com.redator.corretor.service.UploadValidationService;
 import java.util.List;
 import java.util.Map;
 import org.springframework.http.HttpStatus;
@@ -32,9 +33,11 @@ import org.springframework.web.server.ResponseStatusException;
 public class EssayController {
 
     private final EssayService essayService;
+    private final UploadValidationService uploadValidationService;
 
-    public EssayController(EssayService essayService) {
+    public EssayController(EssayService essayService, UploadValidationService uploadValidationService) {
         this.essayService = essayService;
+        this.uploadValidationService = uploadValidationService;
     }
 
     @GetMapping("/temas")
@@ -95,25 +98,12 @@ public class EssayController {
             return null;
         }
 
-        if (file.getSize() > 8L * 1024 * 1024) {
-            throw new ResponseStatusException(HttpStatus.PAYLOAD_TOO_LARGE, "arquivo excede o limite de 8 MB");
-        }
-
         byte[] content;
         String fileName;
         try {
             content = file.getBytes();
             fileName = file.getOriginalFilename() == null ? "arquivo" : file.getOriginalFilename();
-            String normalizedFileName = fileName.toLowerCase();
-            if (normalizedFileName.endsWith(".pdf") && !(content.length >= 4 && content[0] == '%' && content[1] == 'P' && content[2] == 'D' && content[3] == 'F')) {
-                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "arquivo PDF invalido");
-            }
-            if (normalizedFileName.endsWith(".png") && !(content.length >= 8 && content[0] == (byte) 0x89 && content[1] == 0x50 && content[2] == 0x4E && content[3] == 0x47)) {
-                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "arquivo PNG invalido");
-            }
-            if ((normalizedFileName.endsWith(".jpg") || normalizedFileName.endsWith(".jpeg")) && !(content.length >= 3 && content[0] == (byte) 0xFF && content[1] == (byte) 0xD8 && content[2] == (byte) 0xFF)) {
-                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "arquivo JPG invalido");
-            }
+            uploadValidationService.validate(content, fileName);
         } catch (Exception e) {
             if (e instanceof ResponseStatusException rse) {
                 throw rse;
