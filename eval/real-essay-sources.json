@@ -1,0 +1,36 @@
+{
+  "purpose": "Fontes públicas para calibração manual do corretor ENEM; não contém redações integrais.",
+  "copyrightPolicy": "Não copiar nem redistribuir textos integrais. Use somente textos obtidos com autorização ou fornecidos pelo avaliador, mantendo-os fora do Git.",
+  "sources": [
+    {
+      "id": "brasil-escola-temas-anteriores",
+      "publisher": "Brasil Escola",
+      "sourceUrl": "https://vestibular.brasilescola.uol.com.br/corrige-aqui/temas-anteriores.htm",
+      "usage": "referência pública de temas e páginas de correção",
+      "examples": [
+        {"year": 2025, "month": "01", "theme": "Proibição do uso de celular nas salas de aula"},
+        {"year": 2025, "month": "02", "theme": "Regulamentação das redes sociais no Brasil"},
+        {"year": 2025, "month": "03", "theme": "A importância de incentivar a adoção de animais de rua"},
+        {"year": 2025, "month": "04", "theme": "Impactos das mudanças climáticas no Brasil"},
+        {"year": 2025, "month": "05", "theme": "A importância da leitura na construção da cidadania no Brasil"},
+        {"year": 2026, "month": "01", "theme": "O fim da escala 6x1 e os desafios para a qualidade de vida e a produtividade no Brasil"},
+        {"year": 2026, "month": "02", "theme": "Canetas emagrecedoras: popularidade crescente e riscos da automedicação no Brasil"},
+        {"year": 2026, "month": "03", "theme": "Violência contra a mulher e violência vicária: o uso da agressão como mecanismo de controle"}
+      ]
+    },
+    {
+      "id": "uol-banco-redacoes",
+      "publisher": "UOL Educação",
+      "sourceUrl": "https://educacao.uol.com.br/bancoderedacoes/",
+      "usage": "referência pública de redações corrigidas e comentários",
+      "examples": [
+        {"year": 2020, "month": "03", "theme": "Carnaval e apropriação cultural"},
+        {"year": 2020, "month": "02", "theme": "Qualificação e o futuro do emprego"},
+        {"year": 2020, "month": "01", "theme": "Supremo Tribunal Federal e opinião pública"},
+        {"year": 2019, "month": "12", "theme": "Ciência, tecnologia e superação dos limites humanos"},
+        {"year": 2019, "month": "10", "theme": "Agrotóxicos ou defensivos agrícolas: dois nomes e uma polêmica"},
+        {"year": 2019, "month": "09", "theme": "Preservação da Amazônia: desafio brasileiro ou internacional?"}
+      ]
+    }
+  ]
+}

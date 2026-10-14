@@ -1,0 +1,18 @@
+{
+  "instructions": "Preencha somente com redações cujo uso esteja autorizado. Mantenha este arquivo fora do Git se contiver texto integral.",
+  "sourceId": "brasil-escola-temas-anteriores",
+  "theme": "",
+  "sourceUrl": "",
+  "text": "",
+  "textSha256": "",
+  "humanScores": {
+    "c1": null,
+    "c2": null,
+    "c3": null,
+    "c4": null,
+    "c5": null,
+    "total": null
+  },
+  "humanNotes": "",
+  "authorizedForLocalEvaluation": false
+}

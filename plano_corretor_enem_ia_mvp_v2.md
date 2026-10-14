@@ -954,6 +954,10 @@ Esforço em dias úteis de dedicação (**ESTIMATIVA**, dev solo). Cada fase ter
 - [ ] `RubricEngine` + `rubrics/enem-2026-mvp.yaml` + tabela-verdade de testes
 - [ ] Dataset: subconjunto do Essay-BR, `manifest.json`, splits dev/test
 - [ ] Eval CLI: leitura do dataset, QWK, MAE, bootstrap pareado, relatório Markdown/CSV (com testes das métricas)
+
+### Fontes reais incorporadas ao plano
+
+O catálogo [eval/real-essay-sources.json](eval/real-essay-sources.json) usa temas e páginas públicas do Brasil Escola e do UOL Banco de Redações como fontes de calibração. O projeto não copia redações integrais: textos reais só entram em avaliações locais quando houver autorização, acompanhados de URL, SHA-256 e notas humanas por competência, conforme o template [eval/real-essay-calibration-template.json](eval/real-essay-calibration-template.json).
 - [ ] Baseline **B0** (sem LLM)
 - [ ] CI básico (`ci.yml`)
 
