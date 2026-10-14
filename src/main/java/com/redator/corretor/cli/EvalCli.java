@@ -4,6 +4,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.redator.corretor.service.BaselineComparisonService;
 import com.redator.corretor.service.DatasetMetricsCalculator;
 import com.redator.corretor.service.DatasetReportGenerator;
+import com.redator.corretor.service.DocumentCalibrationReportGenerator;
+import com.redator.corretor.service.DocumentCalibrationService;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -26,6 +28,7 @@ public class EvalCli {
         switch (command) {
             case "baseline" -> runBaseline(args);
             case "compare" -> runCompare(args);
+            case "document-calibration" -> runDocumentCalibration(args);
             default -> {
                 System.err.println("Comando desconhecido: " + command);
                 printUsage();
@@ -125,6 +128,71 @@ public class EvalCli {
         System.out.println(MAPPER.writerWithDefaultPrettyPrinter().writeValueAsString(result));
     }
 
+    private static void runDocumentCalibration(String[] args) throws Exception {
+        String inputPath = null;
+        String outputDir = null;
+
+        for (int i = 1; i < args.length; i++) {
+            String arg = args[i];
+            switch (arg) {
+                case "--input" -> inputPath = args[++i];
+                case "--output" -> outputDir = args[++i];
+                default -> {
+                    System.err.println("Argumento desconhecido: " + arg);
+                    printUsage();
+                    return;
+                }
+            }
+        }
+
+        if (inputPath == null) {
+            System.err.println("document-calibration exige --input");
+            printUsage();
+            return;
+        }
+
+        List<DocumentCalibrationService.Sample> samples = readCalibrationSamples(Path.of(inputPath));
+        DocumentCalibrationService.Summary summary = DocumentCalibrationService.summarize(samples);
+        Path reportDir = outputDir == null
+                ? Path.of("eval", "reports", "document-calibration-" + System.currentTimeMillis())
+                : Path.of(outputDir);
+        Path generatedDir = new DocumentCalibrationReportGenerator().generate(reportDir, summary);
+
+        Map<String, Object> result = new LinkedHashMap<>();
+        result.put("reportDir", generatedDir.toAbsolutePath().toString());
+        result.put("summary", summary);
+        System.out.println(MAPPER.writerWithDefaultPrettyPrinter().writeValueAsString(result));
+    }
+
+    private static List<DocumentCalibrationService.Sample> readCalibrationSamples(Path inputPath) throws Exception {
+        Object root = MAPPER.readValue(Files.readString(inputPath, StandardCharsets.UTF_8), Object.class);
+        Object values = root instanceof Map<?, ?> map && map.containsKey("samples") ? map.get("samples") : root;
+        if (!(values instanceof List<?> list)) {
+            throw new IllegalArgumentException("Dataset documental deve ser uma lista ou objeto com a chave 'samples'");
+        }
+
+        List<DocumentCalibrationService.Sample> samples = new ArrayList<>();
+        for (Object value : list) {
+            if (!(value instanceof Map<?, ?> sample)) {
+                continue;
+            }
+            Object name = sample.get("name");
+            Object gold = sample.get("goldText");
+            Object transcribed = sample.get("transcribedText");
+            if (gold != null && transcribed != null) {
+                samples.add(new DocumentCalibrationService.Sample(
+                        name == null ? null : String.valueOf(name),
+                        String.valueOf(gold),
+                        String.valueOf(transcribed)
+                ));
+            }
+        }
+        if (samples.isEmpty()) {
+            throw new IllegalArgumentException("Dataset documental nao possui amostras validas");
+        }
+        return samples;
+    }
+
     private static List<Integer> readScores(Map<String, Object> payload, String key) {
         Object value = payload.get(key);
         if (value instanceof List<?> list) {
@@ -145,5 +213,6 @@ public class EvalCli {
         System.out.println("Uso:");
         System.out.println("  EvalCli baseline --input <dataset.json> --kind B0|B1 [--output <dir>]");
         System.out.println("  EvalCli compare --input <dataset.json> [--output <dir>]");
+        System.out.println("  EvalCli document-calibration --input <samples.json> [--output <dir>]");
     }
 }

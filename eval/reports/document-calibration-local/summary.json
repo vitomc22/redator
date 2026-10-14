@@ -1,0 +1,24 @@
+{
+  "totalSamples" : 2,
+  "passCount" : 1,
+  "failCount" : 1,
+  "averageCer" : 0.05056179775280899,
+  "averageWer" : 0.32142857142857145,
+  "averagePreservationRate" : 0.6666666666666666,
+  "passRate" : 0.5,
+  "results" : [ {
+    "name" : "digitada-baseline",
+    "cer" : 0.0,
+    "wer" : 0.0,
+    "preservationRate" : 1.0,
+    "pass" : true,
+    "verdict" : "GO"
+  }, {
+    "name" : "ruido-curto",
+    "cer" : 0.10112359550561797,
+    "wer" : 0.6428571428571429,
+    "preservationRate" : 0.3333333333333333,
+    "pass" : false,
+    "verdict" : "NO-GO"
+  } ]
+}

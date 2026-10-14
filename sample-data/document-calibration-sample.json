@@ -1,0 +1,14 @@
+{
+  "samples": [
+    {
+      "name": "digitada-baseline",
+      "goldText": "A educação é um direito fundamental para todos. A participação ativa fortalece a cidadania.",
+      "transcribedText": "A educacao e um direito fundamental para todos. A participacao ativa fortalece a cidadania."
+    },
+    {
+      "name": "ruido-curto",
+      "goldText": "A educação é um direito fundamental para todos. A participação ativa fortalece a cidadania.",
+      "transcribedText": "A educacao e um direito qwe fundamental para todos. A participacao zzzzz fortalece a cidadania."
+    }
+  ]
+}

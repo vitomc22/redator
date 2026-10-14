@@ -6,6 +6,8 @@ import com.redator.corretor.service.BaselineComparisonService;
 import com.redator.corretor.service.DatasetMetricsCalculator;
 import com.redator.corretor.service.DatasetReportGenerator;
 import com.redator.corretor.service.DeterministicEssayAnalysis;
+import com.redator.corretor.service.DocumentCalibrationService;
+import com.redator.corretor.service.DocumentCalibrationReportGenerator;
 import com.redator.corretor.service.DocumentTranscriptionService;
 import com.redator.corretor.service.TranscriptionQualityMetricsCalculator;
 import java.nio.charset.StandardCharsets;
@@ -202,6 +204,38 @@ class DatasetMetricsCalculatorTest {
 
         assertThat(quality.quality()).isEqualTo("REVISAR");
         assertThat(quality.suspiciousTokens()).isNotEmpty();
+    }
+
+    @Test
+    void shouldSummarizeDocumentCalibrationSamples() {
+        List<DocumentCalibrationService.Sample> samples = List.of(
+                new DocumentCalibrationService.Sample("amostra_ok", "A educacao e um direito fundamental para todos. A participacao ativa e essencial.",
+                        "A educação é um direito fundamental para todos. A participação ativa é essencial."),
+                new DocumentCalibrationService.Sample("amostra_ruidosa", "A educacao e um direito fundamental para todos. A participacao ativa e essencial.",
+                        "A educacao qwerty e um direito fundamental para todos. A participacao zzzzz e essencial.")
+        );
+
+        DocumentCalibrationService.Summary summary = DocumentCalibrationService.summarize(samples);
+
+        assertThat(summary.totalSamples()).isEqualTo(2);
+        assertThat(summary.passCount()).isEqualTo(1);
+        assertThat(summary.passRate()).isGreaterThan(0.0);
+        assertThat(summary.averageCer()).isGreaterThanOrEqualTo(0.0);
+        assertThat(summary.averageWer()).isGreaterThanOrEqualTo(0.0);
+        assertThat(summary.averagePreservationRate()).isGreaterThanOrEqualTo(0.0);
+    }
+
+    @Test
+    void shouldGenerateDocumentCalibrationReport(@TempDir Path tempDir) throws Exception {
+        DocumentCalibrationService.Summary summary = DocumentCalibrationService.summarize(List.of(
+                new DocumentCalibrationService.Sample("ok", "A educacao e um direito.", "A educação é um direito.")
+        ));
+
+        Path reportDir = new DocumentCalibrationReportGenerator().generate(tempDir.resolve("calibration"), summary);
+
+        assertThat(reportDir.resolve("summary.json")).exists();
+        assertThat(reportDir.resolve("samples.csv")).exists();
+        assertThat(Files.readString(reportDir.resolve("report.md"))).contains("Document calibration report");
     }
 
     @Test

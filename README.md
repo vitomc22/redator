@@ -202,7 +202,19 @@ GET /api/essays/{id}/quality
 - OCR/PDF e qualidade documental
 - revisão humana com destaque de trechos suspeitos
 - refinamento da experiência de edição
-- guardar critérios de go/no-go com dados documentais reais
+- calibração reproduzível com CER, WER e preservação de erros
+
+Para executar uma calibração documental, use um JSON com `samples`, contendo `name`, `goldText` e `transcribedText`:
+
+```bash
+mvn -q -DskipTests package dependency:build-classpath -Dmdep.outputFile=target/classpath.txt
+java -cp "target/classes:$(cat target/classpath.txt)" \
+  com.redator.corretor.cli.EvalCli document-calibration \
+  --input sample-data/document-calibration-sample.json \
+  --output eval/reports/document-calibration-local
+```
+
+O relatório gera `summary.json`, `samples.csv` e `report.md`. O resultado agregado só é `GO` quando todas as amostras passam pelos limites do plano; uma amostra com ruído continua registrada como `NO-GO`.
 
 ### Fase 4 — pendente
 
