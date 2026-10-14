@@ -953,6 +953,7 @@ Esforço em dias úteis de dedicação (**ESTIMATIVA**, dev solo). Cada fase ter
 - [ ] JSON Schemas + validador + testes de contrato (válidos e inválidos)
 - [ ] `RubricEngine` + `rubrics/enem-2026-mvp.yaml` + tabela-verdade de testes
 - [x] Dataset: manifesto inicial com fontes reais e split dev em `dataset/manifest.json`; textos protegidos permanecem fora do repositório
+- [x] Validação do manifesto no Eval CLI (`manifest-check`), exigindo origem, split e hash para textos autorizados
 - [ ] Eval CLI: leitura do dataset, QWK, MAE, bootstrap pareado, relatório Markdown/CSV (com testes das métricas)
 
 ### Fontes reais incorporadas ao plano

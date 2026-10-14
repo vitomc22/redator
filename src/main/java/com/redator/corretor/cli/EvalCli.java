@@ -7,6 +7,7 @@ import com.redator.corretor.service.DatasetReportGenerator;
 import com.redator.corretor.service.DocumentCalibrationReportGenerator;
 import com.redator.corretor.service.DocumentCalibrationService;
 import com.redator.corretor.service.AdversarialSuiteService;
+import com.redator.corretor.service.DatasetManifestValidator;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -31,6 +32,7 @@ public class EvalCli {
             case "compare" -> runCompare(args);
             case "document-calibration" -> runDocumentCalibration(args);
             case "adversarial" -> runAdversarial(args);
+            case "manifest-check" -> runManifestCheck(args);
             default -> {
                 System.err.println("Comando desconhecido: " + command);
                 printUsage();
@@ -190,6 +192,19 @@ public class EvalCli {
         }
     }
 
+    private static void runManifestCheck(String[] args) throws Exception {
+        if (args.length != 3 || !"--input".equals(args[1])) {
+            System.err.println("manifest-check exige --input <manifest.json>");
+            printUsage();
+            return;
+        }
+        DatasetManifestValidator.Result result = DatasetManifestValidator.validate(Path.of(args[2]));
+        System.out.println(MAPPER.writerWithDefaultPrettyPrinter().writeValueAsString(result));
+        if (!result.valid()) {
+            throw new IllegalArgumentException("manifesto invalido: " + String.join("; ", result.errors()));
+        }
+    }
+
     private static List<DocumentCalibrationService.Sample> readCalibrationSamples(Path inputPath) throws Exception {
         Object root = MAPPER.readValue(Files.readString(inputPath, StandardCharsets.UTF_8), Object.class);
         Object values = root instanceof Map<?, ?> map && map.containsKey("samples") ? map.get("samples") : root;
@@ -241,5 +256,6 @@ public class EvalCli {
         System.out.println("  EvalCli compare --input <dataset.json> [--output <dir>]");
         System.out.println("  EvalCli document-calibration --input <samples.json> [--output <dir>]");
         System.out.println("  EvalCli adversarial [--output <dir>]");
+        System.out.println("  EvalCli manifest-check --input <manifest.json>");
     }
 }

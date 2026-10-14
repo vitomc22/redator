@@ -170,6 +170,8 @@ O catálogo [eval/real-essay-sources.json](eval/real-essay-sources.json) registr
 
 O manifesto [dataset/manifest.json](dataset/manifest.json) fixa o identificador, tema, fonte e split das amostras. Os campos `textPath` e `sha256` só devem ser preenchidos para texto autorizado mantido em `dataset/private/`, que é ignorado pelo Git.
 
+Valide o manifesto antes de uma rodada com `EvalCli manifest-check --input dataset/manifest.json`.
+
 Para avaliar uma redação real, use [eval/real-essay-calibration-template.json](eval/real-essay-calibration-template.json) somente com texto obtido com autorização. Registre a URL, o SHA-256 do texto e as notas humanas por competência; mantenha o arquivo preenchido fora do Git. O texto então pode ser enviado ao endpoint de texto ou incluído em um dataset local ignorado pelo controle de versão.
 
 As fontes públicas consultadas são [Brasil Escola](https://vestibular.brasilescola.uol.com.br/corrige-aqui/temas-anteriores.htm) e [UOL Banco de Redações](https://educacao.uol.com.br/bancoderedacoes/). Os temas servem para cobrir variação temática; eles não são evidência de concordância com uma correção oficial.
