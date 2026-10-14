@@ -502,6 +502,18 @@
 
       .benchmark-output.visible { display: block; }
 
+      .human-panel {
+        margin-top: 22px;
+        background: linear-gradient(180deg, rgba(24,58,122,0.04), rgba(255,255,255,0.8));
+        border: 1px solid var(--border);
+        border-radius: 20px;
+        padding: 22px;
+      }
+
+      .score-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; }
+      .score-grid input { width: 100%; min-height: 44px; border: 1px solid var(--border); border-radius: 10px; padding: 10px; }
+      .human-feedback { margin-top: 12px; color: var(--muted); }
+
       .benchmark-table {
         width: 100%;
         border-collapse: collapse;
@@ -710,6 +722,28 @@
           </div>
 
           <div id="benchmarkOutput" class="benchmark-output" aria-live="polite"></div>
+        </section>
+
+        <section class="human-panel" aria-label="Notas humanas">
+          <h2>Registrar nota humana real</h2>
+          <p class="human-feedback">Use após revisar a redação. As notas são armazenadas por competência para calibrar o corretor contra uma avaliação humana.</p>
+          <div class="field">
+            <label for="humanEvaluator">Nome ou identificador do avaliador</label>
+            <input id="humanEvaluator" placeholder="Ex.: avaliador-01" />
+          </div>
+          <div class="field">
+            <label for="humanSource">Fonte da redação</label>
+            <input id="humanSource" placeholder="URL ou ID da fonte autorizada" />
+          </div>
+          <div class="score-grid" aria-label="Notas por competência">
+            <div class="field"><label for="human-C1">C1</label><input id="human-C1" type="number" min="0" max="200" step="40" placeholder="0–200" /></div>
+            <div class="field"><label for="human-C2">C2</label><input id="human-C2" type="number" min="0" max="200" step="40" placeholder="0–200" /></div>
+            <div class="field"><label for="human-C3">C3</label><input id="human-C3" type="number" min="0" max="200" step="40" placeholder="0–200" /></div>
+            <div class="field"><label for="human-C4">C4</label><input id="human-C4" type="number" min="0" max="200" step="40" placeholder="0–200" /></div>
+            <div class="field"><label for="human-C5">C5</label><input id="human-C5" type="number" min="0" max="200" step="40" placeholder="0–200" /></div>
+          </div>
+          <div class="button-row" style="margin-top: 14px;"><button type="button" id="saveHumanScores" class="primary-btn">Salvar notas humanas</button></div>
+          <div id="humanScoreOutput" class="human-feedback" aria-live="polite"></div>
         </section>
       </main>
     </div>
@@ -1055,6 +1089,26 @@
           </table>
         `;
         benchmarkOutput.classList.add('visible');
+      });
+
+      document.getElementById('saveHumanScores').addEventListener('click', async () => {
+        const output = document.getElementById('humanScoreOutput');
+        if (!currentEssayId) {
+          output.textContent = 'Envie uma redação primeiro para associar as notas humanas.';
+          return;
+        }
+        const scores = Object.fromEntries(['C1','C2','C3','C4','C5'].map((c) => [c, Number(document.getElementById(`human-${c}`).value)]));
+        if (Object.values(scores).some((score) => !Number.isInteger(score) || score < 0 || score > 200 || score % 40 !== 0)) {
+          output.textContent = 'Preencha todas as competências com 0, 40, 80, 120, 160 ou 200.';
+          return;
+        }
+        const response = await fetch(`/api/essays/${currentEssayId}/human-scores`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({
+          evaluator: document.getElementById('humanEvaluator').value.trim(),
+          source: document.getElementById('humanSource').value.trim(),
+          scores
+        })});
+        const data = await response.json();
+        output.textContent = response.ok ? `Notas salvas. Total humano: ${data.total}/1000.` : `Erro: ${data.message || 'não foi possível salvar'}`;
       });
 
       loadTemas();

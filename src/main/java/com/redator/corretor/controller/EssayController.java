@@ -24,6 +24,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestPart;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
@@ -177,6 +178,16 @@ public class EssayController {
     @GetMapping("/essays/{id}/result")
     public ResponseEntity<Map<String, Object>> getResult(@PathVariable Long id) {
         return ResponseEntity.ok(essayService.getResult(id));
+    }
+
+    @PostMapping("/essays/{id}/human-scores")
+    public ResponseEntity<Map<String, Object>> saveHumanScores(@PathVariable Long id, @RequestBody Map<String, Object> payload) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(essayService.saveHumanScores(id, payload));
+    }
+
+    @GetMapping("/essays/{id}/human-scores")
+    public ResponseEntity<List<Map<String, Object>>> listHumanScores(@PathVariable Long id) {
+        return ResponseEntity.ok(essayService.listHumanScores(id));
     }
 
     @GetMapping("/runs/{id}")

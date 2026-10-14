@@ -115,6 +115,41 @@ public class EssayService {
         return findEssayById(essayId);
     }
 
+    @Transactional
+    public Map<String, Object> saveHumanScores(Long essayId, Map<String, Object> payload) {
+        findEssayById(essayId);
+        String evaluator = payload.get("evaluator") == null ? "anonimo" : String.valueOf(payload.get("evaluator")).trim();
+        String source = payload.get("source") == null ? null : String.valueOf(payload.get("source")).trim();
+        if (evaluator.isBlank()) {
+            throw new IllegalArgumentException("avaliador obrigatorio");
+        }
+        Map<String, Object> scores = payload.get("scores") instanceof Map<?, ?> map
+                ? (Map<String, Object>) map : Map.of();
+        List<String> competences = List.of("C1", "C2", "C3", "C4", "C5");
+        Map<String, Integer> saved = new LinkedHashMap<>();
+        String now = OffsetDateTime.now().format(DateTimeFormatter.ISO_OFFSET_DATE_TIME);
+        for (String competence : competences) {
+            Object raw = scores.get(competence);
+            if (!(raw instanceof Number number)) {
+                throw new IllegalArgumentException("nota ausente para " + competence);
+            }
+            int score = number.intValue();
+            if (score < 0 || score > 200 || score % 40 != 0) {
+                throw new IllegalArgumentException("nota de " + competence + " deve ser 0, 40, 80, 120, 160 ou 200");
+            }
+            jdbcTemplate.update("INSERT INTO human_score (essay_id, competencia, nota, avaliador, fonte, created_at) VALUES (?, ?, ?, ?, ?, ?)",
+                    essayId, competence, score, evaluator, source, now);
+            saved.put(competence, score);
+        }
+        return Map.of("essayId", essayId, "evaluator", evaluator, "source", source == null ? "" : source, "scores", saved,
+                "total", saved.values().stream().mapToInt(Integer::intValue).sum());
+    }
+
+    public List<Map<String, Object>> listHumanScores(Long essayId) {
+        findEssayById(essayId);
+        return jdbcTemplate.queryForList("SELECT competencia, nota, avaliador, fonte, created_at FROM human_score WHERE essay_id = ? ORDER BY id", essayId);
+    }
+
     public boolean passesTranscriptionQualityGate(Long essayId, String reviewedText) {
         EssayResponse essay = findEssayById(essayId);
         if (essay.text() == null || essay.text().isBlank() || reviewedText == null || reviewedText.isBlank()) {
