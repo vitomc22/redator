@@ -143,6 +143,7 @@ public class EssayService {
         DeterministicEssayAnalysis analysis = DeterministicEssayAnalysis.analyze(essay.text());
         Map<String, CompetenceResult> baseCompetences = RubricEngine.evaluate(analysis);
         baseCompetences = applyCartilhaRules(essay.text(), baseCompetences);
+        baseCompetences = applyThemeAlignmentRules(essay.text(), findTemaById(essay.temaId()), baseCompetences);
         EvaluationProfile evaluationProfile = EvaluationProfile.from(profile);
         Map<String, CompetenceResult> competences = new HashMap<>();
 
@@ -231,6 +232,28 @@ public class EssayService {
             evidence.add(cartilha.evidenceSource());
             adjusted.put("C5", new CompetenceResult("C5", 0, 0, evidence, problems, true,
                     List.of("Violacao de direitos humanos conforme Cartilha ENEM 2026")));
+        }
+        return adjusted;
+    }
+
+    private Map<String, CompetenceResult> applyThemeAlignmentRules(String text, Tema tema, Map<String, CompetenceResult> competences) {
+        ThemeAlignmentService.Assessment assessment = new ThemeAlignmentService().assess(text, tema);
+        if (assessment.alignment() == ThemeAlignmentService.Alignment.PLENO) {
+            return competences;
+        }
+
+        int cap = assessment.alignment() == ThemeAlignmentService.Alignment.FUGA ? 0 : 40;
+        Map<String, CompetenceResult> adjusted = new LinkedHashMap<>(competences);
+        for (String competence : List.of("C2", "C3", "C5")) {
+            CompetenceResult current = adjusted.get(competence);
+            List<String> evidence = new ArrayList<>(current.evidencias());
+            evidence.add(assessment.evidence());
+            List<String> problems = new ArrayList<>(current.problemas());
+            problems.add(assessment.alignment() == ThemeAlignmentService.Alignment.FUGA
+                    ? "Possivel fuga ao tema; revisar antes de considerar a anulacao"
+                    : "Possivel tangenciamento; a cartilha limita C2, C3 e C5 a 40 pontos");
+            adjusted.put(competence, new CompetenceResult(competence, Math.min(current.nota(), cap),
+                    Math.min(current.nivelSugerido(), cap), evidence, problems, true, current.motivos()));
         }
         return adjusted;
     }
@@ -385,6 +408,14 @@ public class EssayService {
                 (String) row.get("text"),
                 (String) row.get("status"),
                 (String) row.get("created_at")
+        );
+    }
+
+    private Tema findTemaById(Long temaId) {
+        return jdbcTemplate.queryForObject(
+                "SELECT id, titulo, recorte, motivadores FROM tema WHERE id = ?",
+                (rs, rowNum) -> new Tema(rs.getLong("id"), rs.getString("titulo"), rs.getString("recorte"), rs.getString("motivadores")),
+                temaId
         );
     }
 }

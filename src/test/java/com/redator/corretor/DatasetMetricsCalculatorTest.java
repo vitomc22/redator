@@ -9,6 +9,8 @@ import com.redator.corretor.service.DeterministicEssayAnalysis;
 import com.redator.corretor.service.DocumentCalibrationService;
 import com.redator.corretor.service.DocumentCalibrationReportGenerator;
 import com.redator.corretor.service.AdversarialSuiteService;
+import com.redator.corretor.service.ThemeAlignmentService;
+import com.redator.corretor.model.Tema;
 import com.redator.corretor.service.DocumentTranscriptionService;
 import com.redator.corretor.service.TranscriptionQualityMetricsCalculator;
 import java.nio.charset.StandardCharsets;
@@ -246,6 +248,17 @@ class DatasetMetricsCalculatorTest {
         assertThat(summary.total()).isEqualTo(5);
         assertThat(summary.failed()).isZero();
         assertThat(summary.suitePassed()).isTrue();
+    }
+
+    @Test
+    void shouldClassifyThemeAlignmentForCartilhaCaps() {
+        ThemeAlignmentService service = new ThemeAlignmentService();
+        Tema tema = new Tema(1L, "Educacao como direito fundamental", "Como a educacao impacta a mobilidade social", "A educacao amplia oportunidades.");
+
+        assertThat(service.assess("A educacao amplia oportunidades e fortalece a cidadania.", tema).alignment())
+                .isEqualTo(ThemeAlignmentService.Alignment.PLENO);
+        assertThat(service.assess("A sociedade precisa melhorar.", tema).alignment())
+                .isEqualTo(ThemeAlignmentService.Alignment.FUGA);
     }
 
     @Test
