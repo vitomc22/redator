@@ -6,6 +6,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import com.redator.corretor.model.EvaluationProfile;
 import com.redator.corretor.service.BudgetGuard;
 import com.redator.corretor.service.ResponseSchemaValidator;
+import com.redator.corretor.service.CartilhaEnem2026Service;
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
 
@@ -85,6 +86,15 @@ class EssayControllerIntegrationTest {
         assertThatThrownBy(() -> validator.validate("{\"competencia\": 123, \"score\": \"x\"}"))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("schema");
+    }
+
+    @Test
+    void shouldLoadCartilhaAndDetectHumanRightsViolation() {
+        CartilhaEnem2026Service cartilha = new CartilhaEnem2026Service();
+
+        assertThat(cartilha.sourceVersion()).startsWith("enem-2026-cartilha-sha256-");
+        assertThat(cartilha.detectsHumanRightsViolation("A proposta deve defender a pena de morte.")).isTrue();
+        assertThat(cartilha.detectsHumanRightsViolation("O governo deve ampliar o acesso à educação.")).isFalse();
     }
 
     @Test

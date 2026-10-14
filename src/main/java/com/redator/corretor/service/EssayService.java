@@ -29,10 +29,12 @@ public class EssayService {
 
     private final JdbcTemplate jdbcTemplate;
     private final LlmGateway llmGateway;
+    private final CartilhaEnem2026Service cartilha;
 
-    public EssayService(JdbcTemplate jdbcTemplate, LlmGateway llmGateway) {
+    public EssayService(JdbcTemplate jdbcTemplate, LlmGateway llmGateway, CartilhaEnem2026Service cartilha) {
         this.jdbcTemplate = jdbcTemplate;
         this.llmGateway = llmGateway;
+        this.cartilha = cartilha;
     }
 
     public List<Tema> listTemas() {
@@ -140,6 +142,7 @@ public class EssayService {
 
         DeterministicEssayAnalysis analysis = DeterministicEssayAnalysis.analyze(essay.text());
         Map<String, CompetenceResult> baseCompetences = RubricEngine.evaluate(analysis);
+        baseCompetences = applyCartilhaRules(essay.text(), baseCompetences);
         EvaluationProfile evaluationProfile = EvaluationProfile.from(profile);
         Map<String, CompetenceResult> competences = new HashMap<>();
 
@@ -216,6 +219,20 @@ public class EssayService {
         List<String> problems = new ArrayList<>();
         competences.values().forEach(c -> problems.addAll(c.problemas()));
         return new EvaluationResult(runId, total, competences, needsReview, problems, evaluationProfile.name().toLowerCase());
+    }
+
+    private Map<String, CompetenceResult> applyCartilhaRules(String text, Map<String, CompetenceResult> competences) {
+        Map<String, CompetenceResult> adjusted = new LinkedHashMap<>(competences);
+        if (cartilha.detectsHumanRightsViolation(text)) {
+            CompetenceResult current = adjusted.get("C5");
+            List<String> problems = new ArrayList<>(current.problemas());
+            problems.add("A cartilha determina nota 0 na C5 para proposta que desrespeita direitos humanos");
+            List<String> evidence = new ArrayList<>(current.evidencias());
+            evidence.add(cartilha.evidenceSource());
+            adjusted.put("C5", new CompetenceResult("C5", 0, 0, evidence, problems, true,
+                    List.of("Violacao de direitos humanos conforme Cartilha ENEM 2026")));
+        }
+        return adjusted;
     }
 
     public Map<String, Object> getResult(Long essayId) {

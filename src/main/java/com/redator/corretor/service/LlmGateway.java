@@ -5,6 +5,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -12,16 +13,27 @@ public class LlmGateway {
 
     private final BudgetGuard budgetGuard;
     private final ResponseSchemaValidator schemaValidator;
+    private final String guidelineVersion;
     private final Map<String, LlmCallResult> responseCache = new ConcurrentHashMap<>();
     private final AtomicLong cacheHitCount = new AtomicLong();
 
     public LlmGateway(BudgetGuard budgetGuard, ResponseSchemaValidator schemaValidator) {
+        this(budgetGuard, schemaValidator, "no-guideline");
+    }
+
+    @Autowired
+    public LlmGateway(BudgetGuard budgetGuard, ResponseSchemaValidator schemaValidator, CartilhaEnem2026Service cartilha) {
+        this(budgetGuard, schemaValidator, cartilha.sourceVersion());
+    }
+
+    private LlmGateway(BudgetGuard budgetGuard, ResponseSchemaValidator schemaValidator, String guidelineVersion) {
         this.budgetGuard = budgetGuard;
         this.schemaValidator = schemaValidator;
+        this.guidelineVersion = guidelineVersion;
     }
 
     public LlmCallResult generate(String competence, String essayText, EvaluationProfile profile) {
-        String promptHash = Integer.toHexString((competence + essayText + profile.name()).hashCode());
+        String promptHash = Integer.toHexString((competence + essayText + profile.name() + guidelineVersion).hashCode());
         String schemaHash = Integer.toHexString(("essay-eval-v1" + competence).hashCode());
         String cacheKey = promptHash + ":" + schemaHash;
 

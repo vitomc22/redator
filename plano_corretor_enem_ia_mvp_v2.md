@@ -513,6 +513,19 @@ public record CompetenceScore(
 
 ## 9.4 Calibração barata (pós-MVP imediato)
 
+## 9.5 Fonte normativa da rubrica — Cartilha do Participante ENEM 2026
+
+O arquivo [`src/main/resources/cartilha_enem_2026.pdf`](../src/main/resources/cartilha_enem_2026.pdf) é a fonte normativa versionada para a correção do MVP. O runtime deve carregá-lo no startup, extrair os descritores das cinco competências e registrar o hash SHA-256 da fonte em cada avaliação ou relatório.
+
+Regras aplicadas diretamente no MVP:
+
+- cada competência permanece na escala oficial de 0, 40, 80, 120, 160 ou 200 pontos;
+- proposta de intervenção que desrespeite direitos humanos recebe 0 na Competência V e `needs_review=true`;
+- fuga ao tema, tangenciamento, tipo textual e cópia dos textos motivadores são sinais de teto/zeragem e devem ser avaliados contra o tema configurado, não por um prompt genérico;
+- a cartilha é referência de critério, não evidência inventada: toda evidência retornada precisa continuar ancorada no texto da redação.
+
+O carregamento da cartilha falha de forma explícita se o recurso estiver ausente ou não contiver os descritores obrigatórios. Alterações na cartilha mudam o hash da fonte e invalidam o cache de avaliação.
+
 Quando o pipeline estiver estável, o mapeamento features → nível pode ser **aprendido** em vez de escrito à mão: rodar a extração em ~500 redações do split de treino do Essay-BR (custo da ordem de **poucos dólares** no tier barato) e ajustar uma **regressão ordinal** por competência sobre as features estruturadas. As regras viram *baseline* para comparar. É o caminho de custo mais baixo para sair de HIPÓTESE para dado.
 
 ---
