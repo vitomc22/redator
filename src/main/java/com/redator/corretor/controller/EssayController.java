@@ -9,6 +9,7 @@ import com.redator.corretor.model.EvaluationResult;
 import com.redator.corretor.model.Tema;
 import com.redator.corretor.service.DocumentTranscriptionService;
 import com.redator.corretor.service.EssayService;
+import com.redator.corretor.service.LlmGateway;
 import com.redator.corretor.service.UploadValidationService;
 import java.util.List;
 import java.util.Map;
@@ -35,10 +36,12 @@ public class EssayController {
 
     private final EssayService essayService;
     private final UploadValidationService uploadValidationService;
+    private final LlmGateway llmGateway;
 
-    public EssayController(EssayService essayService, UploadValidationService uploadValidationService) {
+    public EssayController(EssayService essayService, UploadValidationService uploadValidationService, LlmGateway llmGateway) {
         this.essayService = essayService;
         this.uploadValidationService = uploadValidationService;
+        this.llmGateway = llmGateway;
     }
 
     @GetMapping("/temas")
@@ -166,13 +169,26 @@ public class EssayController {
     public ResponseEntity<Map<String, Object>> evaluateEssay(@PathVariable Long id, @RequestParam(defaultValue = "cheap") String profile) {
         EvaluationProfile evaluationProfile = EvaluationProfile.from(profile);
         EvaluationResult result = essayService.evaluateEssay(id, evaluationProfile.name().toLowerCase());
-        return ResponseEntity.ok(Map.of(
-                "runId", result.runId(),
-                "total", result.total(),
-                "needsReview", result.needsReview(),
-                "profile", result.profile(),
-                "competences", result.competences()
-        ));
+        Map<String, Object> body = new java.util.LinkedHashMap<>();
+        body.put("runId", result.runId());
+        body.put("total", result.total());
+        body.put("needsReview", result.needsReview());
+        body.put("profile", result.profile());
+        body.put("status", result.status());
+        body.put("provider", result.provider());
+        body.put("model", result.model());
+        body.put("competences", result.competences());
+        body.put("limitations", result.limitations());
+        body.put("reviewStage", result.needsReview() ? "EVALUATION" : null);
+        body.put("reviewReasons", result.reviewReasons());
+        body.put("cacheHit", result.cacheHit());
+        body.put("experimental", result.experimental());
+        return ResponseEntity.ok(body);
+    }
+
+    @GetMapping("/runtime")
+    public ResponseEntity<Map<String, Object>> runtime() {
+        return ResponseEntity.ok(llmGateway.runtime());
     }
 
     @GetMapping("/essays/{id}/result")

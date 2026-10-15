@@ -1,0 +1,12 @@
+{
+  "status": "pending",
+  "reason": "Docker ausente neste host; geração, compatibilidade e persistência não verificadas.",
+  "approvedAt": null,
+  "image": {"bootstrapReference": "ollama/ollama:latest", "approvedReference": null, "digest": null},
+  "serverVersion": null,
+  "model": {"tag": "gemma4:e2b-it-q4_K_M", "digest": null, "expectedQuantization": "Q4_K_M", "observedQuantization": null},
+  "generation": {"num_ctx": 4096, "num_predict": 1200, "num_thread": 4, "temperature": 0, "seed": 42, "keep_alive": "5m", "think": false},
+  "thinkingControlVerified": false,
+  "host": {"os": null, "cpu": null, "ramBytes": null},
+  "checks": {"structuredGeneration": "pending", "modelPersistenceAfterRestart": "pending", "memoryAndSwapLimits": "pending", "applicationEndToEnd": "pending"}
+}

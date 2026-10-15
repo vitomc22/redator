@@ -566,7 +566,7 @@
           <div class="brand-mark">E</div>
           <span>Corretor ENEM IA</span>
         </div>
-        <div class="status-pill">MVP · provider LLM simulado · revisão humana</div>
+        <div id="runtimeStatus" class="status-pill" aria-live="polite">Provider/modelo: aguardando informações do backend</div>
       </header>
 
       <main class="card">
@@ -584,7 +584,7 @@
               </div>
               <div class="metric">
                 <strong>3</strong>
-                <span>perfis de custo</span>
+                <span>perfis experimentais</span>
               </div>
               <div class="metric">
                 <strong>100%</strong>
@@ -640,7 +640,7 @@
 
             <div id="reviewPanel" class="review-panel" aria-live="polite" aria-label="Painel de revisão humana">
               <h2>Revisão humana</h2>
-              <p>O texto precisa ser validado antes da avaliação final quando há transcrição documental.</p>
+              <p>Revisão da transcrição: faça o texto coincidir com o documento, preservando os erros linguísticos do aluno.</p>
 
               <div id="qualitySummary" class="quality-box">
                 <strong>Qualidade da transcrição: aguardando análise</strong>
@@ -668,9 +668,11 @@
             <div id="resultBox" class="result-box" aria-live="polite">
               <div class="meta-row">
                 <span id="runBadge" class="badge">RUN</span>
-                <span id="total" class="badge">Total: 0</span>
+                <span id="total" class="badge">Sem nota</span>
                 <span id="reviewStatus" class="badge">REVISAR</span>
               </div>
+              <p id="evaluationNotice"></p>
+              <p id="evaluationLimitations">Avaliação experimental de treino; não substitui correção humana ou oficial do ENEM.</p>
               <pre id="resultJson"></pre>
             </div>
           </div>
@@ -691,7 +693,7 @@
             </div>
             <div class="quality-box">
               <strong>4. Comparação</strong>
-              Benchmark entre cheap, normal e premium para decidir melhor custo/benefício.
+              Comparação exploratória entre cheap, normal e premium, sem ranking de qualidade. No Ollama, são aliases do mesmo modelo e parâmetros.
             </div>
           </aside>
         </section>
@@ -768,6 +770,46 @@
       let currentEssayId = null;
       let selectedDocumentPreview = null;
       let reviewBlocksRefreshTimer = null;
+      let busy = false;
+      let savedDisabledStates = [];
+
+      function showFailure(error) {
+        resultBox.classList.add('visible');
+        resultJson.textContent = `Erro: ${error.message}`;
+        document.getElementById('total').textContent = 'Sem nota';
+        document.getElementById('runBadge').textContent = 'FALHA';
+        document.getElementById('reviewStatus').textContent = 'AVALIAÇÃO NÃO CONCLUÍDA';
+        document.getElementById('reviewStatus').className = 'badge warn';
+        document.getElementById('evaluationNotice').textContent = 'Não houve retry automático. Em falha de conexão ou timeout, a geração pode continuar no servidor; confira antes de tentar novamente.';
+      }
+
+      async function withBusy(action) {
+        if (busy) return;
+        busy = true;
+        savedDisabledStates = [...document.querySelectorAll('button, input, textarea, select')].map(el => [el, el.disabled]);
+        savedDisabledStates.forEach(([el]) => { el.disabled = true; });
+        form.setAttribute('aria-busy', 'true');
+        try { await action(); } catch (error) { showFailure(error); }
+        finally {
+          savedDisabledStates.forEach(([el, disabled]) => { el.disabled = disabled; });
+          form.setAttribute('aria-busy', 'false');
+          busy = false;
+        }
+      }
+
+      async function requestJson(url, options = {}) {
+        const response = await fetch(url, options);
+        const text = await response.text();
+        let data;
+        try { data = text ? JSON.parse(text) : {}; }
+        catch { throw new Error(`Resposta inválida do servidor (HTTP ${response.status}).`); }
+        if (!response.ok) throw new Error(data.message || data.error || `Falha HTTP ${response.status}`);
+        return data;
+      }
+
+      function displayRuntime(metadata = {}) {
+        document.getElementById('runtimeStatus').textContent = `Provider: ${metadata.provider || 'não informado'} · Modelo: ${metadata.model || 'não informado'}`;
+      }
 
       function escapeHtml(value) {
         return String(value || '')
@@ -902,19 +944,32 @@
       }
 
       async function evaluateEssay(essayId) {
-        const response = await fetch(`/api/essays/${essayId}/evaluate?profile=cheap`, { method: 'POST' });
-        if (!response.ok) {
-          const error = await response.text();
-          throw new Error(error || 'Avaliação bloqueada');
-        }
-
-        const evaluation = await response.json();
         resultBox.classList.add('visible');
+        document.getElementById('total').textContent = 'Sem nota';
+        document.getElementById('runBadge').textContent = 'EM ANDAMENTO';
+        document.getElementById('reviewStatus').textContent = 'AGUARDE';
+        document.getElementById('evaluationNotice').textContent = 'Avaliação em andamento. A inferência local pode levar vários minutos. Não recarregue a página.';
+        document.getElementById('evaluationLimitations').textContent = 'Avaliação experimental; qualidade e desempenho ainda dependem de calibração humana.';
+        resultJson.textContent = '';
+        // Sem timeout curto ou retry: o backend controla o limite de inferência.
+        const evaluation = await requestJson(`/api/essays/${essayId}/evaluate?profile=cheap`, { method: 'POST' });
         resultJson.textContent = JSON.stringify(evaluation, null, 2);
-        document.getElementById('total').textContent = `Total: ${evaluation.total}`;
+        displayRuntime(evaluation);
+        if (!evaluation.provider && evaluation.runId) {
+          try {
+            const run = await requestJson(`/api/runs/${evaluation.runId}`);
+            displayRuntime(run.llmCall || run);
+          } catch { /* Ausência de auditoria não inventa identidade do modelo. */ }
+        }
+        document.getElementById('total').textContent = evaluation.needsReview ? 'Nota final bloqueada — revisão pendente' : `Nota experimental: ${evaluation.total ?? 'indisponível'}`;
         document.getElementById('runBadge').textContent = `RUN ${evaluation.runId}`;
-        document.getElementById('reviewStatus').textContent = evaluation.needsReview ? 'REVISAR' : 'OK';
+        document.getElementById('reviewStatus').textContent = evaluation.needsReview ? 'REVISAR AVALIAÇÃO' : 'EXPERIMENTAL';
         document.getElementById('reviewStatus').className = `badge ${evaluation.needsReview ? 'warn' : 'success'}`;
+        const reasons = evaluation.reviewReasons || evaluation.problems || [];
+        document.getElementById('evaluationNotice').textContent = evaluation.needsReview
+          ? `Revisão humana da avaliação (distinta da transcrição). Motivos: ${reasons.join('; ') || 'não informados'}. Notas no JSON são provisórias.`
+          : 'Resultado de treino, sem equivalência comprovada à correção oficial.';
+        document.getElementById('evaluationLimitations').textContent = `Limitações: ${(evaluation.limitations || []).join('; ') || 'backend não informou limitações específicas; isso não significa ausência de limitações.'}`;
       }
 
       async function createEssayFromForm() {
@@ -947,7 +1002,10 @@
 
       form.addEventListener('submit', async (event) => {
         event.preventDefault();
-
+        await withBusy(async () => {
+        reviewPanel.classList.remove('visible');
+        resultBox.classList.remove('visible');
+        currentEssayId = null;
         try {
           const essay = await createEssayFromForm();
           currentEssayId = essay.id;
@@ -964,14 +1022,8 @@
           }
 
           await evaluateEssay(essay.id);
-        } catch (error) {
-          resultBox.classList.add('visible');
-          resultJson.textContent = `Erro: ${error.message}`;
-          document.getElementById('total').textContent = 'Total: -';
-          document.getElementById('runBadge').textContent = 'ERRO';
-          document.getElementById('reviewStatus').textContent = 'REVISAR';
-          document.getElementById('reviewStatus').className = 'badge warn';
-        }
+        } catch (error) { showFailure(error); }
+        });
       });
 
       reviewText.addEventListener('input', () => {
@@ -981,7 +1033,7 @@
 
       document.getElementById('approveReview').addEventListener('click', async () => {
         if (!currentEssayId) return;
-
+        await withBusy(async () => {
         const request = { reviewedText: reviewText.value.trim(), approved: true };
         const response = await fetch(`/api/essays/${currentEssayId}/review`, {
           method: 'POST',
@@ -991,18 +1043,23 @@
 
         if (!response.ok) {
           const text = await response.text();
-          resultJson.textContent = `Erro na revisão: ${text}`;
-          return;
+          throw new Error(`Revisão da transcrição bloqueada: ${text}`);
+        }
+
+        const reviewed = await response.json();
+        if ((reviewed.essay || reviewed).status === 'NEEDS_REVIEW') {
+          throw new Error('Transcrição ainda requer revisão; avaliação não iniciada.');
         }
 
         await refreshQuality(currentEssayId);
         reviewPanel.classList.remove('visible');
         await evaluateEssay(currentEssayId);
+        });
       });
 
       document.getElementById('rejectReview').addEventListener('click', async () => {
         if (!currentEssayId) return;
-
+        await withBusy(async () => {
         const response = await fetch(`/api/essays/${currentEssayId}/review`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -1016,7 +1073,8 @@
           document.getElementById('runBadge').textContent = 'PENDENTE';
           document.getElementById('reviewStatus').textContent = 'REVISAR';
           document.getElementById('reviewStatus').className = 'badge warn';
-        }
+        } else { throw new Error('Não foi possível registrar a rejeição da transcrição.'); }
+        });
       });
 
       sourceType.addEventListener('change', () => {
@@ -1029,6 +1087,7 @@
       });
 
       document.getElementById('runBenchmark').addEventListener('click', async () => {
+        await withBusy(async () => {
         const temaId = Number(temaSelect.value);
         const selectedProfiles = [...document.querySelectorAll('.profile-option input:checked')].map((input) => input.value);
         const texts = benchmarkText.value
@@ -1048,6 +1107,9 @@
           texts: texts.length ? texts : ['A educação é um direito fundamental para todos.']
         };
 
+        benchmarkOutput.textContent = 'Comparação em andamento; pode levar vários minutos por redação e perfil.';
+        benchmarkOutput.classList.add('visible');
+
         const response = await fetch('/api/benchmark/compare', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -1065,7 +1127,7 @@
         const rows = Object.entries(comparisons)
           .map(([name, summary]) => `
             <tr>
-              <td>${name}</td>
+              <td>${escapeHtml(name)}</td>
               <td>${summary.averageTotal ?? 0}</td>
               <td>${summary.totalCostUsd ?? 0}</td>
               <td>${summary.averageLatencyMs ?? 0}</td>
@@ -1075,7 +1137,8 @@
 
         benchmarkOutput.innerHTML = `
           <div class="quality-box">
-            <strong>Melhor perfil:</strong> ${data.bestProfile || 'n/a'}
+            <strong>Comparação exploratória, sem ranking.</strong>
+            Maior nota não significa maior qualidade. Os perfis locais são aliases do mesmo modelo; custo de API não inclui CPU, memória ou energia.
           </div>
           <table class="benchmark-table">
             <thead>
@@ -1090,6 +1153,7 @@
           </table>
         `;
         benchmarkOutput.classList.add('visible');
+        });
       });
 
       document.getElementById('saveHumanScores').addEventListener('click', async () => {
@@ -1112,7 +1176,9 @@
         output.textContent = response.ok ? `Notas salvas. Total humano: ${data.total}/1000.` : `Erro: ${data.message || 'não foi possível salvar'}`;
       });
 
-      loadTemas();
+      fileInput.disabled = sourceType.value !== 'upload';
+      loadTemas().catch(showFailure);
+      requestJson('/api/runtime').then(displayRuntime).catch(() => displayRuntime());
     </script>
   </body>
 </html>

@@ -1,5 +1,6 @@
 package com.redator.corretor.service;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.redator.corretor.model.CreateEssayRequest;
 import com.redator.corretor.model.CompetenceResult;
 import com.redator.corretor.model.EssayResponse;
@@ -12,12 +13,11 @@ import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import org.springframework.http.HttpStatus;
-import java.util.Comparator;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Service;
@@ -26,6 +26,8 @@ import org.springframework.web.server.ResponseStatusException;
 
 @Service
 public class EssayService {
+
+    private static final ObjectMapper JSON = new ObjectMapper();
 
     private final JdbcTemplate jdbcTemplate;
     private final LlmGateway llmGateway;
@@ -168,11 +170,11 @@ public class EssayService {
         return DocumentTranscriptionService.analyze(essay.text());
     }
 
-    @Transactional
     public EvaluationResult evaluateEssay(Long essayId, String profile) {
         EssayResponse essay = findEssayById(essayId);
         if ("NEEDS_REVIEW".equalsIgnoreCase(essay.status())) {
-            throw new ResponseStatusException(HttpStatus.CONFLICT, "redacao precisa de revisão humana antes da avaliacao");
+            throw new EvaluationFailure(HttpStatus.CONFLICT, "DOCUMENT_REVIEW_REQUIRED",
+                    "A redação precisa de revisão humana antes da avaliação.");
         }
 
         DeterministicEssayAnalysis analysis = DeterministicEssayAnalysis.analyze(essay.text());
@@ -180,7 +182,8 @@ public class EssayService {
         baseCompetences = applyCartilhaRules(essay.text(), baseCompetences);
         baseCompetences = applyThemeAlignmentRules(essay.text(), findTemaById(essay.temaId()), baseCompetences);
         EvaluationProfile evaluationProfile = EvaluationProfile.from(profile);
-        Map<String, CompetenceResult> competences = new HashMap<>();
+        Tema theme = findTemaById(essay.temaId());
+        String revisionHash = LocalEvaluationContract.hash(essay.text());
 
         String now = OffsetDateTime.now().format(DateTimeFormatter.ISO_OFFSET_DATE_TIME);
         KeyHolder runKey = new GeneratedKeyHolder();
@@ -199,44 +202,43 @@ public class EssayService {
 
         Long runId = runKey.getKey() == null ? 1L : runKey.getKey().longValue();
 
-        for (Map.Entry<String, CompetenceResult> entry : baseCompetences.entrySet()) {
-            CompetenceResult result = entry.getValue();
-            if (List.of("C2", "C3", "C4", "C5").contains(entry.getKey())) {
-                LlmCallResult llmCall = llmGateway.generate(entry.getKey(), essay.text(), evaluationProfile);
-                jdbcTemplate.update(
-                        "INSERT INTO llm_call (run_id, provider, model, prompt_hash, schema_hash, cost_usd, latency_ms, status, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
-                        runId,
-                        llmCall.provider(),
-                        llmCall.model(),
-                        llmCall.promptHash(),
-                        llmCall.schemaHash(),
-                        llmCall.costUsd(),
-                        llmCall.latencyMs(),
-                        llmCall.status(),
-                        now
-                );
-
-                List<String> evidence = new ArrayList<>(result.evidencias());
-                evidence.add("Gateway " + evaluationProfile.name() + ": " + llmCall.summary());
-                List<String> reasons = new ArrayList<>(result.motivos());
-                reasons.add("Resposta do provider " + llmCall.provider() + " validada pelo perfil " + evaluationProfile.name().toLowerCase());
-                result = new CompetenceResult(
-                        result.competencia(),
-                        result.nota(),
-                        result.nivelSugerido(),
-                        evidence,
-                        result.problemas(),
-                        result.needsReview(),
-                        reasons
-                );
-            }
-            competences.put(entry.getKey(), result);
+        LlmGateway.EvaluationOutput output;
+        try {
+            output = llmGateway.evaluate(essay.text(), theme, essay.id(), evaluationProfile, baseCompetences);
+        } catch (EvaluationFailure failure) {
+            jdbcTemplate.update("UPDATE run SET status = 'FAILED', essay_revision = ?, failure_code = ?, failure_message = ? WHERE id = ?",
+                    revisionHash, failure.code(), failure.getReason(), runId);
+            throw failure.withRun(runId);
+        } catch (RuntimeException failure) {
+            jdbcTemplate.update("UPDATE run SET status = 'FAILED', essay_revision = ?, failure_code = 'INTERNAL_FAILURE', failure_message = ? WHERE id = ?",
+                    revisionHash, "Falha interna sem nota publicada", runId);
+            throw new EvaluationFailure(HttpStatus.INTERNAL_SERVER_ERROR, "INTERNAL_FAILURE",
+                    "Falha interna sem nota publicada.").withRun(runId);
         }
 
-        int total = competences.values().stream().mapToInt(CompetenceResult::nota).sum();
-        boolean needsReview = competences.values().stream().anyMatch(CompetenceResult::needsReview);
+        EssayResponse current = findEssayById(essayId);
+        if (!revisionHash.equals(LocalEvaluationContract.hash(current.text()))) {
+            jdbcTemplate.update("UPDATE run SET status = 'STALE' WHERE id = ?", runId);
+            throw new EvaluationFailure(HttpStatus.CONFLICT, "STALE_REVISION",
+                    "A redação mudou durante a inferência; o resultado antigo foi descartado.").withRun(runId);
+        }
 
-        jdbcTemplate.update("UPDATE run SET total = ?, status = ? WHERE id = ?", total, needsReview ? "NEEDS_REVIEW" : "READY", runId);
+        Map<String, CompetenceResult> competences = output.competences();
+        Map<String, Object> audit = output.audit();
+        String provider = String.valueOf(audit.getOrDefault("provider", "unknown"));
+        String model = String.valueOf(audit.getOrDefault("model", "unknown"));
+        long latencyMs = Math.round(number(audit.get("wallMs")));
+        jdbcTemplate.update(
+                "INSERT INTO llm_call (run_id, provider, model, prompt_hash, schema_hash, cost_usd, latency_ms, status, created_at, audit_json, cache_hit) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                runId, provider, model, text(audit.get("promptHash")), text(audit.get("schemaHash")),
+                number(audit.get("costUsd")), latencyMs, "ok", now, json(audit), output.cacheHit() ? 1 : 0);
+
+        int total = competences.values().stream().mapToInt(CompetenceResult::nota).sum();
+        boolean needsReview = output.needsReview() || competences.values().stream().anyMatch(CompetenceResult::needsReview);
+
+        jdbcTemplate.update("UPDATE run SET total = ?, status = ?, essay_revision = ?, provider = ?, model = ?, limitations = ?, review_reasons = ? WHERE id = ?",
+                total, needsReview ? "NEEDS_REVIEW" : "READY", revisionHash, provider, model,
+                json(output.limitations()), json(output.reviewReasons()), runId);
 
         for (Map.Entry<String, CompetenceResult> entry : competences.entrySet()) {
             jdbcTemplate.update(
@@ -254,8 +256,18 @@ public class EssayService {
 
         List<String> problems = new ArrayList<>();
         competences.values().forEach(c -> problems.addAll(c.problemas()));
-        return new EvaluationResult(runId, total, competences, needsReview, problems, evaluationProfile.name().toLowerCase());
+        return new EvaluationResult(runId, needsReview ? null : total, competences, needsReview, problems,
+                evaluationProfile.name().toLowerCase(), needsReview ? "NEEDS_REVIEW" : "READY",
+                provider, model, output.limitations(), output.reviewReasons(), output.cacheHit(), true);
     }
+
+    private static String json(Object value) {
+        try { return JSON.writeValueAsString(value); }
+        catch (Exception ex) { throw new IllegalStateException("Falha ao persistir auditoria", ex); }
+    }
+
+    private static String text(Object value) { return value == null ? null : String.valueOf(value); }
+    private static double number(Object value) { return value instanceof Number number ? number.doubleValue() : 0.0; }
 
     private Map<String, CompetenceResult> applyCartilhaRules(String text, Map<String, CompetenceResult> competences) {
         Map<String, CompetenceResult> adjusted = new LinkedHashMap<>(competences);
@@ -295,41 +307,65 @@ public class EssayService {
 
     public Map<String, Object> getResult(Long essayId) {
         EssayResponse essay = findEssayById(essayId);
-        Long runId = jdbcTemplate.queryForObject(
-                "SELECT id FROM run WHERE essay_id = ? ORDER BY created_at DESC LIMIT 1",
-                Long.class,
-                essay.id()
-        );
-
-        if (runId == null) {
-            return Map.of("essayId", essay.id(), "status", essay.status(), "total", 0, "competences", Map.of());
+        List<Long> runIds = jdbcTemplate.queryForList(
+                "SELECT id FROM run WHERE essay_id = ? ORDER BY id DESC LIMIT 1", Long.class, essay.id());
+        if (runIds.isEmpty()) {
+            Map<String, Object> response = new LinkedHashMap<>();
+            response.put("essayId", essay.id());
+            response.put("status", "NOT_EVALUATED");
+            response.put("total", null);
+            response.put("competences", List.of());
+            response.put("experimental", true);
+            return response;
         }
-
-        Map<String, Object> response = new HashMap<>();
+        Map<String, Object> response = getRunDetails(runIds.getFirst());
         response.put("essayId", essay.id());
-        response.put("status", essay.status());
-        response.put("runId", runId);
-        response.put("total", jdbcTemplate.queryForObject("SELECT total FROM run WHERE id = ?", Integer.class, runId));
-
-        List<Map<String, Object>> competences = jdbcTemplate.queryForList(
-                "SELECT competencia, nota, nivel_sugerido, evidencias, problemas, needs_review FROM competence_result WHERE run_id = ? ORDER BY competencia",
-                runId
-        );
-        response.put("competences", competences);
         return response;
     }
 
     public Map<String, Object> getRunDetails(Long runId) {
-        Map<String, Object> run = jdbcTemplate.queryForMap(
-                "SELECT id, essay_id, profile, total, status, created_at FROM run WHERE id = ?",
-                runId
-        );
-        List<Map<String, Object>> competences = jdbcTemplate.queryForList(
-                "SELECT competencia, nota, nivel_sugerido, evidencias, problemas, needs_review FROM competence_result WHERE run_id = ? ORDER BY competencia",
-                runId
-        );
-        run.put("competences", competences);
-        return run;
+        Map<String, Object> stored;
+        try {
+            stored = jdbcTemplate.queryForMap(
+                    "SELECT id, essay_id, profile, total, status, created_at, provider, model, limitations, review_reasons, failure_code, failure_message FROM run WHERE id = ?",
+                    runId);
+        } catch (EmptyResultDataAccessException ex) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "execucao nao encontrada");
+        }
+        String status = String.valueOf(stored.get("status"));
+        boolean publishCompetences = "READY".equals(status) || "NEEDS_REVIEW".equals(status);
+        Map<String, Object> response = new LinkedHashMap<>();
+        response.put("runId", stored.get("id"));
+        response.put("essayId", stored.get("essay_id"));
+        response.put("profile", stored.get("profile"));
+        response.put("status", status);
+        response.put("total", "READY".equals(status) ? stored.get("total") : null);
+        response.put("provider", stored.get("provider"));
+        response.put("model", stored.get("model"));
+        response.put("limitations", jsonList(stored.get("limitations")));
+        response.put("reviewStage", "NEEDS_REVIEW".equals(status) ? "EVALUATION" : null);
+        response.put("reviewReasons", jsonList(stored.get("review_reasons")));
+        response.put("failureCode", stored.get("failure_code"));
+        response.put("failureMessage", stored.get("failure_message"));
+        response.put("createdAt", stored.get("created_at"));
+        response.put("experimental", true);
+        response.put("competences", publishCompetences ? jdbcTemplate.queryForList(
+                "SELECT competencia, nota, nivel_sugerido AS nivelSugerido, evidencias, problemas, needs_review AS needsReview, motivos FROM competence_result WHERE run_id = ? ORDER BY competencia",
+                runId) : List.of());
+        response.put("llmCalls", jdbcTemplate.queryForList(
+                "SELECT provider, model, prompt_hash AS promptHash, schema_hash AS schemaHash, cost_usd AS costUsd, latency_ms AS latencyMs, status, created_at AS createdAt, cache_hit AS cacheHit, audit_json AS auditJson FROM llm_call WHERE run_id = ? ORDER BY id",
+                runId));
+        return response;
+    }
+
+    private static List<?> jsonList(Object stored) {
+        if (!(stored instanceof String text) || text.isBlank()) return List.of();
+        try {
+            Object parsed = JSON.readValue(text, Object.class);
+            return parsed instanceof List<?> list ? list : List.of();
+        } catch (Exception ignored) {
+            return List.of();
+        }
     }
 
     public Map<String, Object> runBenchmark(Long temaId, List<String> texts, String profile) {
@@ -343,6 +379,7 @@ public class EssayService {
         EvaluationProfile evaluationProfile = EvaluationProfile.from(profile);
         List<Map<String, Object>> results = new ArrayList<>();
         int totalScore = 0;
+        int scoredCount = 0;
         double totalCostUsd = 0.0;
         long totalLatencyMs = 0L;
 
@@ -355,29 +392,35 @@ public class EssayService {
             EvaluationResult evaluation = evaluateEssay(essay.id(), evaluationProfile.name().toLowerCase());
             double cost = sumCostForRun(evaluation.runId());
             long latency = averageLatencyMsForRun(evaluation.runId());
-            totalScore += evaluation.total();
+            if (evaluation.total() != null) {
+                totalScore += evaluation.total();
+                scoredCount++;
+            }
             totalCostUsd += cost;
             totalLatencyMs += latency;
 
-            results.add(Map.of(
-                    "essayId", essay.id(),
-                    "total", evaluation.total(),
-                    "needsReview", evaluation.needsReview(),
-                    "profile", evaluation.profile(),
-                    "costUsd", round(cost),
-                    "averageLatencyMs", latency
-            ));
+            Map<String, Object> item = new LinkedHashMap<>();
+            item.put("essayId", essay.id());
+            item.put("total", evaluation.total());
+            item.put("needsReview", evaluation.needsReview());
+            item.put("profile", evaluation.profile());
+            item.put("provider", evaluation.provider());
+            item.put("model", evaluation.model());
+            item.put("costUsd", round(cost));
+            item.put("averageLatencyMs", latency);
+            results.add(item);
         }
 
         int count = results.size();
-        return Map.of(
-                "profile", evaluationProfile.name().toLowerCase(),
-                "count", count,
-                "averageTotal", count == 0 ? 0 : Math.round((double) totalScore / count),
-                "totalCostUsd", round(totalCostUsd),
-                "averageLatencyMs", count == 0 ? 0 : Math.round((double) totalLatencyMs / count),
-                "results", results
-        );
+        Map<String, Object> summary = new LinkedHashMap<>();
+        summary.put("profile", evaluationProfile.name().toLowerCase());
+        summary.put("count", count);
+        summary.put("scoredCount", scoredCount);
+        summary.put("averageTotal", scoredCount == 0 ? null : Math.round((double) totalScore / scoredCount));
+        summary.put("totalCostUsd", round(totalCostUsd));
+        summary.put("averageLatencyMs", count == 0 ? 0 : Math.round((double) totalLatencyMs / count));
+        summary.put("results", results);
+        return summary;
     }
 
     public Map<String, Object> compareProfiles(Long temaId, List<String> profiles, List<String> texts) {
@@ -397,15 +440,11 @@ public class EssayService {
             comparisons.put(profile.toLowerCase(), runBenchmark(temaId, texts, profile));
         }
 
-        String bestProfile = selectedProfiles.stream()
-                .map(String::toLowerCase)
-                .max(Comparator.comparingDouble(profile -> ((Number) comparisons.get(profile).get("averageTotal")).doubleValue()))
-                .orElse("cheap");
-
         return Map.of(
                 "temaId", temaId,
                 "profiles", selectedProfiles,
-                "bestProfile", bestProfile,
+                "profilesAreAliases", true,
+                "qualityRanking", "not-measured",
                 "comparisons", comparisons
         );
     }

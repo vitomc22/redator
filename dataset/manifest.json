@@ -1,27 +1,7 @@
-{
-  "version": 1,
-  "policy": "metadata-only",
-  "description": "Manifesto de calibração com referências públicas; textos integrais ficam fora do repositório.",
-  "entries": [
-    {
-      "id": "brasil-escola-2025-celular-sala-aula",
-      "split": "dev",
-      "theme": "Proibição do uso de celular nas salas de aula",
-      "source": "brasil-escola-temas-anteriores",
-      "sourceUrl": "https://vestibular.brasilescola.uol.com.br/corrige-aqui/temas-anteriores.htm",
-      "textPath": null,
-      "sha256": null,
-      "authorizedLocalText": false
-    },
-    {
-      "id": "uol-2020-carnaval-apropriacao-cultural",
-      "split": "dev",
-      "theme": "Carnaval e apropriação cultural",
-      "source": "uol-banco-redacoes",
-      "sourceUrl": "https://educacao.uol.com.br/bancoderedacoes/",
-      "textPath": null,
-      "sha256": null,
-      "authorizedLocalText": false
-    }
-  ]
-}
+{"version":2,"policy":"metadata-only","description":"Sementes humanas inspecionadas no planejamento. Textos integrais não são redistribuídos; todas permanecem no split dev.","entries":[
+{"id":"brasil-escola-25172","split":"dev","themeGroup":"ia-educacao","theme":"Inteligência artificial na educação","source":"brasil-escola-correcao-tradicional","sourceUrl":"https://vestibular.brasilescola.uol.com.br/corrige-aqui/25172","rightsStatus":"pending","textPath":null,"sha256":null,"authorizedLocalText":false,"evaluatorType":"human","labelSource":"human","scoreScale":"individual","humanScores":[200,200,120,200,200],"humanTotal":920,"notes":"Usar a tabela tradicional; não confundir com a correção por IA da mesma página."},
+{"id":"brasil-escola-25206","split":"dev","themeGroup":"ia-educacao","theme":"Inteligência artificial na educação","source":"brasil-escola-correcao-tradicional","sourceUrl":"https://vestibular.brasilescola.uol.com.br/corrige-aqui/25206","rightsStatus":"pending","textPath":null,"sha256":null,"authorizedLocalText":false,"evaluatorType":"human","labelSource":"human","scoreScale":"individual","humanScores":[120,80,80,160,40],"humanTotal":480,"notes":"Referência humana; não usar o total 640 atribuído pela IA da página."},
+{"id":"uol-publica-e-gratuita","split":"dev","themeGroup":"educacao-publica","theme":"Educação pública e gratuita","source":"uol-banco-redacoes","sourceUrl":"https://educacao.uol.com.br/bancoderedacoes/redacoes/publica-e-gratuita.htm","rightsStatus":"pending","textPath":null,"sha256":null,"authorizedLocalText":false,"evaluatorType":"human","labelSource":"human","scoreScale":"individual","humanScores":[160,160,120,160,120],"humanTotal":720,"notes":"Confirmar a equivalência da rubrica histórica antes de promover para benchmark."},
+{"id":"uol-educacao-brasileira-conhecimento-ja","split":"dev","themeGroup":"educacao-brasileira","theme":"Educação brasileira","source":"uol-banco-redacoes","sourceUrl":"https://educacao.uol.com.br/bancoderedacoes/redacoes/educacao-brasileira-conhecimento-ja.htm","rightsStatus":"pending","textPath":null,"sha256":null,"authorizedLocalText":false,"evaluatorType":"human","labelSource":"human","scoreScale":"individual","humanScores":[120,0,80,80,80],"humanTotal":360,"notes":"Caso diagnóstico: comentário histórico flexibiliza a anulação para orientar o aluno."},
+{"id":"uol-revolucao-e-evolucao","split":"dev","themeGroup":"fuga-tematica","theme":"Revolução e evolução","source":"uol-banco-redacoes","sourceUrl":"https://educacao.uol.com.br/bancoderedacoes/redacoes/revolucao-e-evolucao.htm","rightsStatus":"pending","textPath":null,"sha256":null,"authorizedLocalText":false,"evaluatorType":"human","labelSource":"human","scoreScale":"individual","humanScores":[0,0,0,0,0],"humanTotal":0,"notes":"Caso de fuga temática; medir também decisão de revisão/anulação."}
+]}

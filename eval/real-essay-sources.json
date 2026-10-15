@@ -1,35 +1,30 @@
 {
-  "purpose": "Fontes públicas para calibração manual do corretor ENEM; não contém redações integrais.",
-  "copyrightPolicy": "Não copiar nem redistribuir textos integrais. Use somente textos obtidos com autorização ou fornecidos pelo avaliador, mantendo-os fora do Git.",
+  "purpose": "Catálogo de sementes públicas com notas humanas para calibração manual; não contém redações integrais.",
+  "copyrightPolicy": "Acesso público não autoriza redistribuição ou treino. Só material autorizado, com evidência de direitos, pode entrar em dataset/private/.",
+  "selectionPolicy": "As cinco sementes foram inspecionadas ao elaborar o plano e por isso ficam somente em dev, nunca como teste cego.",
   "sources": [
     {
       "id": "brasil-escola-temas-anteriores",
       "publisher": "Brasil Escola",
       "sourceUrl": "https://vestibular.brasilescola.uol.com.br/corrige-aqui/temas-anteriores.htm",
-      "usage": "referência pública de temas e páginas de correção",
-      "examples": [
-        {"year": 2025, "month": "01", "theme": "Proibição do uso de celular nas salas de aula"},
-        {"year": 2025, "month": "02", "theme": "Regulamentação das redes sociais no Brasil"},
-        {"year": 2025, "month": "03", "theme": "A importância de incentivar a adoção de animais de rua"},
-        {"year": 2025, "month": "04", "theme": "Impactos das mudanças climáticas no Brasil"},
-        {"year": 2025, "month": "05", "theme": "A importância da leitura na construção da cidadania no Brasil"},
-        {"year": 2026, "month": "01", "theme": "O fim da escala 6x1 e os desafios para a qualidade de vida e a produtividade no Brasil"},
-        {"year": 2026, "month": "02", "theme": "Canetas emagrecedoras: popularidade crescente e riscos da automedicação no Brasil"},
-        {"year": 2026, "month": "03", "theme": "Violência contra a mulher e violência vicária: o uso da agressão como mecanismo de controle"}
+      "rightsStatus": "authorization-required",
+      "usage": "metadados e conferência manual das tabelas publicadas",
+      "warning": "Cada página pode apresentar tabela humana e tabela de IA; apenas a tradicional serve como rótulo humano.",
+      "seeds": [
+        {"id": "brasil-escola-25172", "url": "https://vestibular.brasilescola.uol.com.br/corrige-aqui/25172", "humanScores": [200, 200, 120, 200, 200], "humanTotal": 920},
+        {"id": "brasil-escola-25206", "url": "https://vestibular.brasilescola.uol.com.br/corrige-aqui/25206", "humanScores": [120, 80, 80, 160, 40], "humanTotal": 480, "excludedAiTotal": 640}
       ]
     },
     {
       "id": "uol-banco-redacoes",
       "publisher": "UOL Educação",
       "sourceUrl": "https://educacao.uol.com.br/bancoderedacoes/",
-      "usage": "referência pública de redações corrigidas e comentários",
-      "examples": [
-        {"year": 2020, "month": "03", "theme": "Carnaval e apropriação cultural"},
-        {"year": 2020, "month": "02", "theme": "Qualificação e o futuro do emprego"},
-        {"year": 2020, "month": "01", "theme": "Supremo Tribunal Federal e opinião pública"},
-        {"year": 2019, "month": "12", "theme": "Ciência, tecnologia e superação dos limites humanos"},
-        {"year": 2019, "month": "10", "theme": "Agrotóxicos ou defensivos agrícolas: dois nomes e uma polêmica"},
-        {"year": 2019, "month": "09", "theme": "Preservação da Amazônia: desafio brasileiro ou internacional?"}
+      "rightsStatus": "restricted-school-use",
+      "usage": "metadados e conferência manual; confirmar compatibilidade da rubrica histórica",
+      "seeds": [
+        {"id": "uol-publica-e-gratuita", "url": "https://educacao.uol.com.br/bancoderedacoes/redacoes/publica-e-gratuita.htm", "humanScores": [160, 160, 120, 160, 120], "humanTotal": 720},
+        {"id": "uol-educacao-brasileira-conhecimento-ja", "url": "https://educacao.uol.com.br/bancoderedacoes/redacoes/educacao-brasileira-conhecimento-ja.htm", "humanScores": [120, 0, 80, 80, 80], "humanTotal": 360},
+        {"id": "uol-revolucao-e-evolucao", "url": "https://educacao.uol.com.br/bancoderedacoes/redacoes/revolucao-e-evolucao.htm", "humanScores": [0, 0, 0, 0, 0], "humanTotal": 0, "diagnostic": "fuga-tematica"}
       ]
     }
   ]

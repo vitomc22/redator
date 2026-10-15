@@ -1,573 +1,94 @@
-# Corretor ENEM IA
+# Corretor ENEM IA — MVP experimental
 
-Projeto MVP para avaliação automatizada de redações do ENEM com foco em: arquitetura enxuta, medição objetiva, revisão humana obrigatória antes da avaliação e documentação de qualidade do pipeline.
+Monólito Java 21/Spring Boot para corrigir redações segundo as cinco competências do ENEM. O runtime real usa Ollama local com `gemma4:e2b-it-q4_K_M`, uma única geração estruturada por redação e auditoria persistida. O provider `fake` continua sendo o padrão seguro para testes offline; suas notas não medem qualidade pedagógica.
 
-O repositório já cobre a maior parte do fluxo funcional do plano descrito em [plano_corretor_enem_ia_mvp_v2.md](plano_corretor_enem_ia_mvp_v2.md), com foco em um monólito Java + Spring Boot simples e executável localmente.
+O sistema não substitui a correção oficial. Uma nota só é publicada quando a resposta passa pelo schema e não exige revisão; `RUNNING`, `FAILED`, `STALE` e `NEEDS_REVIEW` retornam `total: null`.
 
----
+## Estado verificável
 
-## Status atual
+- provider Ollama real implementado atrás de `LlmGateway`;
+- JSON schema estrito com C1–C5, notas na escala 0/40/80/120/160/200 e evidências literais;
+- verificação de versão, modelo, digest, quantização, contexto e término da geração;
+- cache por configuração/revisão e apenas uma inferência local ativa;
+- auditoria de provider, modelo, hashes, tempos, tokens e cache no SQLite;
+- interface informa runtime, estado experimental, carregamento, revisão e erros;
+- dataset aceita apenas textos locais autorizados e rótulos humanos revisados;
+- cinco sementes reais catalogadas somente como metadados de desenvolvimento.
 
-### Implementado
+Neste host, Docker, Ollama e a porta 11434 não estavam disponíveis. Portanto, os testes offline passam, mas a inferência real do Gemma e sua qualidade contra humanos ainda não foram medidas. O registro está em [local-integration-status.md](eval/reports/local-integration-status.md), e o lock permanece corretamente `pending` em [local-runtime-lock.json](eval/config/local-runtime-lock.json).
 
-- backend Spring Boot em Java 21
-- SQLite + Flyway
-- API REST para criação, revisão, avaliação e benchmark
-- avaliação por perfil (`cheap`, `normal`, `premium`)
-- gateway de avaliação estruturada com provider fake/replay para desenvolvimento
-- gate de revisão humana para documentos e uploads
-- validação de PDF/JPG/PNG
-- qualidade de transcrição com CER/WER/preservation e detecção de ruído OCR
-- comparação de baselines e métricas de dataset
-- frontend estático com revisão visual, destaque de trechos suspeitos e preview de documento
+## Subir o runtime real
 
-### Fase ativa
+Requisitos: Java 21, Maven, Docker Compose, `curl` e `jq`. O modelo ocupa vários gigabytes; os limites do Compose precisam ser conferidos no hardware real.
 
-A fase ativa do roadmap é a etapa de entrada documental realista do F3:
-
-- calibração da qualidade de OCR/PDF e imagens
-- reforço do gate de revisão humana para ruído documental
-- melhoria da experiência de revisão com blocos editáveis e destaque de trechos suspeitos
-- ajuste de ruído curto de OCR (sequências de teclado e tokens consonantais sem vogais)
-
-O projeto já passou do MVP texto-only e está validando o passo seguinte: fluxo de imagem/PDF com revisão e qualidade documental mais realista.
-
-### Importante sobre LLM
-
-O fluxo de avaliação possui um gateway compatível com a futura integração, mas o provider atualmente configurado é `fake`: ele valida o schema, registra custo/latência simulados e devolve uma resposta fixa de desenvolvimento. Não há, neste estado, correção real por OpenAI, Azure OpenAI ou outro modelo externo. Para uso educacional real, as notas devem ser tratadas como experimentais até conectar um provider real, calibrá-lo contra notas humanas e manter revisão humana.
-
----
-
-## Fluxo funcional atual
-
-### Texto direto
-
-1. o usuário envia texto e tema
-2. a redação é persistida
-3. a avaliação pode seguir sem revisão humana
-
-### Upload de PDF / imagem
-
-1. o arquivo é validado por tipo e conteúdo
-2. a transcrição literal é extraída/gerada pelo gateway de visão
-3. a redação apenas entra no pipeline após revisão humana
-4. o editor pode aprovar ou rejeitar o texto
-5. só depois da revisão o sistema libera a avaliação final
-
-### Gate de qualidade documental
-
-A regra atual considera:
-
-- CER
-- WER
-- preservation rate
-- presença de ruído OCR/gibberish em texto revisado
-
-Se o texto tiver sinal de transcrição comprometida, a redação continua em `NEEDS_REVIEW` mesmo que os números gerais pareçam aceitáveis.
-
----
-
-## Arquitetura
-
-```text
-Browser / UI
-      |
-      v
-Spring Boot App
-      |
-      +--> EssayController
-      |
-      +--> EssayService
-      |      |
-      |      +--> DeterministicEssayAnalysis
-      |      +--> RubricEngine
-      |      +--> LlmGateway
-      |      +--> DocumentTranscriptionService
-      |      +--> TranscriptionQualityMetricsCalculator
-      |
-      +--> SQLite (arquivo local)
-             |
-             +--> tema
-             +--> essay
-             +--> run
-             +--> competence_result
-             +--> llm_call
+```bash
+cp .env.example .env
+docker compose -f compose.ollama.yml up -d
+docker compose -f compose.ollama.yml exec ollama ollama pull gemma4:e2b-it-q4_K_M
+./scripts/ollama-smoke.sh
+set -a; source .env; set +a
+LLM_PROVIDER=ollama mvn spring-boot:run
 ```
 
-### Componentes principais
+Abra `http://localhost:8080/`. O pull é explícito: a aplicação não baixa modelos e não promove automaticamente a imagem `latest` para lock aprovado. Depois do smoke, registre os digests reais e valide reinício, memória, swap e percurso API → modelo → persistência antes de mudar o lock.
 
-- `EssayController`: endpoints da API
-- `EssayService`: regras de negócio, review gate e persistência
-- `DocumentTranscriptionService`: análise de documento, suspeitas e revisão
-- `VisionTranscriptionGateway`: fronteira para OCR/visão
-- `TranscriptionQualityMetricsCalculator`: gate documental
-- `DatasetMetricsCalculator`: métricas do dataset
-- `BaselineComparisonService`: comparação e benchmark
-- `LlmGateway`: fronteira do provider simulado; ainda requer provider real para produção
+Para desenvolvimento sem Ollama:
 
----
-
-## Endpoints principais
-
-### Temas
-
-```http
-GET /api/temas
+```bash
+mvn spring-boot:run
 ```
 
-### Criar redação em texto
+Nesse modo `GET /api/runtime` mostrará `provider: fake`. Não trate o resultado como correção por LLM.
+
+## Contrato principal
 
 ```http
+GET /api/runtime
 POST /api/essays
-Content-Type: application/json
-
-{
-  "temaId": 1,
-  "text": "A educação é um direito fundamental"
-}
+POST /api/essays/{id}/evaluate?profile=normal
+GET /api/essays/{id}/result
+GET /api/runs/{runId}
+POST /api/essays/{id}/human-scores
 ```
 
-### Criar redação por upload
+`cheap`, `normal` e `premium` são aliases de compatibilidade; no runtime local atual não representam modelos diferentes nem ranking de qualidade. A avaliação síncrona tem timeout padrão de 600 s. O cliente pode acompanhar o último estado em `/result`.
 
-```http
-POST /api/essays
-Content-Type: multipart/form-data
-```
+Uma avaliação concluída contém `status`, `provider`, `model`, `competences`, `needsReview`, `reviewReasons`, `limitations`, `cacheHit` e `experimental`. Cada competência contém nota, nível sugerido, evidências, problemas e motivos. Falhas usam JSON com `status`, `error`, `code` e, quando criado, `runId`.
 
-Campos esperados:
+Principais códigos: `EVALUATION_BUSY`, `DOCUMENT_REVIEW_REQUIRED`, `STALE_REVISION`, `RUNTIME_UNAVAILABLE`, `MODEL_NOT_FOUND`, `RUNTIME_QUARANTINED`, `INFERENCE_TIMEOUT`, `INVALID_RESPONSE`, `TRUNCATED_RESPONSE` e `CONTEXT_LIMIT`.
 
-- `temaId`
-- `text` (opcional)
-- `file` (PDF/PNG/JPG)
+## Dataset e notas humanas
 
-### Revisão humana
+O [manifesto](dataset/manifest.json) e o [catálogo de fontes](eval/real-essay-sources.json) guardam apenas URLs, metadados e notas humanas publicadas. Os textos completos do Brasil Escola e UOL não são copiados. Acesso público não comprova autorização para redistribuição, avaliação automatizada ou treino.
 
-```http
-POST /api/essays/{id}/review
-Content-Type: application/json
-
-{
-  "reviewedText": "Texto revisado pelo editor",
-  "approved": true
-}
-```
-
-### Avaliação
-
-```http
-POST /api/essays/{id}/evaluate?profile=cheap
-```
-
-### Benchmark
-
-```http
-POST /api/benchmark
-```
-
-### Comparação de perfis
-
-```http
-POST /api/benchmark/compare
-```
-
-## Amostras reais para calibração
-
-O catálogo [eval/real-essay-sources.json](eval/real-essay-sources.json) registra temas e fontes públicas do Brasil Escola e do UOL Banco de Redações. Ele não armazena redações integrais.
-
-O manifesto [dataset/manifest.json](dataset/manifest.json) fixa o identificador, tema, fonte e split das amostras. Os campos `textPath` e `sha256` só devem ser preenchidos para texto autorizado mantido em `dataset/private/`, que é ignorado pelo Git.
-
-Valide o manifesto antes de uma rodada com `EvalCli manifest-check --input dataset/manifest.json`.
-
-Para avaliar uma redação real, use [eval/real-essay-calibration-template.json](eval/real-essay-calibration-template.json) somente com texto obtido com autorização. Registre a URL, o SHA-256 do texto e as notas humanas por competência; mantenha o arquivo preenchido fora do Git. O texto então pode ser enviado ao endpoint de texto ou incluído em um dataset local ignorado pelo controle de versão.
-
-As fontes públicas consultadas são [Brasil Escola](https://vestibular.brasilescola.uol.com.br/corrige-aqui/temas-anteriores.htm) e [UOL Banco de Redações](https://educacao.uol.com.br/bancoderedacoes/). Os temas servem para cobrir variação temática; eles não são evidência de concordância com uma correção oficial.
-
-### Qualidade da transcrição
-
-```http
-GET /api/essays/{id}/quality
-```
-
----
-
-## Roadmap em sequência
-
-### Fase 0 — concluída
-
-- projeto Spring Boot e estrutura local
-- SQLite + Flyway
-- gateway LLM, cache e budget guard
-- schema validation
-- baselines e métricas
-- CI e testes básicos
-
-### Fase 1 — concluída
-
-- pipeline texto → nota
-- rubricas por competência
-- perfis de avaliação
-- persistência e API pública
-
-### Fase 2 — concluída
-
-- dataset benchmarks e relatórios
-- comparação de baselines
-- comparação entre profiles
-- validação de qualidade e review gate
-
-### Fase 3 — em andamento
-
-- OCR/PDF e qualidade documental
-- revisão humana com destaque de trechos suspeitos
-- refinamento da experiência de edição
-- calibração reproduzível com CER, WER e preservação de erros
-
-Para executar uma calibração documental, use um JSON com `samples`, contendo `name`, `goldText` e `transcribedText`:
+Para tornar uma amostra elegível, obtenha autorização compatível, salve o texto em `dataset/private/` (ignorado pelo Git), registre SHA-256 e evidência de direitos, revise a extração e os cinco rótulos humanos. Sementes já vistas durante o planejamento ficam em `dev`, nunca em teste cego.
 
 ```bash
 mvn -q -DskipTests package dependency:build-classpath -Dmdep.outputFile=target/classpath.txt
 java -cp "target/classes:$(cat target/classpath.txt)" \
-  com.redator.corretor.cli.EvalCli document-calibration \
-  --input sample-data/document-calibration-sample.json \
-  --output eval/reports/document-calibration-local
+  com.redator.corretor.cli.EvalCli manifest-check --input dataset/manifest.json
 ```
 
-O relatório gera `summary.json`, `samples.csv` e `report.md`. O resultado agregado só é `GO` quando todas as amostras passam pelos limites do plano; uma amostra com ruído continua registrada como `NO-GO`.
+O benchmark calcula métricas por competência, matriz de confusão, erro absoluto, viés e QWK somente quando a amostra é válida e há variação suficiente. Casos de fuga temática também devem medir a decisão de revisão/anulação. LoRA permanece fora do runtime; os pré-requisitos estão em [LORA-READINESS.md](eval/LORA-READINESS.md).
 
-A suíte adversarial determinística pode ser executada sem rede:
+## Testes
 
 ```bash
-java -cp "target/classes:$(cat target/classpath.txt)" \
-  com.redator.corretor.cli.EvalCli adversarial \
-  --output eval/reports/adversarial-local
-```
-
-Ela verifica injeção de prompt, JSON falso no texto, texto curto, ruído OCR e um texto longo seguro.
-
-### Fase 4 — pendente
-
-- endurecimento operacional
-- segurança, LGPD e retenção
-- suite adversarial e E2E
-- README/report final e limites do MVP
-
----
-
-## Como rodar localmente
-
-### Requisitos
-
-- Java 21+
-- Maven 3.8+
-- Git
-
-### Executar a aplicação
-
-```bash
-cd /home/victor/Documentos/git/redator
-mvn spring-boot:run
-```
-
-A aplicação fica em:
-
-```text
-http://localhost:8080/
-```
-
-### Rodar testes
-
-```bash
-cd /home/victor/Documentos/git/redator
-mvn test
-```
-
----
-
-## Estrutura do projeto
-
-```text
-redator/
-├── src/
-│   ├── main/
-│   │   ├── java/com/redator/corretor/
-│   │   │   ├── controller/
-│   │   │   ├── model/
-│   │   │   └── service/
-│   │   └── resources/
-│   │       ├── static/
-│   │       └── db/migration/
-│   └── test/java/com/redator/corretor/
-├── data/
-├── sample-data/
-├── src/main/resources/static/index.html
-├── README.md
-├── plano_corretor_enem_ia_mvp_v2.md
-├── pom.xml
-└── target/
-```
-
----
-
-## Observações importantes
-
-- este projeto é um MVP experimental e não substitui a correção oficial do ENEM
-- a revisão humana é obrigatória para textos originados em imagem/PDF
-- o sistema prioriza evidência, rastreabilidade e medida objetiva sobre sofisticação de infraestrutura
-- a próxima etapa de desenvolvimento é a calibração da qualidade documental e a refinamento da revisão visual
-
----
-
-## Verificação atual
-
-A suíte de testes do projeto foi validada com sucesso com:
-
-```bash
-cd /home/victor/Documentos/git/redator
 mvn -q test
+bash -n scripts/ollama-smoke.sh
 ```
 
-Resultado verificado: `EXIT:0`.
+Os testes de Ollama usam um servidor HTTP local controlado: verificam exatamente uma chamada `/api/chat`, schema, opções, ausência de thinking e evidência literal, sem baixar modelo. O smoke real é opt-in e não aprova qualidade ENEM por si só.
 
-```bash
-cd /home/victor/Documentos/git/redator
-mvn spring-boot:run
-```
-
-Depois, abra a interface em:
+## Arquitetura
 
 ```text
-http://localhost:8080/
+Browser -> Spring Boot -> EssayService -> LlmGateway -> fake | Ollama local
+                    \-> SQLite/Flyway (run, competence_result, llm_call)
 ```
 
-ou use os endpoints diretamente pela API.
+Rubrica, schema e prompts versionados ficam em `src/main/resources/{rubrics,schemas,prompts}`. A Cartilha do Participante ENEM 2026 local é a fonte normativa registrada por hash. O plano de implementação e os critérios de aceite estão em [plano_corretor_enem_ia_mvp_v2.md](plano_corretor_enem_ia_mvp_v2.md).
 
----
+## Critério para dizer “pronto para uso”
 
-## 10. Como validar
-
-```bash
-cd /home/victor/Documentos/git/redator
-mvn -q -Dtest=DatasetMetricsCalculatorTest,EssayControllerIntegrationTest test
-```
-
-A validação atual cobre:
-
-- métricas de dataset
-- comparação de baselines
-- qualidade da transcrição
-- gate de revisão humana
-- upload de documento
-- avaliação de fluxo completo
-
----
-
-## 11. Próximo passo do plano
-
-A próxima etapa do roadmap é a integração de um provedor real de OCR/visão para PDF e imagem, preservando a arquitetura atual:
-
-- manter `VisionTranscriptionGateway` como fronteira
-- facilitar a troca de provider sem mexer em regras de negócio
-- continuar exigindo revisão humana antes da avaliação
-- medir CER/WER e preservação antes de aceitar a transcrição como final
-
-Esse é o ponto exato em que o MVP deixa de ser apenas um fluxo local de texto e passa a cobrir o problema real de entrada documental do ENEM.
-
-
-#### GET /api/runs/{id}
-
-Retorna os detalhes da execução.
-
----
-
-## 10. Exemplo de execução
-
-### Requisitos
-
-- Java 21+
-- Maven 3.8+
-- Linux/macOS/Windows com terminal
-
-### Executar localmente
-
-```bash
-cd /home/victor/Documentos/git/redator
-mvn spring-boot:run
-```
-
-A aplicação fica disponível em:
-
-```text
-http://localhost:8080
-```
-
-### Rodar testes
-
-```bash
-mvn test
-```
-
----
-
-## 11. Frontend
-
-A interface é uma página estática servida pelo próprio Spring Boot, em:
-
-- [src/main/resources/static/index.html](src/main/resources/static/index.html)
-
-Ela permite:
-
-- escolher tema
-- enviar texto da redação
-- disparar avaliação
-- visualizar resultado simplificado
-
-O objetivo do frontend é servir como prova de conceito e não como aplicação completa.
-
----
-
-## 12. Plano de evolução do projeto
-
-O plano completo está em [plano_corretor_enem_ia_mvp_v2.md](plano_corretor_enem_ia_mvp_v2.md). Abaixo está um resumo das fases previstas.
-
-### Fase 1 — base funcional
-
-- backend REST
-- SQLite + Flyway
-- análise determinística
-- rubrica por competência
-- página estática
-- testes de integração básicos
-
-### Fase 2 — gateway e orquestração
-
-- perfis de avaliação
-- provider fake + provider real
-- cache por hash de prompt
-- budget guard
-- schema validation
-- registro de custo e latência
-
-### Fase 3 — entrada multimodal
-
-- PDF e imagem
-- transcrição literal
-- revisão humana obrigatória
-- destacando tokens suspeitos
-
-### Fase 4 — medição e benchmarking
-
-- dataset de avaliação
-- métricas como QWK, concordância adjacente, viés médio
-- comparação entre modelos
-- relatório de custo e latência
-
-### Fase 5 — consolidação e expansão
-
-- melhor rubrica calibrada
-- entrada e validação de tema em escala
-- logs estruturados e observabilidade
-- preparação para robustez operacional
-
----
-
-## 13. Principais riscos e guardrails
-
-### 1. Prompt injection
-
-Redações podem incluir instruções externas que tentem manipular a interpretação do sistema. O código já faz detecção simples de padrões suspeitos.
-
-### 2. Texto muito curto
-
-Obras muito curtas tendem a receber nota baixa para evitar falsa precisão.
-
-### 3. Oralidade e informalidade
-
-O sistema marca elementos de registro informal como possíveis indicadores de perda de formalidade.
-
-### 4. Custo de LLM
-
-Mesmo em um MVP, o custo de chamadas de API pode crescer rápido. Por isso o projeto trabalha com perfil e guardas de orçamento.
-
-### 5. Revisão humana
-
-Quando o modelo ou a estrutura do texto geram risco, a aplicação sinaliza `needsReview`, evitando falsa sensação de confiabilidade.
-
----
-
-## 14. Observabilidade e auditoria
-
-A persistência em `llm_call` e `run` permite rastrear:
-
-- modelo/provider
-- prompt hash
-- schema hash
-- custo
-- latência
-- status da chamada
-- histórico de execução
-
-Essa persistência é essencial para medir qualidade, custo e estabilidade do sistema.
-
----
-
-## 15. Status atual do repositório
-
-O repositório já está em um estado funcional de MVP:
-
-- projeto Spring Boot configurado
-- SQLite funcionando
-- Flyway validado
-- API REST ativa
-- frontend básico entregue
-- testes de integração funcionando
-- fluxo de avaliação com perfis implementado
-
----
-
-## 16. Próximos passos recomendados
-
-A sequência lógica sugerida para continuar o desenvolvimento é:
-
-1. validar schema de respostas do LLM
-2. implementar proteção de orçamento
-3. criar CLI de benchmark por dataset
-4. inserir revisão humana de textos transcritos
-5. evoluir rubrica e métricas de performance
-6. introduzir provider real (cloud ou local)
-7. preparar relatórios comparativos de qualidade e custo
-
-### CLI de benchmark por dataset
-
-O repositório agora inclui um runner de benchmark em lote para rodar uma coleção de redações e obter um resumo consolidado de custo, latência e nota média.
-
-Execução:
-
-```bash
-mvn -q -DskipTests compile
-mvn -q -DskipTests exec:java \
-  -Dexec.mainClass=com.redator.corretor.cli.BenchmarkDatasetCli \
-  -Dexec.args="sample-data/benchmark-sample.json 1 cheap"
-```
-
-O arquivo JSON pode ser uma lista de textos ou um objeto com a chave `texts`.
-
----
-
-## 17. Conclusão
-
-Este projeto é um ponto de partida robusto para um corretor automatizado de redações ENEM, com foco em:
-
-- simplicidade
-- baixo custo
-- reprodutibilidade
-- observabilidade
-- evolução guiada por dados
-
-A estrutura atual fornece a base necessária para crescer em direção a um sistema de correção mais sofisticado, mantendo o princípio central do plano: o sistema deve coletar evidências, aplicar uma rubrica auditável e permitir calibração com dados humanos.
-
----
-
-Se você quiser, posso continuar em duas direções agora:
-
-1. implementar a próxima etapa do plano de arquitetura (schema validation + budget guard), ou
-2. ampliar o README com uma seção de roadmap executiva, screenshots e exemplos de payload/response mais completos.
+O software está pronto para experimentação local quando o smoke e o E2E real passarem no hardware alvo. Ele só estará pronto para apoiar notas humanas depois de um benchmark autorizado, cego e revisado demonstrar concordância por competência e limites aceitáveis de revisão, erro, estabilidade e latência. Até lá, toda saída deve permanecer marcada como experimental.

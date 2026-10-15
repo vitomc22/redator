@@ -94,13 +94,21 @@ class DatasetMetricsCalculatorTest {
 
     @Test
     void shouldReuseCachedLlmResponsesForDuplicateCalls() {
-        var gateway = new com.redator.corretor.service.LlmGateway(new com.redator.corretor.service.BudgetGuard(1.0), new com.redator.corretor.service.ResponseSchemaValidator());
+        var contract = new com.redator.corretor.service.LocalEvaluationContract();
+        var properties = new com.redator.corretor.config.OllamaProperties();
+        var gateway = new com.redator.corretor.service.LlmGateway("fake",
+                new com.redator.corretor.service.OllamaLlmProvider(properties, contract), contract);
+        var theme = new com.redator.corretor.model.Tema(1L, "Educação", "Direito à educação", "");
+        var baseline = com.redator.corretor.service.RubricEngine.evaluate(
+                com.redator.corretor.service.DeterministicEssayAnalysis.analyze("A educação é um direito fundamental."));
 
-        var first = gateway.generate("C2", "A educação é um direito fundamental.", com.redator.corretor.model.EvaluationProfile.CHEAP);
-        var second = gateway.generate("C2", "A educação é um direito fundamental.", com.redator.corretor.model.EvaluationProfile.CHEAP);
+        var first = gateway.evaluate("A educação é um direito fundamental.", theme, 1L,
+                com.redator.corretor.model.EvaluationProfile.CHEAP, baseline);
+        var second = gateway.evaluate("A educação é um direito fundamental.", theme, 1L,
+                com.redator.corretor.model.EvaluationProfile.CHEAP, baseline);
 
-        assertThat(second.summary()).isEqualTo(first.summary());
-        assertThat(second.costUsd()).isZero();
+        assertThat(second.competences()).isEqualTo(first.competences());
+        assertThat(second.cacheHit()).isTrue();
         assertThat(gateway.cacheHitCount()).isEqualTo(1);
     }
 

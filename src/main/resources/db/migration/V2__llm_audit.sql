@@ -1,0 +1,9 @@
+ALTER TABLE llm_call ADD COLUMN audit_json TEXT;
+ALTER TABLE llm_call ADD COLUMN cache_hit INTEGER NOT NULL DEFAULT 0;
+ALTER TABLE run ADD COLUMN essay_revision TEXT;
+ALTER TABLE run ADD COLUMN provider TEXT;
+ALTER TABLE run ADD COLUMN model TEXT;
+ALTER TABLE run ADD COLUMN limitations TEXT;
+ALTER TABLE run ADD COLUMN review_reasons TEXT;
+ALTER TABLE run ADD COLUMN failure_code TEXT;
+ALTER TABLE run ADD COLUMN failure_message TEXT;

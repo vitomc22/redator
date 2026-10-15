@@ -1,0 +1,18 @@
+{
+  "version": "enem-2026-v1",
+  "source": {
+    "edition": "Cartilha do Participante ENEM 2026",
+    "url": "https://www.gov.br/inep/pt-br/centrais-de-conteudo/acervo-linha-editorial/publicacoes-institucionais/avaliacoes-e-exames-da-educacao-basica/a-redacao-do-enem-2026-cartilha-do-a-participante",
+    "resource": "cartilha_enem_2026.pdf",
+    "sha256": "5708d8df9a3b0046cbf3d835e023f9eb89be08d295cb01ce5afeac77496211ad",
+    "pages": {"C1":14,"C2":27,"C3":31,"C4":34,"C5":38},
+    "verification": "Síntese conferida com os quadros extraídos do PDF local; revisão pedagógica humana independente pendente."
+  },
+  "levels": {
+    "C1": {"0":"Desconhecimento da escrita formal.","40":"Domínio precário: desvios frequentes, variados e sistemáticos.","80":"Domínio insuficiente: muitos desvios de gramática, registro e convenções.","120":"Domínio mediano: alguns desvios.","160":"Bom domínio: poucos desvios.","200":"Excelente domínio: desvios apenas excepcionais, sem reincidência."},
+    "C2": {"0":"Fuga temática ou tipo incompatível: solicitar revisão de anulação.","40":"Tangenciamento ou domínio precário, com outros tipos textuais constantes.","80":"Cópia dos motivadores ou estrutura dissertativo-argumentativa insuficiente.","120":"Argumentação previsível e domínio mediano, com proposição, argumentação e conclusão.","160":"Argumentação consistente e bom domínio da estrutura.","200":"Argumentação consistente, repertório produtivo e excelente domínio dissertativo-argumentativo."},
+    "C3": {"0":"Informações não relacionadas ao tema, sem ponto de vista.","40":"Informações pouco relacionadas ou incoerentes, sem ponto de vista.","80":"Informações relacionadas, desorganizadas ou contraditórias, limitadas aos motivadores.","120":"Informações relacionadas, pouco organizadas e limitadas aos motivadores, defendendo um ponto de vista.","160":"Informações organizadas, com indícios de autoria, defendendo um ponto de vista.","200":"Informações consistentes e organizadas, configurando autoria em defesa de um ponto de vista."},
+    "C4": {"0":"Não articula informações.","40":"Articulação precária.","80":"Articulação insuficiente, muitas inadequações e recursos limitados.","120":"Articulação mediana, inadequações e pouca diversidade.","160":"Articula com poucas inadequações e recursos diversificados.","200":"Boa articulação e recursos coesivos diversificados."},
+    "C5": {"0":"Sem intervenção ou intervenção alheia ao tema/assunto. Desrespeito aos direitos humanos também recebe zero em C5.","40":"Intervenção vaga, precária ou apenas ligada ao assunto.","80":"Intervenção insuficiente ligada ao tema ou não articulada à discussão.","120":"Intervenção mediana, ligada ao tema e articulada à discussão.","160":"Boa intervenção ligada ao tema e articulada à discussão.","200":"Intervenção muito bem elaborada, detalhada, ligada ao tema e articulada à discussão."}
+  }
+}

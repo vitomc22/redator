@@ -1,0 +1,20 @@
+{
+  "type":"object","additionalProperties":false,
+  "required":["competences","globalFlags","limitations"],
+  "properties":{
+    "competences":{"type":"array","minItems":5,"maxItems":5,"items":{
+      "type":"object","additionalProperties":false,
+      "required":["id","score","justification","evidence","improvement","evidenceKind"],
+      "properties":{
+        "id":{"type":"string","enum":["C1","C2","C3","C4","C5"]},
+        "score":{"type":"integer","enum":[0,40,80,120,160,200]},
+        "justification":{"type":"string","minLength":1,"maxLength":180},
+        "evidence":{"type":"array","maxItems":2,"items":{"type":"string","minLength":1,"maxLength":120}},
+        "improvement":{"type":"string","minLength":1,"maxLength":140},
+        "evidenceKind":{"type":"string","enum":["passage","absence"]}
+      }
+    }},
+    "globalFlags":{"type":"array","maxItems":5,"uniqueItems":true,"items":{"type":"string","enum":["THEME_ESCAPE","INCOMPATIBLE_TEXT_TYPE","CRITICAL_INSUFFICIENCY","HUMAN_RIGHTS_CONCERN","ANNULMENT_SUSPECTED"]}},
+    "limitations":{"type":"array","maxItems":5,"items":{"type":"string","minLength":1,"maxLength":180}}
+  }
+}

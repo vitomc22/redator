@@ -24,11 +24,36 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
+        properties = "spring.datasource.url=jdbc:sqlite:./target/test-redator.db")
 class EssayControllerIntegrationTest {
 
     @Autowired
     private TestRestTemplate restTemplate;
+
+    @Test
+    void shouldExposeExplicitRuntimeMetadata() {
+        ResponseEntity<Map> runtime = restTemplate.getForEntity("/api/runtime", Map.class);
+
+        assertThat(runtime.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(runtime.getBody()).containsEntry("provider", "fake");
+        assertThat(runtime.getBody()).containsKeys("model", "experimental", "synchronous", "timeoutSeconds", "profilesAliases");
+    }
+
+    @Test
+    void shouldNotFabricateScoreBeforeEvaluation() {
+        ResponseEntity<Map> created = restTemplate.postForEntity(
+                "/api/essays",
+                Map.of("temaId", 1, "text", "Texto ainda não avaliado."),
+                Map.class);
+        Number essayId = (Number) ((Map<?, ?>) created.getBody().get("essay")).get("id");
+
+        ResponseEntity<Map> result = restTemplate.getForEntity("/api/essays/{id}/result", Map.class, essayId.longValue());
+
+        assertThat(result.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(result.getBody()).containsEntry("status", "NOT_EVALUATED");
+        assertThat(result.getBody().get("total")).isNull();
+    }
 
     @Test
     void shouldCreateEssayAndEvaluate() {
