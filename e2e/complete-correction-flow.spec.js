@@ -99,7 +99,7 @@ test('fluxo completo: aluno, IA, solicitação, corretor e comparação final', 
   await page.getByRole('button', { name: 'Correções pendentes' }).click();
   await page.getByLabel('Chave local').fill('local-reviewer');
   await page.getByLabel('Identificador').fill('corretor-e2e');
-  await page.getByRole('button', { name: 'Carregar pendentes' }).click();
+  await page.getByRole('button', { name: 'Carregar correções' }).click();
   await expect(page.getByText(theme.titulo)).toBeVisible();
   await page.getByRole('button', { name: 'Assumir' }).click();
 
@@ -115,6 +115,13 @@ test('fluxo completo: aluno, IA, solicitação, corretor e comparação final', 
   await page.goto('/#result/9100');
   await expect(page.getByRole('heading', { name: 'IA × Humano' })).toBeVisible();
   await expect(page.getByText('880 IA · 800 humano')).toBeVisible();
+  const comparison = page.getByRole('table', { name: 'Comparação por competência' });
+  await expect(comparison).toBeVisible();
+  await expect(comparison.getByRole('row', { name: /C3 — Argumentação/ })).toContainText('200');
+  await expect(comparison.getByRole('row', { name: /C3 — Argumentação/ })).toContainText('160');
+  await expect(comparison.getByRole('row', { name: /C3 — Argumentação/ })).toContainText('Justificativa humana para C3.');
+  await expect(page.getByText('Aprofundar dados e integrar melhor o repertório aos argumentos.')).toBeVisible();
+  await expect(page.getByText(/não geram média automática/)).toBeVisible();
   await expect(page.locator('.competence')).toHaveCount(5);
   if (process.env.E2E_DEMO === '1') await page.waitForTimeout(8_000);
 });

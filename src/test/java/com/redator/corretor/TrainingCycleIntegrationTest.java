@@ -72,6 +72,20 @@ class TrainingCycleIntegrationTest {
                 "comments", Map.of("C3", "Desenvolver melhor a relação de causa e consequência."),
                 "mainGuidance", "Aprofunde o terceiro argumento."
         );
+        ResponseEntity<Map> draft = rest.exchange(
+                "/api/reviewer/review-requests/{id}/draft", HttpMethod.POST,
+                new HttpEntity<>(evaluation, reviewer), Map.class, requestId);
+        assertThat(draft.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(draft.getBody()).containsEntry("status", "DRAFT");
+
+        ResponseEntity<Map> resumed = rest.exchange(
+                "/api/reviewer/review-requests/{id}", HttpMethod.GET,
+                new HttpEntity<>(reviewer), Map.class, requestId);
+        assertThat(resumed.getStatusCode()).isEqualTo(HttpStatus.OK);
+        Map<?, ?> recoveredDraft = (Map<?, ?>) resumed.getBody().get("draft");
+        assertThat(recoveredDraft.get("mainGuidance")).isEqualTo("Aprofunde o terceiro argumento.");
+        assertThat(recoveredDraft.get("scores")).isInstanceOf(Map.class);
+
         ResponseEntity<Map> published = rest.exchange(
                 "/api/reviewer/review-requests/{id}/publish", HttpMethod.POST,
                 new HttpEntity<>(evaluation, reviewer), Map.class, requestId);

@@ -184,13 +184,28 @@ public class TrainingCycleService {
 
     public Map<String, Object> reviewerRequest(long requestId, String reviewer) {
         try {
-            return jdbc.queryForMap("""
+            Map<String, Object> result = new LinkedHashMap<>(jdbc.queryForMap("""
                     SELECT hr.id, hr.status, hr.requested_at AS requestedAt, hr.reviewer_id AS reviewerId,
                            e.id AS essayId, e.text, e.attempt_number AS attemptNumber,
                            t.titulo AS theme, t.recorte, t.motivadores
                     FROM human_review_request hr JOIN essay e ON e.id=hr.essay_id JOIN tema t ON t.id=e.tema_id
                     WHERE hr.id=? AND (hr.reviewer_id=? OR hr.status='REQUESTED')
+                    """, requestId, reviewer));
+            List<Map<String, Object>> drafts = jdbc.queryForList("""
+                    SELECT version, scores_json AS scoresJson, comments_json AS commentsJson,
+                           main_guidance AS mainGuidance, revision_reason AS revisionReason,
+                           created_at AS savedAt
+                    FROM human_evaluation
+                    WHERE request_id=? AND reviewer_id=? AND status='DRAFT'
+                    ORDER BY version DESC LIMIT 1
                     """, requestId, reviewer);
+            if (!drafts.isEmpty()) {
+                Map<String, Object> draft = new LinkedHashMap<>(drafts.getFirst());
+                draft.put("scores", parseMap(draft.remove("scoresJson")));
+                draft.put("comments", parseMap(draft.remove("commentsJson")));
+                result.put("draft", draft);
+            }
+            return result;
         } catch (EmptyResultDataAccessException ex) { throw notFound(); }
     }
 
@@ -222,7 +237,7 @@ public class TrainingCycleService {
     public Map<String, Object> progress() {
         List<Map<String, Object>> points = jdbc.queryForList("""
                 SELECT e.id AS essayId, e.group_id AS groupId, e.attempt_number AS attemptNumber,
-                       e.created_at AS createdAt, t.titulo AS theme, r.id AS runId, r.total AS total,
+                       e.created_at AS createdAt, e.text, t.titulo AS theme, r.id AS runId, r.total AS total,
                        r.provider, r.model
                 FROM essay e JOIN tema t ON t.id=e.tema_id JOIN run r ON r.id=(
                     SELECT r2.id FROM run r2 WHERE r2.essay_id=e.id AND r2.status='READY' AND r2.provider<>'fake' ORDER BY r2.id DESC LIMIT 1)

@@ -42,7 +42,15 @@ test('upload de documento exige conferência antes da avaliação', async ({ pag
   await page.goto('/#new');
   await page.getByLabel('Tema obrigatório').selectOption('3');
   await page.getByRole('button', { name: 'Enviar PDF' }).click();
-  await page.getByLabel(/Selecione seu documento/).setInputFiles({ name: 'redacao.pdf', mimeType: 'application/pdf', buffer: Buffer.from('%PDF-1.4 e2e') });
+  await expect(page.getByText(/até 8 MB/)).toBeVisible();
+  const transfer = await page.evaluateHandle(() => {
+    const value = new DataTransfer();
+    value.items.add(new File(['%PDF-1.4 e2e'], 'redacao.pdf', { type: 'application/pdf' }));
+    return value;
+  });
+  await page.getByLabel(/Selecione seu documento/).dispatchEvent('drop', { dataTransfer: transfer });
+  await expect(page.getByText(/redacao\.pdf/)).toBeVisible();
+  await expect(page.getByLabel('Prévia de redacao.pdf')).toBeVisible();
   await page.getByRole('button', { name: 'Continuar para inspeção' }).click();
   await expect(page.getByText('Conferência necessária')).toBeVisible();
   await page.getByLabel('Confira a transcrição').fill(text);
@@ -107,19 +115,32 @@ test('plano de melhoria permite checklist pessoal persistido', async ({ page }) 
   expect(saved).toMatchObject({ competence: 'C1', itemKey: 'reviewed', checked: true });
 });
 
-test('progresso mantém notas de IA e humano separadas', async ({ page }) => {
+test('progresso compara reescritas e filtra competências sem misturar IA e humano', async ({ page }) => {
   await baseRoutes(page);
-  await page.route('**/api/me/progress', route => route.fulfill({ json: { student: 'pilot-student', points: [{
-    essayId: 9400, groupId: 9400, attemptNumber: 1, theme: theme.titulo,
-    total: 880, model: 'gemma4:e2b-it-q4_K_M', human: { total: 800 }
-  }] } }));
+  await page.route('**/api/me/progress', route => route.fulfill({ json: { student: 'pilot-student', points: [
+    { essayId: 9400, groupId: 9400, attemptNumber: 1, theme: theme.titulo, text: 'Primeira versão da redação.', total: 760, provider: 'ollama',
+      scores: [{ competencia: 'C1', nota: 160 }, { competencia: 'C2', nota: 160 }, { competencia: 'C3', nota: 120 }, { competencia: 'C4', nota: 160 }, { competencia: 'C5', nota: 160 }],
+      model: 'gemma4:e2b-it-q4_K_M', human: { total: 720, publishedAt: '2026-10-15T10:00:00Z', scores: { C1: 160, C2: 120, C3: 120, C4: 160, C5: 160 } } },
+    { essayId: 9401, groupId: 9400, attemptNumber: 2, theme: theme.titulo, text: 'Última versão com argumento aprofundado.', total: 880, provider: 'ollama',
+      scores: [{ competencia: 'C1', nota: 160 }, { competencia: 'C2', nota: 160 }, { competencia: 'C3', nota: 200 }, { competencia: 'C4', nota: 160 }, { competencia: 'C5', nota: 200 }],
+      model: 'gemma4:e2b-it-q4_K_M', human: { total: 800, scores: { C1: 160, C2: 160, C3: 160, C4: 160, C5: 160 } } }
+  ] } }));
   await page.goto('/#progress');
   await expect(page.getByRole('heading', { name: 'Meu progresso' })).toBeVisible();
-  const row = page.getByRole('row').filter({ hasText: theme.titulo });
-  await expect(row).toContainText('880');
-  await expect(row).toContainText('800');
-  await expect(row).toContainText('gemma4:e2b-it-q4_K_M');
-  await expect(page.locator('.chart-bar')).toHaveCount(2);
+  const evolution = page.getByRole('table', { name: 'Evolução nesta redação' });
+  await expect(evolution.getByRole('row', { name: /C3 — Argumentação/ })).toContainText('120');
+  await expect(evolution.getByRole('row', { name: /C3 — Argumentação/ })).toContainText('200');
+  await expect(evolution.getByRole('row', { name: /C3 — Argumentação/ })).toContainText('+80');
+  await page.getByText('Comparar textos da primeira e última tentativa').click();
+  await expect(page.getByText('Primeira versão da redação.')).toBeVisible();
+  await expect(page.getByText('Última versão com argumento aprofundado.')).toBeVisible();
+  await page.getByLabel('Filtrar competência').selectOption('C3');
+  const history = page.getByRole('table', { name: 'Histórico de progresso' });
+  const latest = history.getByRole('row').filter({ hasText: theme.titulo }).nth(1);
+  await expect(latest).toContainText('200');
+  await expect(latest).toContainText('160');
+  await expect(history).toContainText('15/10/2026');
+  await expect(page.locator('.chart-bar')).toHaveCount(4);
 });
 
 test('runtime indisponível é comunicado sem bloquear a redação', async ({ page }) => {
@@ -128,4 +149,42 @@ test('runtime indisponível é comunicado sem bloquear a redação', async ({ pa
   await page.goto('/#new');
   await expect(page.getByText('IA indisponível')).toBeVisible();
   await expect(page.getByLabel('Texto da redação')).toBeVisible();
+});
+
+test('corretor filtra solicitações, correções em andamento e concluídas', async ({ page }) => {
+  await baseRoutes(page);
+  const rows = {
+    REQUESTED: [{ id: 51, attemptNumber: 1, theme: 'Tema solicitado', status: 'REQUESTED', requestedAt: '2026-10-16T10:00:00Z' }],
+    IN_REVIEW: [{ id: 52, attemptNumber: 2, theme: 'Tema em correção', status: 'IN_REVIEW', requestedAt: '2026-10-16T10:10:00Z' }],
+    COMPLETED: [{ id: 53, attemptNumber: 3, theme: 'Tema concluído', status: 'COMPLETED', requestedAt: '2026-10-16T10:20:00Z' }]
+  };
+  await page.route(/\/api\/reviewer\/review-requests\?status=(REQUESTED|IN_REVIEW|COMPLETED)$/, route => {
+    const status = new URL(route.request().url()).searchParams.get('status');
+    return route.fulfill({ json: rows[status] });
+  });
+  await page.route('**/api/reviewer/review-requests/52', route => route.fulfill({ json: {
+    ...rows.IN_REVIEW[0], text, recorte: theme.recorte, motivadores: theme.motivadores,
+    draft: { savedAt: '2026-10-16T10:30:00Z', scores: { C1: 160, C2: 120 },
+      comments: { C2: 'Repertório ainda pouco integrado.' }, mainGuidance: 'Aprofundar o segundo argumento.' }
+  } }));
+  await page.goto('/#new');
+  await page.goto('/#reviewer');
+  await page.getByLabel('Chave local').fill('local-reviewer');
+  await page.getByRole('button', { name: 'Carregar correções' }).click();
+  await expect(page.getByText('Tema solicitado')).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Assumir' })).toBeVisible();
+  await page.getByLabel('Estado da fila').selectOption('IN_REVIEW');
+  await expect(page.getByText('Tema em correção')).toBeVisible();
+  await page.getByRole('button', { name: 'Continuar' }).click();
+  await expect(page.getByText(/Rascunho recuperado/)).toBeVisible();
+  await expect(page.locator('#score-C1')).toHaveValue('160');
+  await expect(page.locator('#score-C2')).toHaveValue('120');
+  await expect(page.locator('#comment-C2')).toHaveValue('Repertório ainda pouco integrado.');
+  await expect(page.getByLabel('Orientação principal')).toHaveValue('Aprofundar o segundo argumento.');
+  await page.goto('/#new');
+  await page.goto('/#reviewer');
+  await page.getByLabel('Chave local').fill('local-reviewer');
+  await page.getByLabel('Estado da fila').selectOption('COMPLETED');
+  await expect(page.getByText('Tema concluído')).toBeVisible();
+  await expect(page.getByText('Publicada')).toBeVisible();
 });
