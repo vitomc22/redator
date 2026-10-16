@@ -1,12 +1,12 @@
 {
-  "status": "pending",
-  "reason": "Docker ausente neste host; geração, compatibilidade e persistência não verificadas.",
-  "approvedAt": null,
-  "image": {"bootstrapReference": "ollama/ollama:latest", "approvedReference": null, "digest": null},
-  "serverVersion": null,
-  "model": {"tag": "gemma4:e2b-it-q4_K_M", "digest": null, "expectedQuantization": "Q4_K_M", "observedQuantization": null},
+  "status": "approved",
+  "reason": "Runtime aprovado tecnicamente por smoke, reinício persistente e E2E real; qualidade pedagógica ainda depende de benchmark humano autorizado.",
+  "approvedAt": "2026-10-15T20:57:06-03:00",
+  "image": {"bootstrapReference": "ollama/ollama:latest", "approvedReference": "ollama/ollama@sha256:926d40fd6eeeebd346b5c358a63de2a10ec995371cd93dd22f1843200694b1a6", "digest": "sha256:926d40fd6eeeebd346b5c358a63de2a10ec995371cd93dd22f1843200694b1a6"},
+  "serverVersion": "0.40.4",
+  "model": {"tag": "gemma4:e2b-it-q4_K_M", "digest": "b37049369adfe3d2b653af0ab301a062ca5cbe96ace6aa0d3f2559ee9b563fc2", "sizeBytes": 4587156505, "parameterSize": "4.6B", "contextLength": 131072, "expectedQuantization": "Q4_K_M", "observedQuantization": "Q4_K_M"},
   "generation": {"num_ctx": 4096, "num_predict": 1200, "num_thread": 4, "temperature": 0, "seed": 42, "keep_alive": "5m", "think": false},
-  "thinkingControlVerified": false,
-  "host": {"os": null, "cpu": null, "ramBytes": null},
-  "checks": {"structuredGeneration": "pending", "modelPersistenceAfterRestart": "pending", "memoryAndSwapLimits": "pending", "applicationEndToEnd": "pending"}
+  "thinkingControlVerified": true,
+  "host": {"os": "Linux 7.0.0-38-generic x86_64", "cpu": "AMD Ryzen 7 3700U, 4 cores/8 threads", "ramBytes": 18722508800},
+  "checks": {"structuredGeneration": "passed", "modelPersistenceAfterRestart": "passed", "memoryAndSwapLimits": "passed (10 GiB hard limit; 5.05 GiB observed during inference)", "applicationEndToEnd": "passed (149.5 s)"}
 }

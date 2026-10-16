@@ -1,7 +1,7 @@
 services:
   ollama:
-    # Bootstrap apenas; promover para digest somente após smoke real aprovado.
-    image: ${OLLAMA_IMAGE:-ollama/ollama:latest}
+    # Digest aprovado pelo smoke e E2E em 15/10/2026.
+    image: ${OLLAMA_IMAGE:-ollama/ollama@sha256:926d40fd6eeeebd346b5c358a63de2a10ec995371cd93dd22f1843200694b1a6}
     ports:
       - "127.0.0.1:${OLLAMA_PORT:-11434}:11434"
     volumes:

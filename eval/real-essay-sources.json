@@ -1,13 +1,20 @@
 {
-  "purpose": "Catálogo de sementes públicas com notas humanas para calibração manual; não contém redações integrais.",
-  "copyrightPolicy": "Acesso público não autoriza redistribuição ou treino. Só material autorizado, com evidência de direitos, pode entrar em dataset/private/.",
+  "purpose": "Primeiro benchmark humano de referência: catálogo de correções públicas e notas humanas, sem redações integrais.",
+  "copyrightPolicy": "Acesso público não autoriza redistribuição, inferência automatizada ou treino. Só material licenciado, com evidência de direitos, pode entrar em dataset/private/ e produzir métricas executáveis.",
+  "rightsReview": {
+    "checkedAt": "2026-10-15",
+    "status": "reference-only",
+    "brasilEscolaTermsUrl": "https://brasilescola.uol.com.br/termos-de-uso",
+    "finding": "Os termos declaram o conteúdo protegido, concedem licença pessoal limitada e vedam reprodução e extração em massa.",
+    "uolFinding": "A origem retornou HTTP 403 ao acesso automatizado; nenhuma licença explícita para benchmark foi confirmada."
+  },
   "selectionPolicy": "As cinco sementes foram inspecionadas ao elaborar o plano e por isso ficam somente em dev, nunca como teste cego.",
   "sources": [
     {
       "id": "brasil-escola-temas-anteriores",
       "publisher": "Brasil Escola",
       "sourceUrl": "https://vestibular.brasilescola.uol.com.br/corrige-aqui/temas-anteriores.htm",
-      "rightsStatus": "authorization-required",
+      "rightsStatus": "reference-only-authorization-required",
       "usage": "metadados e conferência manual das tabelas publicadas",
       "warning": "Cada página pode apresentar tabela humana e tabela de IA; apenas a tradicional serve como rótulo humano.",
       "seeds": [
@@ -19,7 +26,7 @@
       "id": "uol-banco-redacoes",
       "publisher": "UOL Educação",
       "sourceUrl": "https://educacao.uol.com.br/bancoderedacoes/",
-      "rightsStatus": "restricted-school-use",
+      "rightsStatus": "reference-only-authorization-required",
       "usage": "metadados e conferência manual; confirmar compatibilidade da rubrica histórica",
       "seeds": [
         {"id": "uol-publica-e-gratuita", "url": "https://educacao.uol.com.br/bancoderedacoes/redacoes/publica-e-gratuita.htm", "humanScores": [160, 160, 120, 160, 120], "humanTotal": 720},

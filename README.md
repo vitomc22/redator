@@ -15,7 +15,7 @@ O sistema não substitui a correção oficial. Uma nota só é publicada quando 
 - dataset aceita apenas textos locais autorizados e rótulos humanos revisados;
 - cinco sementes reais catalogadas somente como metadados de desenvolvimento.
 
-Neste host, Docker, Ollama e a porta 11434 não estavam disponíveis. Portanto, os testes offline passam, mas a inferência real do Gemma e sua qualidade contra humanos ainda não foram medidas. O registro está em [local-integration-status.md](eval/reports/local-integration-status.md), e o lock permanece corretamente `pending` em [local-runtime-lock.json](eval/config/local-runtime-lock.json).
+Neste host, o smoke, a persistência após reinício e o E2E real passaram com Ollama 0.40.4 e Gemma 4 E2B/Q4_K_M. O runtime técnico está fixado por digest em [local-runtime-lock.json](eval/config/local-runtime-lock.json). Isso não aprova a qualidade das notas: a concordância contra corretores humanos ainda precisa ser medida com corpus autorizado. As evidências estão em [local-integration-status.md](eval/reports/local-integration-status.md).
 
 ## Subir o runtime real
 
@@ -23,14 +23,14 @@ Requisitos: Java 21, Maven, Docker Compose, `curl` e `jq`. O modelo ocupa vário
 
 ```bash
 cp .env.example .env
-docker compose -f compose.ollama.yml up -d
-docker compose -f compose.ollama.yml exec ollama ollama pull gemma4:e2b-it-q4_K_M
+docker-compose -f compose.ollama.yml up -d
+docker-compose -f compose.ollama.yml exec ollama ollama pull gemma4:e2b-it-q4_K_M
 ./scripts/ollama-smoke.sh
 set -a; source .env; set +a
 LLM_PROVIDER=ollama mvn spring-boot:run
 ```
 
-Abra `http://localhost:8080/`. O pull é explícito: a aplicação não baixa modelos e não promove automaticamente a imagem `latest` para lock aprovado. Depois do smoke, registre os digests reais e valide reinício, memória, swap e percurso API → modelo → persistência antes de mudar o lock.
+Abra `http://localhost:8080/`. O pull é explícito: a aplicação não baixa modelos. A imagem validada está fixada por digest; use `docker compose` no lugar de `docker-compose` quando o plugin Compose v2 estiver instalado.
 
 Para desenvolvimento sem Ollama:
 
@@ -78,7 +78,7 @@ mvn -q test
 bash -n scripts/ollama-smoke.sh
 ```
 
-Os testes de Ollama usam um servidor HTTP local controlado: verificam exatamente uma chamada `/api/chat`, schema, opções, ausência de thinking e evidência literal, sem baixar modelo. O smoke real é opt-in e não aprova qualidade ENEM por si só.
+Os testes de Ollama usam um servidor HTTP local controlado: verificam exatamente uma chamada `/api/chat`, schema, opções, ausência de thinking e evidência literal, sem baixar modelo. O E2E real é opt-in (`LLM_LIVE_TEST=true mvn -q -Dtest=OllamaLiveIntegrationTest test`) e não aprova qualidade ENEM por si só.
 
 ## Arquitetura
 
