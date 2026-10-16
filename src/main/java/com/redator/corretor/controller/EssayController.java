@@ -3,6 +3,8 @@ package com.redator.corretor.controller;
 import com.redator.corretor.model.BenchmarkComparisonRequest;
 import com.redator.corretor.model.BenchmarkRequest;
 import com.redator.corretor.model.CreateEssayRequest;
+import com.redator.corretor.model.CreateAttemptRequest;
+import com.redator.corretor.model.HumanEvaluationRequest;
 import com.redator.corretor.model.EssayResponse;
 import com.redator.corretor.model.EvaluationProfile;
 import com.redator.corretor.model.EvaluationResult;
@@ -11,6 +13,7 @@ import com.redator.corretor.service.DocumentTranscriptionService;
 import com.redator.corretor.service.EssayService;
 import com.redator.corretor.service.LlmGateway;
 import com.redator.corretor.service.UploadValidationService;
+import com.redator.corretor.service.TrainingCycleService;
 import java.util.List;
 import java.util.Map;
 import org.springframework.http.HttpStatus;
@@ -25,7 +28,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestPart;
-import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestHeader;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
@@ -37,11 +41,17 @@ public class EssayController {
     private final EssayService essayService;
     private final UploadValidationService uploadValidationService;
     private final LlmGateway llmGateway;
+    private final TrainingCycleService trainingCycle;
+    private final String reviewerKey;
 
-    public EssayController(EssayService essayService, UploadValidationService uploadValidationService, LlmGateway llmGateway) {
+    public EssayController(EssayService essayService, UploadValidationService uploadValidationService, LlmGateway llmGateway,
+                           TrainingCycleService trainingCycle,
+                           @Value("${app.reviewer.key:local-reviewer}") String reviewerKey) {
         this.essayService = essayService;
         this.uploadValidationService = uploadValidationService;
         this.llmGateway = llmGateway;
+        this.trainingCycle = trainingCycle;
+        this.reviewerKey = reviewerKey;
     }
 
     @GetMapping("/temas")
@@ -53,6 +63,58 @@ public class EssayController {
     public ResponseEntity<Map<String, Object>> createEssay(@Validated @RequestBody CreateEssayRequest request) {
         EssayResponse essay = essayService.createEssay(request);
         return ResponseEntity.status(HttpStatus.CREATED).body(Map.of("essay", essay));
+    }
+
+    @PostMapping("/attempts")
+    public ResponseEntity<Map<String, Object>> createAttempt(@Validated @RequestBody CreateAttemptRequest request) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(Map.of("essay", trainingCycle.createAttempt(request)));
+    }
+
+    @PostMapping(value = "/attempts", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<Map<String, Object>> createAttemptFromDocument(
+            @RequestParam("temaId") Long temaId,
+            @RequestParam(value = "title", required = false) String title,
+            @RequestParam(value = "parentEssayId", required = false) Long parentEssayId,
+            @RequestPart("file") MultipartFile file) {
+        String text = resolveUploadedText(null, file);
+        String name = file.getOriginalFilename() == null ? "" : file.getOriginalFilename().toLowerCase();
+        String sourceType = name.endsWith(".pdf") ? "pdf" : "image";
+        CreateAttemptRequest request = new CreateAttemptRequest(temaId, text, title, parentEssayId, sourceType);
+        return ResponseEntity.status(HttpStatus.CREATED).body(Map.of("essay", trainingCycle.createAttempt(request)));
+    }
+
+    @GetMapping("/essays/{id}")
+    public ResponseEntity<Map<String, Object>> getEssay(@PathVariable Long id) {
+        return ResponseEntity.ok(trainingCycle.getEssay(id));
+    }
+
+    @GetMapping("/me/essays")
+    public ResponseEntity<List<Map<String, Object>>> listMyEssays() {
+        return ResponseEntity.ok(trainingCycle.listEssayGroups());
+    }
+
+    @GetMapping("/me/essays/{groupId}/attempts")
+    public ResponseEntity<List<Map<String, Object>>> listAttempts(@PathVariable Long groupId) {
+        return ResponseEntity.ok(trainingCycle.listAttempts(groupId));
+    }
+
+    @GetMapping("/me/progress")
+    public ResponseEntity<Map<String, Object>> progress() {
+        return ResponseEntity.ok(trainingCycle.progress());
+    }
+
+    @GetMapping("/essays/{id}/checklist")
+    public ResponseEntity<List<Map<String, Object>>> checklist(@PathVariable Long id) {
+        return ResponseEntity.ok(trainingCycle.checklist(id));
+    }
+
+    @PutMapping("/essays/{id}/checklist")
+    public ResponseEntity<Map<String, Object>> updateChecklist(@PathVariable Long id,
+            @RequestBody Map<String, Object> payload) {
+        String competence = String.valueOf(payload.getOrDefault("competence", ""));
+        String itemKey = String.valueOf(payload.getOrDefault("itemKey", ""));
+        boolean checked = Boolean.TRUE.equals(payload.get("checked"));
+        return ResponseEntity.ok(trainingCycle.updateChecklist(id, competence, itemKey, checked));
     }
 
     @PostMapping(value = "/essays", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
@@ -197,13 +259,70 @@ public class EssayController {
     }
 
     @PostMapping("/essays/{id}/human-scores")
-    public ResponseEntity<Map<String, Object>> saveHumanScores(@PathVariable Long id, @RequestBody Map<String, Object> payload) {
+    public ResponseEntity<Map<String, Object>> saveHumanScores(@PathVariable Long id,
+            @RequestHeader(value = "X-Reviewer-Key", required = false) String key,
+            @RequestBody Map<String, Object> payload) {
+        requireReviewer(key);
         return ResponseEntity.status(HttpStatus.CREATED).body(essayService.saveHumanScores(id, payload));
     }
 
     @GetMapping("/essays/{id}/human-scores")
     public ResponseEntity<List<Map<String, Object>>> listHumanScores(@PathVariable Long id) {
         return ResponseEntity.ok(essayService.listHumanScores(id));
+    }
+
+    @PostMapping("/essays/{id}/human-review-requests")
+    public ResponseEntity<Map<String, Object>> requestHumanReview(@PathVariable Long id,
+            @RequestBody(required = false) Map<String, Object> payload) {
+        Long runId = payload != null && payload.get("runId") instanceof Number n ? n.longValue() : null;
+        return ResponseEntity.status(HttpStatus.CREATED).body(trainingCycle.requestHumanReview(id, runId));
+    }
+
+    @GetMapping("/essays/{id}/human-review-request")
+    public ResponseEntity<Map<String, Object>> humanReviewStatus(@PathVariable Long id) {
+        return ResponseEntity.ok(trainingCycle.currentRequest(id, false));
+    }
+
+    @GetMapping("/reviewer/review-requests")
+    public ResponseEntity<List<Map<String, Object>>> reviewerQueue(
+            @RequestHeader(value = "X-Reviewer-Key", required = false) String key,
+            @RequestParam(required = false) String status) {
+        requireReviewer(key);
+        return ResponseEntity.ok(trainingCycle.reviewerQueue(status));
+    }
+
+    @PostMapping("/reviewer/review-requests/{id}/claim")
+    public ResponseEntity<Map<String, Object>> claimReview(@PathVariable Long id,
+            @RequestHeader(value = "X-Reviewer-Key", required = false) String key,
+            @RequestHeader(value = "X-Reviewer-Id", defaultValue = "pilot-reviewer") String reviewer) {
+        requireReviewer(key);
+        return ResponseEntity.ok(trainingCycle.claim(id, reviewer));
+    }
+
+    @GetMapping("/reviewer/review-requests/{id}")
+    public ResponseEntity<Map<String, Object>> reviewerRequest(@PathVariable Long id,
+            @RequestHeader(value = "X-Reviewer-Key", required = false) String key,
+            @RequestHeader(value = "X-Reviewer-Id", defaultValue = "pilot-reviewer") String reviewer) {
+        requireReviewer(key);
+        return ResponseEntity.ok(trainingCycle.reviewerRequest(id, reviewer));
+    }
+
+    @PostMapping("/reviewer/review-requests/{id}/draft")
+    public ResponseEntity<Map<String, Object>> saveReviewDraft(@PathVariable Long id,
+            @RequestHeader(value = "X-Reviewer-Key", required = false) String key,
+            @RequestHeader(value = "X-Reviewer-Id", defaultValue = "pilot-reviewer") String reviewer,
+            @RequestBody HumanEvaluationRequest request) {
+        requireReviewer(key);
+        return ResponseEntity.ok(trainingCycle.saveHumanEvaluation(id, reviewer, request, false));
+    }
+
+    @PostMapping("/reviewer/review-requests/{id}/publish")
+    public ResponseEntity<Map<String, Object>> publishReview(@PathVariable Long id,
+            @RequestHeader(value = "X-Reviewer-Key", required = false) String key,
+            @RequestHeader(value = "X-Reviewer-Id", defaultValue = "pilot-reviewer") String reviewer,
+            @RequestBody HumanEvaluationRequest request) {
+        requireReviewer(key);
+        return ResponseEntity.ok(trainingCycle.saveHumanEvaluation(id, reviewer, request, true));
     }
 
     @GetMapping("/runs/{id}")
@@ -219,5 +338,13 @@ public class EssayController {
     @PostMapping("/benchmark/compare")
     public ResponseEntity<Map<String, Object>> compareBenchmark(@Validated @RequestBody BenchmarkComparisonRequest request) {
         return ResponseEntity.ok(essayService.compareProfiles(request.temaId(), request.profiles(), request.texts()));
+    }
+
+    private void requireReviewer(String key) {
+        if (key == null || !java.security.MessageDigest.isEqual(
+                key.getBytes(java.nio.charset.StandardCharsets.UTF_8),
+                reviewerKey.getBytes(java.nio.charset.StandardCharsets.UTF_8))) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Credencial de corretor inválida");
+        }
     }
 }

@@ -32,11 +32,14 @@ public class EssayService {
     private final JdbcTemplate jdbcTemplate;
     private final LlmGateway llmGateway;
     private final CartilhaEnem2026Service cartilha;
+    private final TrainingCycleService trainingCycle;
 
-    public EssayService(JdbcTemplate jdbcTemplate, LlmGateway llmGateway, CartilhaEnem2026Service cartilha) {
+    public EssayService(JdbcTemplate jdbcTemplate, LlmGateway llmGateway, CartilhaEnem2026Service cartilha,
+                        TrainingCycleService trainingCycle) {
         this.jdbcTemplate = jdbcTemplate;
         this.llmGateway = llmGateway;
         this.cartilha = cartilha;
+        this.trainingCycle = trainingCycle;
     }
 
     public List<Tema> listTemas() {
@@ -69,6 +72,8 @@ public class EssayService {
         }, keyHolder);
 
         Long essayId = keyHolder.getKey() == null ? 1L : keyHolder.getKey().longValue();
+        jdbcTemplate.update("UPDATE essay SET group_id=id, revision_hash=?, approved_at=?, source_type='text' WHERE id=?",
+                LocalEvaluationContract.hash(request.text()), now, essayId);
         return findEssayById(essayId);
     }
 
@@ -95,6 +100,8 @@ public class EssayService {
         }, keyHolder);
 
         Long essayId = keyHolder.getKey() == null ? 1L : keyHolder.getKey().longValue();
+        jdbcTemplate.update("UPDATE essay SET group_id=id, revision_hash=?, approved_at=?, source_type=? WHERE id=?",
+                LocalEvaluationContract.hash(text), "READY".equals(status) ? now : null, normalizedSourceType, essayId);
         return findEssayById(essayId);
     }
 
@@ -102,7 +109,9 @@ public class EssayService {
         if (text == null || text.isBlank()) {
             throw new IllegalArgumentException("texto nao pode ser vazio");
         }
-        jdbcTemplate.update("UPDATE essay SET text = ?, status = 'READY' WHERE id = ?", text, essayId);
+        trainingCycle.assertMutable(essayId);
+        jdbcTemplate.update("UPDATE essay SET text = ?, status = 'READY', revision_hash=?, approved_at=? WHERE id = ?",
+                text, LocalEvaluationContract.hash(text), OffsetDateTime.now().toString(), essayId);
         return findEssayById(essayId);
     }
 
@@ -111,9 +120,11 @@ public class EssayService {
             throw new IllegalArgumentException("reviewedText obrigatorio");
         }
 
-        EssayResponse essay = findEssayById(essayId);
+        trainingCycle.assertMutable(essayId);
+        findEssayById(essayId);
         String status = approved && passesTranscriptionQualityGate(essayId, reviewedText) ? "READY" : "NEEDS_REVIEW";
-        jdbcTemplate.update("UPDATE essay SET text = ?, status = ? WHERE id = ?", reviewedText, status, essayId);
+        jdbcTemplate.update("UPDATE essay SET text = ?, status = ?, revision_hash=?, approved_at=? WHERE id = ?",
+                reviewedText, status, LocalEvaluationContract.hash(reviewedText), "READY".equals(status) ? OffsetDateTime.now().toString() : null, essayId);
         return findEssayById(essayId);
     }
 
@@ -184,6 +195,7 @@ public class EssayService {
         EvaluationProfile evaluationProfile = EvaluationProfile.from(profile);
         Tema theme = findTemaById(essay.temaId());
         String revisionHash = LocalEvaluationContract.hash(essay.text());
+        trainingCycle.freeze(essayId, revisionHash);
 
         String now = OffsetDateTime.now().format(DateTimeFormatter.ISO_OFFSET_DATE_TIME);
         KeyHolder runKey = new GeneratedKeyHolder();

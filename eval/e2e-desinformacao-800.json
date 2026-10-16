@@ -1,0 +1,21 @@
+{
+  "themeId": 3,
+  "title": "Desafios para o enfrentamento da desinformação no Brasil",
+  "source": "human-reference-authorized-by-user",
+  "essay": "A Constituição Federal de 1988 assegura a todos o direito de acesso à informação, princípio basilar para o exercício da cidadania. Entretanto, a disseminação massiva de notícias falsas nas redes sociais, fenômeno que a Organização Mundial da Saúde denominou ‘infodemia’ durante a pandemia de covid-19, compromete a efetivação desse direito no Brasil. Nesse contexto, a carência de educação midiática e a lógica de funcionamento das plataformas digitais configuram os principais entraves ao enfrentamento do problema.\n\nEm primeiro lugar, a formação crítica insuficiente para o consumo de conteúdo digital agrava o cenário. Isso ocorre porque, em um país marcado por desigualdades educacionais, muitos cidadãos não dispõem de ferramentas para verificar a procedência de uma informação e, por isso, compartilham-na de imediato, sem questionar sua veracidade. Dessa forma, a escola, que deveria ser o espaço privilegiado de desenvolvimento da análise crítica, ainda trata a educação midiática de maneira periférica, o que perpetua a vulnerabilidade da população diante de conteúdos enganosos.\n\nAlém disso, o modelo de negócios das plataformas digitais favorece a propagação de falsidades. O sociólogo Zygmunt Bauman, ao formular o conceito de ‘modernidade líquida’, descreve uma sociedade regida pela velocidade e pela fugacidade, lógica que se reflete nas redes, nas quais algoritmos priorizam o engajamento em detrimento da veracidade. Assim, conteúdos sensacionalistas, por provocarem maior reação emocional, alcançam mais visibilidade e formam ‘bolhas’ em que o indivíduo só entra em contato com ideias que reforçam suas crenças prévias, o que fragiliza o debate público e, por conseguinte, a própria democracia.\n\nPortanto, são necessárias medidas para mitigar o problema. Cabe ao Ministério da Educação, em parceria com as secretarias estaduais e municipais, incluir a educação midiática como tema transversal do currículo da educação básica, por meio de oficinas práticas de checagem de fontes e análise de notícias conduzidas por professores capacitados, a fim de formar cidadãos críticos e autônomos. Ademais, compete ao Congresso Nacional, em diálogo com a sociedade civil, instituir regras de transparência algorítmica para as plataformas, mediante a exigência de relatórios públicos sobre os critérios de recomendação e de remoção de conteúdos, com o objetivo de reduzir a circulação de desinformação sem comprometer a liberdade de expressão. Dessa maneira, o direito à informação previsto na Constituição será, de fato, efetivado.",
+  "expected": {
+    "C1": 160,
+    "C2": 160,
+    "C3": 160,
+    "C4": 160,
+    "C5": 160,
+    "total": 800
+  },
+  "comments": {
+    "C1": "Registro formal, sem desvios graves.",
+    "C2": "Repertório legitimado e pertinente; Bauman aparece integrado de forma um pouco forçada.",
+    "C3": "Argumentação coerente, mas com pouco aprofundamento de dados ou causalidade.",
+    "C4": "Bom uso de conectivos e progressão coesiva.",
+    "C5": "Dois agentes, ação, meio, finalidade e detalhamento presentes."
+  }
+}

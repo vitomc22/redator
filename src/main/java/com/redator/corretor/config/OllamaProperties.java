@@ -8,7 +8,7 @@ import org.springframework.stereotype.Component;
 public class OllamaProperties {
     private String baseUrl = "http://127.0.0.1:11434";
     private String model = "gemma4:e2b-it-q4_K_M";
-    private int numCtx = 4096, numPredict = 1200, numThread = 4;
+    private int numCtx = 8192, numPredict = 1200, numThread = 4;
     private double temperature = 0;
     private long seed = 42;
     private String keepAlive = "5m";

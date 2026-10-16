@@ -1,3 +1,7 @@
 /target/
+.env
 data/private/
 dataset/private/
+node_modules/
+playwright-report/
+test-results/
