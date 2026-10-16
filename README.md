@@ -99,6 +99,16 @@ Principais códigos: `EVALUATION_BUSY`, `DOCUMENT_REVIEW_REQUIRED`, `STALE_REVIS
 
 O [manifesto](dataset/manifest.json) e o [catálogo de fontes](eval/real-essay-sources.json) guardam apenas URLs, metadados e notas humanas publicadas. Os textos completos do Brasil Escola e UOL não são copiados. Acesso público não comprova autorização para redistribuição, avaliação automatizada ou treino.
 
+O projeto também possui um catálogo público separado para datasets com licença
+aberta e notas humanas C1–C5. O importador do KAMeL-USP preserva `train`,
+`validation` e `test`, deduplica por hash normalizado, guarda múltiplos corretores
+e impede que amostras reservadas entrem na recuperação. Consulte
+[dataset/PUBLIC-CORPUS.md](dataset/PUBLIC-CORPUS.md) para importar e auditar.
+
+O código deste repositório é distribuído sob a licença [MIT](LICENSE). Cada
+dataset mantém sua própria licença e proveniência; a licença do software não
+substitui a licença do corpus.
+
 ## Testes E2E com Playwright
 
 A suíte em `e2e/` usa Chromium isolado, locators acessíveis, execução paralela e relatório HTML. Em falhas, guarda screenshot e vídeo; no primeiro retry, guarda trace. O backend é iniciado automaticamente com banco SQLite isolado e provider fake em CI. Localmente, um servidor já aberto em `127.0.0.1:8080` é reutilizado.

@@ -1,0 +1,7 @@
+workspace = "default"
+project = "vitomc22-redator"
+project_strategy = "repo-root"
+
+[briefing]
+inject_on_session_start = "true"
+max_chars = 4000
