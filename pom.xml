@@ -75,4 +75,46 @@
             </plugin>
         </plugins>
     </build>
+
+    <profiles>
+        <profile>
+            <id>dev-local</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.codehaus.mojo</groupId>
+                        <artifactId>exec-maven-plugin</artifactId>
+                        <version>3.5.0</version>
+                        <executions>
+                            <execution>
+                                <id>start-and-verify-ollama</id>
+                                <phase>initialize</phase>
+                                <goals>
+                                    <goal>exec</goal>
+                                </goals>
+                                <configuration>
+                                    <executable>bash</executable>
+                                    <arguments>
+                                        <argument>${project.basedir}/scripts/ollama-prerequisites.sh</argument>
+                                    </arguments>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.springframework.boot</groupId>
+                        <artifactId>spring-boot-maven-plugin</artifactId>
+                        <configuration>
+                            <environmentVariables>
+                                <LLM_PROVIDER>ollama</LLM_PROVIDER>
+                                <OLLAMA_BASE_URL>http://127.0.0.1:11434</OLLAMA_BASE_URL>
+                                <OLLAMA_MODEL>gemma4:e2b-it-q4_K_M</OLLAMA_MODEL>
+                                <OLLAMA_NUM_CTX>8192</OLLAMA_NUM_CTX>
+                            </environmentVariables>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
 </project>

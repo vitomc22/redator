@@ -23,16 +23,31 @@ Neste host, o smoke, a persistência após reinício e o E2E real passaram com O
 
 Requisitos: Java 21, Maven, Docker Compose, `curl` e `jq`. O modelo ocupa vários gigabytes; os limites do Compose precisam ser conferidos no hardware real.
 
+Na primeira instalação, crie o `.env` e disponibilize o tag local/customizado
+`gemma4:e2b-it-q4_K_M` no volume do Ollama. O bootstrap não substitui esse modelo
+por outro nem baixa vários gigabytes silenciosamente.
+
 ```bash
 cp .env.example .env
 docker-compose -f compose.ollama.yml up -d
-docker-compose -f compose.ollama.yml exec ollama ollama pull gemma4:e2b-it-q4_K_M
+# importe/crie gemma4:e2b-it-q4_K_M no Ollama conforme o lock do projeto
 ./scripts/ollama-smoke.sh
-set -a; source .env; set +a
-mvn spring-boot:run
 ```
 
-Abra `http://localhost:8080/`. O pull é explícito: a aplicação não baixa modelos. A imagem validada está fixada por digest; use `docker compose` no lugar de `docker-compose` quando o plugin Compose v2 estiver instalado.
+Depois, o comando normal de desenvolvimento é único:
+
+```bash
+mvn -Pdev-local spring-boot:run
+```
+
+O perfil `dev-local` chama `scripts/ollama-prerequisites.sh` durante a fase
+`initialize`: aceita Compose v2 ou v1, sobe o serviço quando necessário, aguarda a
+API local, exige o modelo Gemma exato com capacidade de completion e só então
+inicia o Spring com `LLM_PROVIDER=ollama` e contexto 8192. Modelo ausente, Docker
+inacessível ou timeout interrompem a inicialização antes do backend. Se o Ollama já
+estiver saudável, o container atual é preservado.
+
+Abra `http://localhost:8080/`. A imagem validada está fixada por digest.
 
 Para desenvolvimento sem Ollama:
 
@@ -88,10 +103,22 @@ O [manifesto](dataset/manifest.json) e o [catálogo de fontes](eval/real-essay-s
 
 A suíte em `e2e/` usa Chromium isolado, locators acessíveis, execução paralela e relatório HTML. Em falhas, guarda screenshot e vídeo; no primeiro retry, guarda trace. O backend é iniciado automaticamente com banco SQLite isolado e provider fake em CI. Localmente, um servidor já aberto em `127.0.0.1:8080` é reutilizado.
 
+Os cenários rápidos cobrem: envio digitado; validação obrigatória; upload e
+conferência documental; avaliação e resultado C1–C5; falha de inferência sem nota;
+pedido de correção humana; fila, aceite e publicação pelo corretor; comparação IA ×
+humano; histórico e reescrita; plano de melhoria e checklist; progresso; e runtime
+indisponível. A inferência real permanece separada em `@live`.
+
 ```bash
 npm install
 npx playwright install chromium
 npm run e2e
+```
+
+Para assistir ao fluxo completo em velocidade reduzida — aluno, IA, pedido humano, área do corretor, publicação e comparação final:
+
+```bash
+npm run e2e:demo
 ```
 
 Para conferir pela UI um resultado real já persistido, sem gerar outra correção:
@@ -123,6 +150,7 @@ O benchmark calcula métricas por competência, matriz de confusão, erro absolu
 ```bash
 mvn -q test
 bash -n scripts/ollama-smoke.sh
+bash -n scripts/ollama-prerequisites.sh
 ```
 
 Os testes de Ollama usam um servidor HTTP local controlado: verificam exatamente uma chamada `/api/chat`, schema, opções, ausência de thinking e evidência literal, sem baixar modelo. O E2E real é opt-in (`LLM_LIVE_TEST=true mvn -q -Dtest=OllamaLiveIntegrationTest test`) e não aprova qualidade ENEM por si só.

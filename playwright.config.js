@@ -23,6 +23,7 @@ module.exports = defineConfig({
   },
   use: {
     baseURL: process.env.PLAYWRIGHT_BASE_URL || 'http://127.0.0.1:8080',
+    launchOptions: { slowMo: Number(process.env.E2E_SLOW_MO || 0) },
     trace: 'on-first-retry',
     screenshot: 'only-on-failure',
     video: 'retain-on-failure'

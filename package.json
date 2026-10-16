@@ -4,6 +4,7 @@
   "scripts": {
     "e2e": "playwright test --grep-invert @live",
     "e2e:live": "E2E_LIVE_OLLAMA=1 playwright test --grep @live",
+    "e2e:demo": "E2E_DEMO=1 E2E_SLOW_MO=900 playwright test e2e/complete-correction-flow.spec.js --headed --workers=1",
     "e2e:ui": "playwright test --ui"
   },
   "devDependencies": {
