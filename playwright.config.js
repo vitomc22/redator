@@ -17,7 +17,7 @@ module.exports = defineConfig({
     timeout: 120_000,
     env: {
       ...process.env,
-      LLM_PROVIDER: 'fake',
+      LLM_PROVIDER: 'fake', // provider exclusivo da suíte; a aplicação normal exige Ollama
       SPRING_DATASOURCE_URL: 'jdbc:sqlite:./target/playwright-redator.db'
     }
   },

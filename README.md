@@ -1,6 +1,6 @@
 # Corretor ENEM IA — MVP experimental
 
-Monólito Java 21/Spring Boot para corrigir redações segundo as cinco competências do ENEM. O runtime real usa Ollama local com `gemma4:e2b-it-q4_K_M`, uma única geração estruturada por redação e auditoria persistida. O provider `fake` continua sendo o padrão seguro para testes offline; suas notas não medem qualidade pedagógica.
+Monólito Java 21/Spring Boot para corrigir redações segundo as cinco competências do ENEM. O runtime normal usa Ollama local com `gemma4:e2b-it-q4_K_M`, RAG com redações públicas corrigidas por humanos, uma única geração estruturada por redação e auditoria persistida. O provider `fake` existe exclusivamente para testes offline; suas notas não medem qualidade pedagógica.
 
 O sistema não substitui a correção oficial. Uma nota só é publicada quando a resposta passa pelo schema e não exige revisão; `RUNNING`, `FAILED`, `STALE` e `NEEDS_REVIEW` retornam `total: null`.
 
@@ -11,6 +11,7 @@ O sistema não substitui a correção oficial. Uma nota só é publicada quando 
 - verificação de versão, modelo, digest, quantização, contexto e término da geração;
 - cache por configuração/revisão e apenas uma inferência local ativa;
 - auditoria de provider, modelo, hashes, tempos, tokens e cache no SQLite;
+- RAG ativo no fluxo normal, limitado ao split `train`, com exclusão da redação atual, fingerprint do corpus e referências auditáveis;
 - interface informa runtime, estado experimental, carregamento, revisão e erros;
 - ciclo de treino com tentativas imutáveis, histórico, plano de melhoria e progresso;
 - solicitação humana, fila do corretor, rascunho e publicação independente/versionada;
@@ -42,17 +43,17 @@ mvn -Pdev-local spring-boot:run
 
 O perfil `dev-local` chama `scripts/ollama-prerequisites.sh` durante a fase
 `initialize`: aceita Compose v2 ou v1, sobe o serviço quando necessário, aguarda a
-API local, exige o modelo Gemma exato com capacidade de completion e só então
+API local, exige o corpus RAG não vazio e o modelo Gemma exato com capacidade de completion e só então
 inicia o Spring com `LLM_PROVIDER=ollama` e contexto 8192. Modelo ausente, Docker
 inacessível ou timeout interrompem a inicialização antes do backend. Se o Ollama já
 estiver saudável, o container atual é preservado.
 
 Abra `http://localhost:8080/`. A imagem validada está fixada por digest.
 
-Para desenvolvimento sem Ollama:
+Para executar deliberadamente a suíte sem Ollama:
 
 ```bash
-mvn spring-boot:run
+LLM_PROVIDER=fake mvn spring-boot:run
 ```
 
 Nesse modo `GET /api/runtime` mostrará `provider: fake`. Não trate o resultado como correção por LLM.
@@ -80,9 +81,10 @@ POST /api/reviewer/review-requests/{id}/publish
 ```
 
 O frontend é uma SPA estática servida pelo Spring, sem build separado. O menu oferece
-Nova redação, Minhas redações, Meu progresso e Correções pendentes. Neste piloto, o
-aluno é a identidade fixa `pilot-student`. Rotas de corretor exigem `X-Reviewer-Key`
-e usam `REVIEWER_KEY`; isso é uma barreira local, não autenticação para produção.
+Nova redação, Minhas redações, Meu progresso e Correções pendentes. Cada navegador
+usa um identificador local enviado em `X-Local-User`; ele pode ser trocado pelo avatar
+e isola o histórico sem simular autenticação. As rotas do corretor não exigem chave no
+modo local. Portanto, o servidor deve permanecer acessível apenas em loopback.
 
 Uma reescrita é criada com `parentEssayId`. Avaliar ou solicitar correção humana
 congela a revisão, impedindo sobrescrita. O corretor assume um pedido antes de salvar
@@ -104,6 +106,12 @@ aberta e notas humanas C1–C5. O importador do KAMeL-USP preserva `train`,
 `validation` e `test`, deduplica por hash normalizado, guarda múltiplos corretores
 e impede que amostras reservadas entrem na recuperação. Consulte
 [dataset/PUBLIC-CORPUS.md](dataset/PUBLIC-CORPUS.md) para importar e auditar.
+
+Na correção Ollama, até três exemplos elegíveis são recuperados do corpus por tema e
+termos do texto. Eles entram no prompt somente como calibração da rubrica; o modelo é
+instruído a não copiar nota, frase ou justificativa. Splits de validação/teste e o hash
+da própria redação não podem ser recuperados. Corpus ausente ou sem amostras elegíveis
+interrompe a inicialização, em vez de executar silenciosamente sem RAG.
 
 O código deste repositório é distribuído sob a licença [MIT](LICENSE). Cada
 dataset mantém sua própria licença e proveniência; a licença do software não
@@ -163,12 +171,17 @@ bash -n scripts/ollama-smoke.sh
 bash -n scripts/ollama-prerequisites.sh
 ```
 
-Os testes de Ollama usam um servidor HTTP local controlado: verificam exatamente uma chamada `/api/chat`, schema, opções, ausência de thinking e evidência literal, sem baixar modelo. O E2E real é opt-in (`LLM_LIVE_TEST=true mvn -q -Dtest=OllamaLiveIntegrationTest test`) e não aprova qualidade ENEM por si só.
+Os testes de Ollama usam SQLite real para o corpus e um servidor HTTP local controlado:
+verificam recuperação sem vazamento de split, exclusão da própria redação, fingerprint,
+injeção das notas humanas no prompt, auditoria, exatamente uma chamada `/api/chat`,
+schema, opções, ausência de thinking e evidência literal. O E2E real é opt-in
+(`LLM_LIVE_TEST=true mvn -q -Dtest=OllamaLiveIntegrationTest test`) e não aprova qualidade ENEM por si só.
 
 ## Arquitetura
 
 ```text
-Browser -> Spring Boot -> EssayService -> LlmGateway -> fake | Ollama local
+Browser -> Spring Boot -> EssayService -> LlmGateway -> Ollama local
+                                           \-> RagService -> corpus público SQLite
                     \-> TrainingCycleService -> tentativas/revisão humana/progresso
                     \-> SQLite/Flyway (run, competence_result, llm_call, human_review_request)
 ```
@@ -177,4 +190,8 @@ Rubrica, schema e prompts versionados ficam em `src/main/resources/{rubrics,sche
 
 ## Critério para dizer “pronto para uso”
 
-O software está pronto para experimentação local individual: runtime e E2E real foram validados, e o ciclo de treino/humano possui testes de integração. Não está pronto para exposição multiusuária: faltam autenticação robusta, isolamento por dono e política operacional de corretores. Só estará pronto para apoiar decisões pedagógicas depois de benchmark autorizado, cego e revisado demonstrar concordância e limites aceitáveis. Até lá, toda saída permanece experimental.
+O software está pronto para uso e experimentação local: runtime, RAG, ciclo de treino,
+correção humana e fluxos E2E têm cobertura automatizada. Não está pronto para exposição
+em rede: por decisão atual não há autenticação, e o identificador local não é uma
+credencial. A correção automática continua identificada como estimativa experimental
+até que um benchmark humano, cego e revisado demonstre concordância aceitável.

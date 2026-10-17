@@ -29,7 +29,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RequestHeader;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
@@ -42,16 +41,13 @@ public class EssayController {
     private final UploadValidationService uploadValidationService;
     private final LlmGateway llmGateway;
     private final TrainingCycleService trainingCycle;
-    private final String reviewerKey;
 
     public EssayController(EssayService essayService, UploadValidationService uploadValidationService, LlmGateway llmGateway,
-                           TrainingCycleService trainingCycle,
-                           @Value("${app.reviewer.key:local-reviewer}") String reviewerKey) {
+                           TrainingCycleService trainingCycle) {
         this.essayService = essayService;
         this.uploadValidationService = uploadValidationService;
         this.llmGateway = llmGateway;
         this.trainingCycle = trainingCycle;
-        this.reviewerKey = reviewerKey;
     }
 
     @GetMapping("/temas")
@@ -260,9 +256,7 @@ public class EssayController {
 
     @PostMapping("/essays/{id}/human-scores")
     public ResponseEntity<Map<String, Object>> saveHumanScores(@PathVariable Long id,
-            @RequestHeader(value = "X-Reviewer-Key", required = false) String key,
             @RequestBody Map<String, Object> payload) {
-        requireReviewer(key);
         return ResponseEntity.status(HttpStatus.CREATED).body(essayService.saveHumanScores(id, payload));
     }
 
@@ -285,43 +279,33 @@ public class EssayController {
 
     @GetMapping("/reviewer/review-requests")
     public ResponseEntity<List<Map<String, Object>>> reviewerQueue(
-            @RequestHeader(value = "X-Reviewer-Key", required = false) String key,
             @RequestParam(required = false) String status) {
-        requireReviewer(key);
         return ResponseEntity.ok(trainingCycle.reviewerQueue(status));
     }
 
     @PostMapping("/reviewer/review-requests/{id}/claim")
     public ResponseEntity<Map<String, Object>> claimReview(@PathVariable Long id,
-            @RequestHeader(value = "X-Reviewer-Key", required = false) String key,
             @RequestHeader(value = "X-Reviewer-Id", defaultValue = "pilot-reviewer") String reviewer) {
-        requireReviewer(key);
         return ResponseEntity.ok(trainingCycle.claim(id, reviewer));
     }
 
     @GetMapping("/reviewer/review-requests/{id}")
     public ResponseEntity<Map<String, Object>> reviewerRequest(@PathVariable Long id,
-            @RequestHeader(value = "X-Reviewer-Key", required = false) String key,
             @RequestHeader(value = "X-Reviewer-Id", defaultValue = "pilot-reviewer") String reviewer) {
-        requireReviewer(key);
         return ResponseEntity.ok(trainingCycle.reviewerRequest(id, reviewer));
     }
 
     @PostMapping("/reviewer/review-requests/{id}/draft")
     public ResponseEntity<Map<String, Object>> saveReviewDraft(@PathVariable Long id,
-            @RequestHeader(value = "X-Reviewer-Key", required = false) String key,
             @RequestHeader(value = "X-Reviewer-Id", defaultValue = "pilot-reviewer") String reviewer,
             @RequestBody HumanEvaluationRequest request) {
-        requireReviewer(key);
         return ResponseEntity.ok(trainingCycle.saveHumanEvaluation(id, reviewer, request, false));
     }
 
     @PostMapping("/reviewer/review-requests/{id}/publish")
     public ResponseEntity<Map<String, Object>> publishReview(@PathVariable Long id,
-            @RequestHeader(value = "X-Reviewer-Key", required = false) String key,
             @RequestHeader(value = "X-Reviewer-Id", defaultValue = "pilot-reviewer") String reviewer,
             @RequestBody HumanEvaluationRequest request) {
-        requireReviewer(key);
         return ResponseEntity.ok(trainingCycle.saveHumanEvaluation(id, reviewer, request, true));
     }
 
@@ -340,11 +324,4 @@ public class EssayController {
         return ResponseEntity.ok(essayService.compareProfiles(request.temaId(), request.profiles(), request.texts()));
     }
 
-    private void requireReviewer(String key) {
-        if (key == null || !java.security.MessageDigest.isEqual(
-                key.getBytes(java.nio.charset.StandardCharsets.UTF_8),
-                reviewerKey.getBytes(java.nio.charset.StandardCharsets.UTF_8))) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Credencial de corretor inválida");
-        }
-    }
 }

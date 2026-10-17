@@ -35,8 +35,16 @@ public class LocalEvaluationContract {
         return dynamic;
     }
     public List<Map<String, String>> messages(String text, Tema theme) {
+        return messages(text, theme, new RagService.Context(false, "disabled", List.of()));
+    }
+    public List<Map<String, String>> messages(String text, Tema theme, RagService.Context rag) {
+        String calibration = rag.references().isEmpty()
+                ? "Nenhum exemplo humano foi recuperado. Avalie somente pela rubrica."
+                : "Exemplos humanos públicos servem apenas para calibrar a aplicação da rubrica. "
+                  + "Não copie notas, frases ou justificativas; avalie integralmente a redação atual. Exemplos: "
+                  + json(rag.promptExamples());
         return List.of(Map.of("role", "system", "content", system + "\nRubrica: " + parse(rubric).get("levels")),
-                Map.of("role", "user", "content", user + "\n" + json(Map.of(
+                Map.of("role", "user", "content", user + "\n" + calibration + "\n" + json(Map.of(
                         "tema", theme.titulo(), "proposta", theme.recorte(), "motivadores", theme.motivadores(),
                         "redacao", text, "evidenceCandidates", evidenceCandidates(text)))));
     }

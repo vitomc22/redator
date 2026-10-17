@@ -21,14 +21,15 @@ import org.springframework.web.server.ResponseStatusException;
 
 @Service
 public class TrainingCycleService {
-    public static final String PILOT_STUDENT = "pilot-student";
     private static final List<String> COMPETENCES = List.of("C1", "C2", "C3", "C4", "C5");
     private static final ObjectMapper JSON = new ObjectMapper();
 
     private final JdbcTemplate jdbc;
+    private final LocalUserContext users;
 
-    public TrainingCycleService(JdbcTemplate jdbc) {
+    public TrainingCycleService(JdbcTemplate jdbc, LocalUserContext users) {
         this.jdbc = jdbc;
+        this.users = users;
     }
 
     @Transactional
@@ -37,7 +38,7 @@ public class TrainingCycleService {
         int attempt = 1;
         if (request.parentEssayId() != null) {
             Map<String, Object> parent = essayRow(request.parentEssayId());
-            if (!PILOT_STUDENT.equals(parent.get("student_id"))) throw notFound();
+            if (!users.current().equals(parent.get("student_id"))) throw notFound();
             if (((Number) parent.get("tema_id")).longValue() != request.temaId()) {
                 throw new IllegalArgumentException("Uma reescrita deve manter o mesmo tema");
             }
@@ -61,7 +62,7 @@ public class TrainingCycleService {
             ps.setString(2, request.text().strip());
             ps.setString(3, status);
             ps.setString(4, now);
-            ps.setString(5, PILOT_STUDENT);
+            ps.setString(5, users.current());
             ps.setString(6, blankToNull(request.title()));
             ps.setString(7, source);
             if (finalGroupId == null) ps.setObject(8, null); else ps.setLong(8, finalGroupId);
@@ -78,7 +79,7 @@ public class TrainingCycleService {
 
     public Map<String, Object> getEssay(long essayId) {
         Map<String, Object> row = essayRow(essayId);
-        if (!PILOT_STUDENT.equals(row.get("student_id"))) throw notFound();
+        if (!users.current().equals(row.get("student_id"))) throw notFound();
         Map<String, Object> result = new LinkedHashMap<>(row);
         result.put("theme", jdbc.queryForMap("SELECT id, titulo, recorte, motivadores FROM tema WHERE id = ?", row.get("tema_id")));
         result.put("humanReview", currentRequest(essayId, false));
@@ -97,7 +98,7 @@ public class TrainingCycleService {
                         ORDER BY he.id DESC LIMIT 1) AS latestHumanTotal
                 FROM essay e JOIN tema t ON t.id=e.tema_id
                 WHERE e.student_id=? GROUP BY e.group_id, t.titulo ORDER BY lastActivity DESC
-                """, PILOT_STUDENT);
+                """, users.current());
     }
 
     public List<Map<String, Object>> listAttempts(long groupId) {
@@ -110,13 +111,13 @@ public class TrainingCycleService {
                         WHERE hr.essay_id=e.id AND he.status='PUBLISHED' ORDER BY he.id DESC LIMIT 1) AS humanTotal
                 FROM essay e JOIN tema t ON t.id=e.tema_id
                 WHERE e.student_id=? AND e.group_id=? ORDER BY e.attempt_number
-                """, PILOT_STUDENT, groupId);
+                """, users.current(), groupId);
     }
 
     @Transactional
     public Map<String, Object> requestHumanReview(long essayId, Long runId) {
         Map<String, Object> essay = essayRow(essayId);
-        if (!PILOT_STUDENT.equals(essay.get("student_id"))) throw notFound();
+        if (!users.current().equals(essay.get("student_id"))) throw notFound();
         String revision = LocalEvaluationContract.hash(String.valueOf(essay.get("text")));
         if (runId != null) {
             Integer count = jdbc.queryForObject("SELECT COUNT(*) FROM run WHERE id=? AND essay_id=? AND essay_revision=?", Integer.class, runId, essayId, revision);
@@ -242,7 +243,7 @@ public class TrainingCycleService {
                 FROM essay e JOIN tema t ON t.id=e.tema_id JOIN run r ON r.id=(
                     SELECT r2.id FROM run r2 WHERE r2.essay_id=e.id AND r2.status='READY' AND r2.provider<>'fake' ORDER BY r2.id DESC LIMIT 1)
                 WHERE e.student_id=? ORDER BY e.created_at
-                """, PILOT_STUDENT);
+                """, users.current());
         for (Map<String, Object> point : points) {
             point.put("scores", jdbc.queryForList("SELECT competencia, nota FROM competence_result WHERE run_id=? ORDER BY competencia", point.get("runId")));
             List<Map<String, Object>> human = jdbc.queryForList("""
@@ -256,18 +257,18 @@ public class TrainingCycleService {
                 point.put("human", h);
             }
         }
-        return Map.of("student", PILOT_STUDENT, "points", points, "fakeExcluded", true, "nullExcluded", true);
+        return Map.of("student", users.current(), "points", points, "fakeExcluded", true, "nullExcluded", true);
     }
 
     public List<Map<String, Object>> checklist(long essayId) {
         Map<String, Object> essay = essayRow(essayId);
-        if (!PILOT_STUDENT.equals(essay.get("student_id"))) throw notFound();
+        if (!users.current().equals(essay.get("student_id"))) throw notFound();
         return jdbc.queryForList("SELECT competence, item_key AS itemKey, checked, updated_at AS updatedAt FROM student_checklist WHERE essay_id=? ORDER BY competence, item_key", essayId);
     }
 
     public Map<String, Object> updateChecklist(long essayId, String competence, String itemKey, boolean checked) {
         Map<String, Object> essay = essayRow(essayId);
-        if (!PILOT_STUDENT.equals(essay.get("student_id"))) throw notFound();
+        if (!users.current().equals(essay.get("student_id"))) throw notFound();
         String normalized = competence == null ? "" : competence.toUpperCase();
         if (!COMPETENCES.contains(normalized)) throw new IllegalArgumentException("competência inválida");
         if (itemKey == null || !itemKey.matches("[a-z0-9-]{1,40}")) throw new IllegalArgumentException("itemKey inválido");

@@ -15,7 +15,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
-        properties = "spring.datasource.url=jdbc:sqlite:./target/training-cycle-test.db")
+        properties = {"spring.datasource.url=jdbc:sqlite:./target/training-cycle-test.db", "app.llm.provider=fake"})
 class TrainingCycleIntegrationTest {
 
     @Autowired
@@ -99,10 +99,10 @@ class TrainingCycleIntegrationTest {
     }
 
     @Test
-    void protectsReviewerEndpoints() {
-        ResponseEntity<Map> response = rest.getForEntity(
-                "/api/reviewer/review-requests", Map.class);
-        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.FORBIDDEN);
+    void allowsReviewerQueueWithoutAuthenticationInLocalMode() {
+        ResponseEntity<List> response = rest.getForEntity(
+                "/api/reviewer/review-requests", List.class);
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
     }
 
     private Map<?, ?> createAttempt(Long parentId, String text) {

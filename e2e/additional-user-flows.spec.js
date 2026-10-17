@@ -169,7 +169,6 @@ test('corretor filtra solicitações, correções em andamento e concluídas', a
   } }));
   await page.goto('/#new');
   await page.goto('/#reviewer');
-  await page.getByLabel('Chave local').fill('local-reviewer');
   await page.getByRole('button', { name: 'Carregar correções' }).click();
   await expect(page.getByText('Tema solicitado')).toBeVisible();
   await expect(page.getByRole('button', { name: 'Assumir' })).toBeVisible();
@@ -183,7 +182,6 @@ test('corretor filtra solicitações, correções em andamento e concluídas', a
   await expect(page.getByLabel('Orientação principal')).toHaveValue('Aprofundar o segundo argumento.');
   await page.goto('/#new');
   await page.goto('/#reviewer');
-  await page.getByLabel('Chave local').fill('local-reviewer');
   await page.getByLabel('Estado da fila').selectOption('COMPLETED');
   await expect(page.getByText('Tema concluído')).toBeVisible();
   await expect(page.getByText('Publicada')).toBeVisible();

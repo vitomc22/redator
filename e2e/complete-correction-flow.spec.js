@@ -39,7 +39,8 @@ test('fluxo completo: aluno, IA, solicitação, corretor e comparação final', 
   };
 
   await page.route('**/api/runtime', route => route.fulfill({ json: {
-    provider: 'ollama', model: 'gemma4:e2b-it-q4_K_M', experimental: true
+    provider: 'ollama', model: 'gemma4:e2b-it-q4_K_M', experimental: true,
+    rag: { enabled: true, available: true, ragEligible: 6579 }
   }}));
   await page.route('**/api/temas', route => route.fulfill({ json: [theme] }));
   await page.route('**/api/attempts', route => route.fulfill({ status: 201, json: { essay } }));
@@ -87,7 +88,10 @@ test('fluxo completo: aluno, IA, solicitação, corretor e comparação final', 
   await page.getByLabel('Tema obrigatório').selectOption('3');
   await page.getByLabel('Título').fill('Demonstração E2E completa');
   await page.getByLabel('Texto da redação').fill(essayText);
+  const attemptCreated = page.waitForResponse(response =>
+    response.request().method() === 'POST' && response.url().endsWith('/api/attempts'));
   await page.getByRole('button', { name: 'Continuar para inspeção' }).click();
+  expect((await attemptCreated).ok()).toBe(true);
 
   await expect(page.getByRole('heading', { name: 'Tentativa 1' })).toBeVisible();
   await page.getByRole('button', { name: 'Avaliar com IA' }).click();
@@ -97,7 +101,6 @@ test('fluxo completo: aluno, IA, solicitação, corretor e comparação final', 
   await expect(page.getByRole('status')).toContainText('Correção humana solicitada.');
 
   await page.getByRole('button', { name: 'Correções pendentes' }).click();
-  await page.getByLabel('Chave local').fill('local-reviewer');
   await page.getByLabel('Identificador').fill('corretor-e2e');
   await page.getByRole('button', { name: 'Carregar correções' }).click();
   await expect(page.getByText(theme.titulo)).toBeVisible();

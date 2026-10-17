@@ -97,7 +97,9 @@ class DatasetMetricsCalculatorTest {
         var contract = new com.redator.corretor.service.LocalEvaluationContract();
         var properties = new com.redator.corretor.config.OllamaProperties();
         var gateway = new com.redator.corretor.service.LlmGateway("fake",
-                new com.redator.corretor.service.OllamaLlmProvider(properties, contract), contract);
+                new com.redator.corretor.service.OllamaLlmProvider(properties, contract,
+                        new com.redator.corretor.service.RagService(
+                                java.nio.file.Path.of("target/missing-rag-metrics.db"), false, 3, 1200)), contract);
         var theme = new com.redator.corretor.model.Tema(1L, "Educação", "Direito à educação", "");
         var baseline = com.redator.corretor.service.RubricEngine.evaluate(
                 com.redator.corretor.service.DeterministicEssayAnalysis.analyze("A educação é um direito fundamental."));

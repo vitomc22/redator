@@ -23,10 +23,10 @@ public class LlmGateway {
     private final AtomicBoolean activeInference = new AtomicBoolean();
     private final AtomicLong cacheHitCount = new AtomicLong();
 
-    public LlmGateway(@Value("${app.llm.provider:fake}") String provider,
+    public LlmGateway(@Value("${app.llm.provider:ollama}") String provider,
                       OllamaLlmProvider ollama,
                       LocalEvaluationContract contract) {
-        this.provider = provider == null ? "fake" : provider.trim().toLowerCase();
+        this.provider = provider == null ? "ollama" : provider.trim().toLowerCase();
         if (!List.of("fake", "ollama").contains(this.provider)) {
             throw new IllegalArgumentException("app.llm.provider deve ser fake ou ollama");
         }

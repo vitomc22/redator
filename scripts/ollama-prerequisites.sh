@@ -30,6 +30,13 @@ compose_file="$project_dir/compose.ollama.yml"
 base_url="${OLLAMA_BASE_URL:-http://127.0.0.1:11434}"
 model="${OLLAMA_MODEL:-gemma4:e2b-it-q4_K_M}"
 wait_seconds="${OLLAMA_STARTUP_TIMEOUT:-120}"
+rag_database="${RAG_DATABASE:-dataset/public-corpus.db}"
+
+[[ -s "$rag_database" ]] || {
+  echo "Corpus RAG obrigatório ausente ou vazio: $rag_database" >&2
+  echo "Execute a ingestão do corpus humano antes de iniciar o portal." >&2
+  exit 1
+}
 
 case "$base_url" in
   http://127.0.0.1:*|http://localhost:*) ;;

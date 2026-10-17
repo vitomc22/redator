@@ -16,11 +16,13 @@ import org.springframework.stereotype.Component;
 public class OllamaLlmProvider {
     private final OllamaProperties config;
     private final LocalEvaluationContract contract;
+    private final RagService rag;
     private final HttpClient http;
     private final AtomicBoolean uncertainGeneration = new AtomicBoolean();
-    public OllamaLlmProvider(OllamaProperties config, LocalEvaluationContract contract) {
+    public OllamaLlmProvider(OllamaProperties config, LocalEvaluationContract contract, RagService rag) {
         this.config = config;
         this.contract = contract;
+        this.rag = rag;
         URI base = URI.create(config.getBaseUrl());
         if (!Set.of("http", "https").contains(base.getScheme()) || base.getHost() == null || base.getUserInfo() != null)
             throw new IllegalArgumentException("Base URL Ollama inválida");
@@ -30,8 +32,11 @@ public class OllamaLlmProvider {
         http = HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(config.getConnectTimeoutSeconds())).build();
     }
     public Map<String, Object> configuration() {
-        return Map.of("model", config.getModel(), "options", options(), "keep_alive", config.getKeepAlive(),
-                "timeoutSeconds", config.getTimeoutSeconds(), "runtimeQuarantined", uncertainGeneration.get());
+        Map<String, Object> result = new LinkedHashMap<>();
+        result.put("model", config.getModel()); result.put("options", options());
+        result.put("keep_alive", config.getKeepAlive()); result.put("timeoutSeconds", config.getTimeoutSeconds());
+        result.put("runtimeQuarantined", uncertainGeneration.get()); result.put("rag", rag.status());
+        return result;
     }
     private Map<String, Object> options() {
         return Map.of("num_ctx", config.getNumCtx(), "num_predict", config.getNumPredict(), "num_thread", config.getNumThread(),
@@ -41,7 +46,8 @@ public class OllamaLlmProvider {
     public Prepared prepare(String text, Tema theme, long revision) {
         if (uncertainGeneration.get()) throw failure(HttpStatus.SERVICE_UNAVAILABLE, "RUNTIME_QUARANTINED",
                 "Geração anterior pode continuar no Ollama. Confirme sua interrupção e reinicie o backend antes de avaliar novamente.");
-        var messages = contract.messages(text, theme);
+        RagService.Context ragContext = rag.retrieve(text, theme.titulo());
+        var messages = contract.messages(text, theme, ragContext);
         JsonNode outputSchema = contract.schemaForText(text);
         // UTF-8 bytes are a conservative token upper estimate, with template reserve.
         // Include schema because constrained decoding overhead varies by runtime.
@@ -79,6 +85,8 @@ public class OllamaLlmProvider {
         audit.put("generationParameters", options()); audit.put("thinkingControl", thinking ? "disabled" : "unsupported-not-sent");
         audit.put("keepAlive", config.getKeepAlive()); audit.put("essayRevision", revision); audit.put("textHash", LocalEvaluationContract.hash(text));
         audit.put("themeHash", LocalEvaluationContract.hash(contract.json(theme)));
+        audit.put("ragEnabled", ragContext.enabled()); audit.put("ragCorpusFingerprint", ragContext.corpusFingerprint());
+        audit.put("ragExampleCount", ragContext.references().size()); audit.put("ragExamples", ragContext.auditExamples());
         audit.put("contextGuard", "utf8-bytes/3 estimate + output + 256 template reserve; not exact token count");
         audit.put("estimatedInputTokens", (int) Math.ceil(estimate / 3.0));
         String key = LocalEvaluationContract.hash(contract.json(audit) + contract.json(payload));
