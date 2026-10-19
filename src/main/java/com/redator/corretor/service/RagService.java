@@ -51,7 +51,7 @@ public class RagService {
                 references.add(new Reference(example.essayId(), example.essayHash(), example.source(), example.sourceId(),
                         example.licenseSpdx(), example.theme(), text, example.scores(), example.total(), example.relevance()));
             }
-            String fingerprint = DatasetManifestValidator.sha256(Files.readAllBytes(database));
+            String fingerprint = corpus.fingerprint();
             return new Context(true, fingerprint, List.copyOf(references));
         } catch (Exception error) {
             throw new IllegalStateException("Falha ao consultar corpus RAG", error);

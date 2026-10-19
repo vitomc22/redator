@@ -18,6 +18,8 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
+import java.security.MessageDigest;
+import java.nio.charset.StandardCharsets;
 
 /**
  * Catálogo público de redações e avaliações humanas, fisicamente separado do banco
@@ -244,6 +246,41 @@ public final class PublicHumanCorpus implements AutoCloseable {
         }
         stats.put("splits", splits);
         return stats;
+    }
+
+    /** Hashes logical rows, so WAL/checkpoint state cannot change or hide the corpus identity. */
+    public String fingerprint() throws SQLException {
+        try {
+            MessageDigest digest = MessageDigest.getInstance("SHA-256");
+            fingerprintRows(digest, """
+                    SELECT source, subset_name, source_id, essay_hash, split_name, theme_group, theme,
+                           essay_text, COALESCE(essay_year,''), license_spdx, license_url, source_url
+                    FROM public_essay ORDER BY essay_hash
+                    """);
+            fingerprintRows(digest, """
+                    SELECT e.essay_hash, h.grader_id, h.c1, h.c2, h.c3, h.c4, h.c5, h.total,
+                           h.evaluator_type, h.human_verified, h.eligible_for_rag,
+                           h.eligible_for_benchmark, h.eligible_for_training
+                    FROM public_human_evaluation h JOIN public_essay e ON e.id=h.essay_id
+                    ORDER BY e.essay_hash, h.grader_id, h.c1, h.c2, h.c3, h.c4, h.c5
+                    """);
+            return java.util.HexFormat.of().formatHex(digest.digest());
+        } catch (java.security.NoSuchAlgorithmException impossible) {
+            throw new IllegalStateException(impossible);
+        }
+    }
+
+    private void fingerprintRows(MessageDigest digest, String sql) throws SQLException {
+        try (Statement statement = connection.createStatement(); ResultSet rows = statement.executeQuery(sql)) {
+            int columns = rows.getMetaData().getColumnCount();
+            while (rows.next()) {
+                for (int index = 1; index <= columns; index++) {
+                    byte[] value = String.valueOf(rows.getObject(index)).getBytes(StandardCharsets.UTF_8);
+                    digest.update(java.nio.ByteBuffer.allocate(4).putInt(value.length).array());
+                    digest.update(value);
+                }
+            }
+        }
     }
 
     public ExistingEssay findByText(String text) throws SQLException {

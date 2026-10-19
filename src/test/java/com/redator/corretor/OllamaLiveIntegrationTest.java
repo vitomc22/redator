@@ -15,7 +15,8 @@ import org.springframework.http.ResponseEntity;
 @EnabledIfEnvironmentVariable(named = "LLM_LIVE_TEST", matches = "true")
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT, properties = {
         "spring.datasource.url=jdbc:sqlite:./target/ollama-live-test.db",
-        "app.llm.provider=ollama"
+        "app.llm.provider=ollama",
+        "app.local-api-token.enabled=false"
 })
 class OllamaLiveIntegrationTest {
 

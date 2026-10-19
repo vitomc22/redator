@@ -18,6 +18,8 @@ module.exports = defineConfig({
     env: {
       ...process.env,
       LLM_PROVIDER: 'fake', // provider exclusivo da suíte; a aplicação normal exige Ollama
+      REDATOR_LOCAL_API_TOKEN: 'true',
+      REDATOR_DATA_DIR: './target/playwright-data',
       SPRING_DATASOURCE_URL: 'jdbc:sqlite:./target/playwright-redator.db'
     }
   },

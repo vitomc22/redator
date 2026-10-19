@@ -16,7 +16,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
-        properties = {"spring.datasource.url=jdbc:sqlite:./target/training-cycle-test.db", "app.llm.provider=fake"})
+        properties = {"spring.datasource.url=jdbc:sqlite:./target/training-cycle-test.db", "app.llm.provider=fake",
+                "app.local-api-token.enabled=false"})
 class TrainingCycleIntegrationTest {
 
     @Autowired

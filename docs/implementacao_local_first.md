@@ -13,16 +13,16 @@ Este arquivo acompanha a execução de `plano_redator_local_first.md`. Um item s
 - [x] Primeiro E2E sem interceptação, usando navegador + Spring + SQLite reais.
 - [x] Publicação da avaliação de IA inteiramente transacional.
 - [x] Testes de rollback para publicação humana e da IA.
-- [ ] Token efêmero entre UI e API local.
+- [x] Token efêmero por processo entre UI e API local, em cookie HttpOnly/SameSite Strict.
 - [ ] Substituir os demais E2E críticos interceptados por integrações reais.
 
 ## Fase 1 — núcleo local-first
 
 - [x] Diretório de dados configurável e layout local seguro, pronto para o launcher escolher o caminho por sistema operacional.
 - [ ] Banco privado por perfil e migração do banco legado.
-- [x] Backup consistente e restauração validada/preparada para aplicação offline pelo launcher.
+- [x] Backup consistente, importação pela UI e restauração aplicada antes do datasource, com snapshot de segurança.
 - [ ] Launcher e lifecycle do backend.
-- [ ] Exportação/importação integral da coleção.
+- [x] Exportação/importação integral da coleção SQLite pela interface, com validação de integridade e schema.
 
 ## Fase 2 — instalação Gemma
 
@@ -36,14 +36,14 @@ Este arquivo acompanha a execução de `plano_redator_local_first.md`. Um item s
 
 - [ ] Contrato único de prompt e schema.
 - [ ] Cache limitado/persistente por fingerprint.
-- [ ] Fingerprint consistente com SQLite WAL.
+- [x] Fingerprint lógico determinístico consistente com SQLite WAL/checkpoints.
 - [ ] Deduplicação aproximada e isolamento de splits.
 - [ ] Benchmark humano congelado e gates de qualidade.
 
 ## Fase 4 — pacote do professor
 
-- [ ] Envelope versionado de pedido e resposta.
-- [ ] Cifragem, integridade, expiração e proteção contra replay.
+- [x] Envelope criptográfico versionado compartilhado por pedido e resposta.
+- [ ] Cifragem, integridade e expiração concluídas; proteção persistente contra replay ainda pendente.
 - [ ] Importação idempotente e transacional.
 - [ ] Modo Professor em banco independente.
 - [ ] E2E de ida e volta por arquivo.
@@ -71,7 +71,7 @@ Este arquivo acompanha a execução de `plano_redator_local_first.md`. Um item s
 
 ## Último baseline
 
-- Java offline: 61 executados, 60 aprovados, 1 teste Ollama/Gemma live ignorado por ser opt-in.
+- Java offline: 67 executados, 66 aprovados, 1 teste Ollama/Gemma live ignorado por ser opt-in.
 - Java live: `OllamaLiveIntegrationTest` aprovado em 271 s com Ollama 0.40.4 e Gemma `gemma4:e2b-it-q4_K_M` no digest fixado.
-- Playwright: 14 aprovados, incluindo 1 integração real local-first.
+- Playwright: 15 aprovados, incluindo isolamento local e exportação/restauração contra backend e SQLite reais.
 - `git diff --check`: sem erros.

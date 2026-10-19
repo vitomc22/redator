@@ -45,6 +45,25 @@ class RagServiceTest {
                 .hasMessageContaining("obrigatório não encontrado");
     }
 
+    @Test
+    void fingerprintRepresentsLogicalCorpusAndIsStableAcrossWalCheckpoint() throws Exception {
+        Path database = temp.resolve("wal-corpus.db");
+        String before;
+        try (PublicHumanCorpus corpus = new PublicHumanCorpus(database)) {
+            corpus.importEntries(List.of(entry("train-wal", "train", "Texto humano no WAL sobre desinformação.", 160)), "v1");
+            before = corpus.fingerprint();
+        }
+        try (var connection = java.sql.DriverManager.getConnection("jdbc:sqlite:" + database);
+             var statement = connection.createStatement()) {
+            statement.execute("PRAGMA wal_checkpoint(TRUNCATE)");
+        }
+        try (PublicHumanCorpus corpus = new PublicHumanCorpus(database)) {
+            assertThat(corpus.fingerprint()).isEqualTo(before);
+            corpus.importEntries(List.of(entry("train-new", "train", "Outro texto humano autorizado.", 120)), "v2");
+            assertThat(corpus.fingerprint()).isNotEqualTo(before);
+        }
+    }
+
     private static PublicHumanCorpus.ImportEntry entry(String sourceId, String split, String text, int score) {
         return new PublicHumanCorpus.ImportEntry(
                 "essay-br", "fixture", sourceId, split, "desinformacao", "Desinformação no Brasil",

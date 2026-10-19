@@ -25,7 +25,8 @@ import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
-        properties = {"spring.datasource.url=jdbc:sqlite:./target/test-redator.db", "app.llm.provider=fake"})
+        properties = {"spring.datasource.url=jdbc:sqlite:./target/test-redator.db", "app.llm.provider=fake",
+                "app.local-api-token.enabled=false"})
 class EssayControllerIntegrationTest {
 
     @Autowired
