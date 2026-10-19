@@ -33,13 +33,18 @@ public class EssayService {
     private final LlmGateway llmGateway;
     private final CartilhaEnem2026Service cartilha;
     private final TrainingCycleService trainingCycle;
+    private final LocalUserContext users;
+    private final EvaluationPublicationService publicationService;
 
     public EssayService(JdbcTemplate jdbcTemplate, LlmGateway llmGateway, CartilhaEnem2026Service cartilha,
-                        TrainingCycleService trainingCycle) {
+                        TrainingCycleService trainingCycle, LocalUserContext users,
+                        EvaluationPublicationService publicationService) {
         this.jdbcTemplate = jdbcTemplate;
         this.llmGateway = llmGateway;
         this.cartilha = cartilha;
         this.trainingCycle = trainingCycle;
+        this.users = users;
+        this.publicationService = publicationService;
     }
 
     public List<Tema> listTemas() {
@@ -60,7 +65,7 @@ public class EssayService {
         }
 
         String now = OffsetDateTime.now().format(DateTimeFormatter.ISO_OFFSET_DATE_TIME);
-        String sql = "INSERT INTO essay (tema_id, text, status, created_at) VALUES (?, ?, ?, ?)";
+        String sql = "INSERT INTO essay (tema_id, text, status, created_at, student_id) VALUES (?, ?, ?, ?, ?)";
         KeyHolder keyHolder = new GeneratedKeyHolder();
         jdbcTemplate.update(connection -> {
             PreparedStatement preparedStatement = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
@@ -68,6 +73,7 @@ public class EssayService {
             preparedStatement.setString(2, request.text());
             preparedStatement.setString(3, "READY");
             preparedStatement.setString(4, now);
+            preparedStatement.setString(5, users.current());
             return preparedStatement;
         }, keyHolder);
 
@@ -91,11 +97,12 @@ public class EssayService {
         KeyHolder keyHolder = new GeneratedKeyHolder();
         jdbcTemplate.update(connection -> {
             PreparedStatement preparedStatement = connection.prepareStatement(
-                    "INSERT INTO essay (tema_id, text, status, created_at) VALUES (?, ?, ?, ?)", Statement.RETURN_GENERATED_KEYS);
+                    "INSERT INTO essay (tema_id, text, status, created_at, student_id) VALUES (?, ?, ?, ?, ?)", Statement.RETURN_GENERATED_KEYS);
             preparedStatement.setLong(1, temaId);
             preparedStatement.setString(2, text);
             preparedStatement.setString(3, status);
             preparedStatement.setString(4, now);
+            preparedStatement.setString(5, users.current());
             return preparedStatement;
         }, keyHolder);
 
@@ -236,41 +243,25 @@ public class EssayService {
         }
 
         Map<String, CompetenceResult> competences = output.competences();
-        Map<String, Object> audit = output.audit();
-        String provider = String.valueOf(audit.getOrDefault("provider", "unknown"));
-        String model = String.valueOf(audit.getOrDefault("model", "unknown"));
-        long latencyMs = Math.round(number(audit.get("wallMs")));
-        jdbcTemplate.update(
-                "INSERT INTO llm_call (run_id, provider, model, prompt_hash, schema_hash, cost_usd, latency_ms, status, created_at, audit_json, cache_hit) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
-                runId, provider, model, text(audit.get("promptHash")), text(audit.get("schemaHash")),
-                number(audit.get("costUsd")), latencyMs, "ok", now, json(audit), output.cacheHit() ? 1 : 0);
-
-        int total = competences.values().stream().mapToInt(CompetenceResult::nota).sum();
-        boolean needsReview = output.needsReview() || competences.values().stream().anyMatch(CompetenceResult::needsReview);
-
-        jdbcTemplate.update("UPDATE run SET total = ?, status = ?, essay_revision = ?, provider = ?, model = ?, limitations = ?, review_reasons = ? WHERE id = ?",
-                total, needsReview ? "NEEDS_REVIEW" : "READY", revisionHash, provider, model,
-                json(output.limitations()), json(output.reviewReasons()), runId);
-
-        for (Map.Entry<String, CompetenceResult> entry : competences.entrySet()) {
-            jdbcTemplate.update(
-                    "INSERT INTO competence_result (run_id, competencia, nota, nivel_sugerido, evidencias, problemas, needs_review, motivos) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
-                    runId,
-                    entry.getKey(),
-                    entry.getValue().nota(),
-                    entry.getValue().nivelSugerido(),
-                    String.join(" | ", entry.getValue().evidencias()),
-                    String.join(" | ", entry.getValue().problemas()),
-                    entry.getValue().needsReview() ? 1 : 0,
-                    String.join(" | ", entry.getValue().motivos())
-            );
+        EvaluationPublicationService.Publication publication;
+        try {
+            publication = publicationService.publish(runId, revisionHash, now, output);
+        } catch (RuntimeException failure) {
+            jdbcTemplate.update("""
+                    UPDATE run SET status='FAILED', essay_revision=?, failure_code='PUBLICATION_FAILURE',
+                                   failure_message='Falha ao publicar resultado; nenhuma nota foi publicada'
+                    WHERE id=?
+                    """, revisionHash, runId);
+            throw new EvaluationFailure(HttpStatus.INTERNAL_SERVER_ERROR, "PUBLICATION_FAILURE",
+                    "Falha ao publicar resultado; nenhuma nota foi publicada.").withRun(runId);
         }
 
         List<String> problems = new ArrayList<>();
         competences.values().forEach(c -> problems.addAll(c.problemas()));
-        return new EvaluationResult(runId, needsReview ? null : total, competences, needsReview, problems,
-                evaluationProfile.name().toLowerCase(), needsReview ? "NEEDS_REVIEW" : "READY",
-                provider, model, output.limitations(), output.reviewReasons(), output.cacheHit(), true);
+        return new EvaluationResult(runId, publication.needsReview() ? null : publication.total(), competences,
+                publication.needsReview(), problems, evaluationProfile.name().toLowerCase(),
+                publication.needsReview() ? "NEEDS_REVIEW" : "READY", publication.provider(), publication.model(),
+                output.limitations(), output.reviewReasons(), output.cacheHit(), true);
     }
 
     private static String json(Object value) {
@@ -338,9 +329,12 @@ public class EssayService {
     public Map<String, Object> getRunDetails(Long runId) {
         Map<String, Object> stored;
         try {
-            stored = jdbcTemplate.queryForMap(
-                    "SELECT id, essay_id, profile, total, status, created_at, provider, model, limitations, review_reasons, failure_code, failure_message FROM run WHERE id = ?",
-                    runId);
+            stored = jdbcTemplate.queryForMap("""
+                    SELECT r.id, r.essay_id, r.profile, r.total, r.status, r.created_at, r.provider,
+                           r.model, r.limitations, r.review_reasons, r.failure_code, r.failure_message
+                    FROM run r JOIN essay e ON e.id=r.essay_id
+                    WHERE r.id=? AND e.student_id=?
+                    """, runId, users.current());
         } catch (EmptyResultDataAccessException ex) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "execucao nao encontrada");
         }
@@ -484,10 +478,14 @@ public class EssayService {
     }
 
     private EssayResponse findEssayById(Long essayId) {
-        Map<String, Object> row = jdbcTemplate.queryForMap(
-                "SELECT id, tema_id, text, status, created_at FROM essay WHERE id = ?",
-                essayId
-        );
+        Map<String, Object> row;
+        try {
+            row = jdbcTemplate.queryForMap(
+                    "SELECT id, tema_id, text, status, created_at FROM essay WHERE id=? AND student_id=?",
+                    essayId, users.current());
+        } catch (EmptyResultDataAccessException ex) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "redacao nao encontrada");
+        }
         return new EssayResponse(
                 ((Number) row.get("id")).longValue(),
                 ((Number) row.get("tema_id")).longValue(),

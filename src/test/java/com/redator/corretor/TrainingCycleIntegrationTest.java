@@ -13,6 +13,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.jdbc.core.JdbcTemplate;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
         properties = {"spring.datasource.url=jdbc:sqlite:./target/training-cycle-test.db", "app.llm.provider=fake"})
@@ -20,6 +21,9 @@ class TrainingCycleIntegrationTest {
 
     @Autowired
     private TestRestTemplate rest;
+
+    @Autowired
+    private JdbcTemplate jdbc;
 
     @Test
     void keepsLinkedAttemptsAndFreezesEvaluatedRevision() {
@@ -105,6 +109,66 @@ class TrainingCycleIntegrationTest {
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
     }
 
+    @Test
+    void preventsOneLocalProfileFromAccessingAnotherProfilesEssay() {
+        HttpHeaders alice = localUserHeaders("alice");
+        HttpHeaders bob = localUserHeaders("bob");
+        Map<String, Object> body = Map.of(
+                "temaId", 1,
+                "text", "A cidadania depende de educação pública e participação social.",
+                "title", "Redação privada",
+                "sourceType", "text");
+        ResponseEntity<Map> created = rest.exchange("/api/attempts", HttpMethod.POST,
+                new HttpEntity<>(body, alice), Map.class);
+        assertThat(created.getStatusCode()).isEqualTo(HttpStatus.CREATED);
+        long essayId = number((Map<?, ?>) created.getBody().get("essay"), "id");
+
+        assertThat(rest.exchange("/api/essays/{id}", HttpMethod.GET,
+                new HttpEntity<>(bob), Map.class, essayId).getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
+        assertThat(rest.exchange("/api/essays/{id}/text", HttpMethod.PUT,
+                new HttpEntity<>(Map.of("text", "Tentativa de acesso cruzado."), bob), Map.class, essayId)
+                .getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
+        assertThat(rest.exchange("/api/essays/{id}/evaluate?profile=normal", HttpMethod.POST,
+                new HttpEntity<>(null, bob), Map.class, essayId).getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
+
+        ResponseEntity<Map> ownerView = rest.exchange("/api/essays/{id}", HttpMethod.GET,
+                new HttpEntity<>(alice), Map.class, essayId);
+        assertThat(ownerView.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(ownerView.getBody().get("text")).isEqualTo(body.get("text"));
+    }
+
+    @Test
+    void rollsBackHumanPublicationWhenCompletingTheRequestFails() {
+        Map<?, ?> essay = createAttempt(null,
+                "A participação social depende de informação confiável e educação crítica.");
+        long essayId = number(essay, "id");
+        ResponseEntity<Map> requested = rest.postForEntity(
+                "/api/essays/{id}/human-review-requests", Map.of(), Map.class, essayId);
+        long requestId = number(requested.getBody(), "id");
+        HttpHeaders reviewer = reviewerHeaders();
+        rest.exchange("/api/reviewer/review-requests/{id}/claim", HttpMethod.POST,
+                new HttpEntity<>(null, reviewer), Map.class, requestId);
+        jdbc.execute("""
+                CREATE TRIGGER fail_human_completion BEFORE UPDATE ON human_review_request
+                WHEN NEW.status='COMPLETED' BEGIN SELECT RAISE(ABORT, 'forced rollback'); END
+                """);
+        try {
+            Map<String, Object> evaluation = Map.of(
+                    "scores", Map.of("C1", 160, "C2", 160, "C3", 160, "C4", 160, "C5", 160),
+                    "comments", Map.of(), "mainGuidance", "Revisar a tese.");
+            ResponseEntity<Map> response = rest.exchange(
+                    "/api/reviewer/review-requests/{id}/publish", HttpMethod.POST,
+                    new HttpEntity<>(evaluation, reviewer), Map.class, requestId);
+            assertThat(response.getStatusCode()).isEqualTo(HttpStatus.INTERNAL_SERVER_ERROR);
+            assertThat(jdbc.queryForObject(
+                    "SELECT COUNT(*) FROM human_evaluation WHERE request_id=?", Integer.class, requestId)).isZero();
+            assertThat(jdbc.queryForObject(
+                    "SELECT status FROM human_review_request WHERE id=?", String.class, requestId)).isEqualTo("IN_REVIEW");
+        } finally {
+            jdbc.execute("DROP TRIGGER IF EXISTS fail_human_completion");
+        }
+    }
+
     private Map<?, ?> createAttempt(Long parentId, String text) {
         Map<String, Object> body = new java.util.LinkedHashMap<>();
         body.put("temaId", 1);
@@ -121,6 +185,12 @@ class TrainingCycleIntegrationTest {
         HttpHeaders headers = new HttpHeaders();
         headers.set("X-Reviewer-Key", "local-reviewer");
         headers.set("X-Reviewer-Id", "reviewer-test");
+        return headers;
+    }
+
+    private static HttpHeaders localUserHeaders(String localUser) {
+        HttpHeaders headers = new HttpHeaders();
+        headers.set("X-Local-User", localUser);
         return headers;
     }
 

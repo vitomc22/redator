@@ -48,3 +48,11 @@ This block and the installed ai-memory Agent Skills are managed together.
 
 Refreshes are idempotent: only the content delimited by the ai-memory start/end HTML-comment markers is replaced.
 <!-- ai-memory:end -->
+
+## Regras permanentes do projeto
+
+- O Redator é um aplicativo local-first e gratuito; o banco SQLite do estudante é a fonte de verdade e não deve depender de uma conta ou servidor central para funcionar.
+- Gemma executado localmente é o modelo padrão obrigatório da instalação. Outros provedores são extensões opcionais e não podem tornar o fluxo principal dependente de nuvem.
+- Toda alteração funcional deve começar por um teste que expresse o comportamento esperado quando isso for tecnicamente viável. Antes da entrega, executar em sequência os testes unitários, de integração e os fluxos Playwright afetados; corrigir regressões antes de prosseguir.
+- Testes E2E que interceptam APIs são testes de interface, não prova de integração. Fluxos críticos precisam também de E2E contra backend e SQLite reais; o fluxo de IA precisa de uma suíte real opt-in com Ollama/Gemma.
+- Correções humanas remotas devem compartilhar apenas o pacote explicitamente autorizado pelo estudante. A resposta importada fica armazenada no banco local do estudante; nenhum serviço remoto é autoridade sobre o histórico.

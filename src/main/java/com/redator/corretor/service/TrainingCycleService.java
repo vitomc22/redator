@@ -139,6 +139,7 @@ public class TrainingCycleService {
     }
 
     public Map<String, Object> currentRequest(long essayId, boolean reviewer) {
+        if (!reviewer) assertOwned(essayId);
         List<Map<String, Object>> rows = jdbc.queryForList("""
                 SELECT hr.id, hr.essay_id AS essayId, hr.reference_run_id AS referenceRunId,
                        hr.status, hr.reviewer_id AS reviewerId, hr.requested_at AS requestedAt,
@@ -282,12 +283,19 @@ public class TrainingCycleService {
     }
 
     public void assertMutable(long essayId) {
+        assertOwned(essayId);
         Integer frozen = jdbc.queryForObject("SELECT frozen FROM essay WHERE id=?", Integer.class, essayId);
         if (frozen != null && frozen == 1) throw new ResponseStatusException(HttpStatus.CONFLICT, "A revisão desta tentativa está congelada; crie uma nova tentativa");
     }
 
     public void freeze(long essayId, String revision) {
+        assertOwned(essayId);
         jdbc.update("UPDATE essay SET frozen=1, revision_hash=?, approved_at=COALESCE(approved_at, ?) WHERE id=?", revision, now(), essayId);
+    }
+
+    private void assertOwned(long essayId) {
+        Map<String, Object> essay = essayRow(essayId);
+        if (!users.current().equals(essay.get("student_id"))) throw notFound();
     }
 
     private Map<String, Object> essayRow(long id) {

@@ -66,11 +66,23 @@ fi
 
 tags="$(curl --fail --silent --show-error --connect-timeout 3 "$base_url/api/tags")"
 if ! jq -e --arg model "$model" '.models[]? | select(.name == $model or .model == $model)' <<<"$tags" >/dev/null; then
-  echo "Modelo obrigatório ausente no volume do Ollama: $model" >&2
-  echo "Esse tag Gemma é local/customizado; importe ou crie o modelo antes de iniciar o backend." >&2
-  echo "Modelos disponíveis:" >&2
-  jq -r '.models[]?.name' <<<"$tags" >&2
-  exit 1
+  [[ "${OLLAMA_AUTO_PULL:-true}" == "true" ]] || {
+    echo "Modelo obrigatório ausente e OLLAMA_AUTO_PULL=false: $model" >&2
+    exit 1
+  }
+  echo "[dev-local] Baixando o Gemma obrigatório $model (o Ollama permite retomar camadas já recebidas)..."
+  pull_payload="$(jq -cn --arg model "$model" '{model:$model,stream:false}')"
+  curl --fail-with-body --silent --show-error --connect-timeout 3 \
+    --max-time "${OLLAMA_PULL_TIMEOUT:-1800}" -H 'Content-Type: application/json' \
+    --data-binary "$pull_payload" "$base_url/api/pull" >/dev/null || {
+      echo "Falha ao baixar $model. O backend não será iniciado e nenhum provider de nuvem será usado." >&2
+      exit 1
+    }
+  tags="$(curl --fail --silent --show-error --connect-timeout 3 "$base_url/api/tags")"
+  jq -e --arg model "$model" '.models[]? | select(.name == $model or .model == $model)' <<<"$tags" >/dev/null || {
+    echo "Download terminou sem disponibilizar o modelo obrigatório: $model" >&2
+    exit 1
+  }
 fi
 
 show_payload="$(jq -cn --arg model "$model" '{model:$model}')"
@@ -82,4 +94,9 @@ jq -e '.capabilities | index("completion") != null' <<<"$show" >/dev/null || {
 }
 
 digest="$(jq -r --arg model "$model" '.models[] | select(.name == $model or .model == $model) | .digest' <<<"$tags")"
+expected_digest="${OLLAMA_MODEL_DIGEST:-b37049369adfe3d2b653af0ab301a062ca5cbe96ace6aa0d3f2559ee9b563fc2}"
+[[ "${digest#sha256:}" == "${expected_digest#sha256:}" ]] || {
+  echo "Digest do modelo diverge do manifesto aprovado; recusando inicialização." >&2
+  exit 1
+}
 echo "[dev-local] Ollama pronto: $model (${digest:0:12}...)"

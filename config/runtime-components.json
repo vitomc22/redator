@@ -1,0 +1,19 @@
+{
+  "schemaVersion": 1,
+  "ollama": {
+    "containerImage": "ollama/ollama@sha256:926d40fd6eeeebd346b5c358a63de2a10ec995371cd93dd22f1843200694b1a6",
+    "verifiedVersion": "0.40.4",
+    "loopbackOnly": true
+  },
+  "gemma": {
+    "tag": "gemma4:e2b-it-q4_K_M",
+    "digest": "b37049369adfe3d2b653af0ab301a062ca5cbe96ace6aa0d3f2559ee9b563fc2",
+    "quantization": "Q4_K_M",
+    "sizeBytes": 4587156505,
+    "automaticDownload": true
+  },
+  "policy": {
+    "cloudFallback": false,
+    "allowDigestMismatch": false
+  }
+}
