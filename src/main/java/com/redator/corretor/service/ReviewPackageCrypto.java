@@ -40,9 +40,15 @@ public class ReviewPackageCrypto {
 
     public Sealed seal(String type, String requestId, String revisionHash, Instant expiresAt,
                        Map<String, Object> payload) {
+        return sealWithSecret(type, requestId, revisionHash, expiresAt, payload, encode(randomBytes(32)));
+    }
+
+    public Sealed sealWithSecret(String type, String requestId, String revisionHash, Instant expiresAt,
+                                 Map<String, Object> payload, String secret) {
         require(type, "tipo"); require(requestId, "requestId"); require(revisionHash, "hash da revisão");
         if (expiresAt == null) throw new IllegalArgumentException("Expiração obrigatória");
-        byte[] key = randomBytes(32);
+        byte[] key = decode(secret);
+        if (key.length != 32) throw invalid("Segredo inválido");
         byte[] nonce = randomBytes(12);
         String nonceText = encode(nonce);
         Map<String, Object> metadata = metadata(type, requestId, revisionHash, expiresAt, nonceText);
@@ -51,7 +57,7 @@ public class ReviewPackageCrypto {
             byte[] ciphertext = crypt(Cipher.ENCRYPT_MODE, key, nonce, aad(metadata), plaintext);
             ObjectNode envelope = mapper.valueToTree(metadata);
             envelope.put("ciphertext", encode(ciphertext));
-            return new Sealed(mapper.writeValueAsBytes(envelope), encode(key));
+            return new Sealed(mapper.writeValueAsBytes(envelope), secret);
         } catch (Exception exception) {
             throw new IllegalStateException("Não foi possível cifrar o pacote de revisão", exception);
         }
@@ -84,6 +90,23 @@ public class ReviewPackageCrypto {
         }
     }
 
+    public Metadata inspect(byte[] envelopeBytes) {
+        try {
+            JsonNode parsed = mapper.readTree(envelopeBytes);
+            if (!(parsed instanceof ObjectNode envelope)) throw invalid("Envelope inválido");
+            Iterator<String> names = envelope.fieldNames();
+            while (names.hasNext()) if (!FIELDS.contains(names.next())) throw invalid("Campo inesperado no envelope");
+            if (envelope.size() != FIELDS.size() || envelope.path("version").asInt(-1) != VERSION)
+                throw invalid("Versão ou campos inválidos");
+            return new Metadata(text(envelope, "type"), text(envelope, "requestId"),
+                    text(envelope, "revisionHash"), Instant.parse(text(envelope, "expiresAt")));
+        } catch (IllegalArgumentException exception) {
+            throw exception;
+        } catch (Exception exception) {
+            throw invalid("Envelope inválido");
+        }
+    }
+
     private Map<String, Object> metadata(String type, String requestId, String revisionHash,
                                          Instant expiresAt, String nonce) {
         Map<String, Object> result = new LinkedHashMap<>();
@@ -112,4 +135,5 @@ public class ReviewPackageCrypto {
 
     public record Sealed(byte[] envelope, String secret) { }
     public record Opened(String requestId, String revisionHash, Instant expiresAt, Map<String, Object> payload) { }
+    public record Metadata(String type, String requestId, String revisionHash, Instant expiresAt) { }
 }

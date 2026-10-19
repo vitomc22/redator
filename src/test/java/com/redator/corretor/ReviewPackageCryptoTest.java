@@ -50,4 +50,29 @@ class ReviewPackageCryptoTest {
         assertThatThrownBy(() -> crypto.open(new ObjectMapper().writeValueAsBytes(unknown), sealed.secret(), "RESPONSE", "revision-hash"))
                 .isInstanceOf(IllegalArgumentException.class).hasMessageContaining("inesperado");
     }
+
+    @Test
+    void responseCanReuseCapabilitySecretWithAFreshNonce() {
+        var request = crypto.seal("REQUEST", "pkg-1", "rev-1",
+                NOW.instant().plusSeconds(3600), Map.of("essayText", "Texto"));
+        var response = crypto.sealWithSecret("RESPONSE", "pkg-1", "rev-1",
+                NOW.instant().plusSeconds(3600), Map.of("scores", Map.of("C1", 160)), request.secret());
+
+        assertThat(response.secret()).isEqualTo(request.secret());
+        assertThat(response.envelope()).isNotEqualTo(request.envelope());
+        assertThat(crypto.open(response.envelope(), request.secret(), "RESPONSE", "rev-1").payload())
+                .containsKey("scores");
+    }
+
+    @Test
+    void inspectsVersionedMetadataWithoutDecryptingThePayload() {
+        var sealed = crypto.seal("REQUEST", "pkg-2", "rev-2",
+                NOW.instant().plusSeconds(3600), Map.of("essayText", "Texto"));
+
+        var metadata = crypto.inspect(sealed.envelope());
+
+        assertThat(metadata.type()).isEqualTo("REQUEST");
+        assertThat(metadata.requestId()).isEqualTo("pkg-2");
+        assertThat(metadata.revisionHash()).isEqualTo("rev-2");
+    }
 }

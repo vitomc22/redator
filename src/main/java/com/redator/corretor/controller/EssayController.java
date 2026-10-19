@@ -14,6 +14,9 @@ import com.redator.corretor.service.EssayService;
 import com.redator.corretor.service.LlmGateway;
 import com.redator.corretor.service.UploadValidationService;
 import com.redator.corretor.service.TrainingCycleService;
+import com.redator.corretor.service.ReviewExchangeService;
+import com.redator.corretor.service.TrainingCardService;
+import java.util.Base64;
 import java.util.List;
 import java.util.Map;
 import org.springframework.http.HttpStatus;
@@ -41,13 +44,18 @@ public class EssayController {
     private final UploadValidationService uploadValidationService;
     private final LlmGateway llmGateway;
     private final TrainingCycleService trainingCycle;
+    private final ReviewExchangeService reviewExchange;
+    private final TrainingCardService trainingCards;
 
     public EssayController(EssayService essayService, UploadValidationService uploadValidationService, LlmGateway llmGateway,
-                           TrainingCycleService trainingCycle) {
+                           TrainingCycleService trainingCycle, ReviewExchangeService reviewExchange,
+                           TrainingCardService trainingCards) {
         this.essayService = essayService;
         this.uploadValidationService = uploadValidationService;
         this.llmGateway = llmGateway;
         this.trainingCycle = trainingCycle;
+        this.reviewExchange = reviewExchange;
+        this.trainingCards = trainingCards;
     }
 
     @GetMapping("/temas")
@@ -277,6 +285,80 @@ public class EssayController {
         return ResponseEntity.ok(trainingCycle.currentRequest(id, false));
     }
 
+    @PostMapping("/essays/{id}/review-package")
+    public ResponseEntity<Map<String, Object>> exportReviewPackage(@PathVariable Long id,
+            @RequestBody(required = false) Map<String, Object> payload) {
+        Long runId = payload != null && payload.get("runId") instanceof Number n ? n.longValue() : null;
+        int validityDays = payload != null && payload.get("validityDays") instanceof Number n ? n.intValue() : 14;
+        return ResponseEntity.status(HttpStatus.CREATED).body(reviewExchange.exportRequest(id, runId, validityDays));
+    }
+
+    @PostMapping("/review-packages/open")
+    public ResponseEntity<Map<String, Object>> openReviewPackage(@RequestBody Map<String, Object> payload) {
+        return ResponseEntity.ok(reviewExchange.openRequest(packageBytes(payload), required(payload, "secret")));
+    }
+
+    @PostMapping("/review-packages/respond")
+    public ResponseEntity<Map<String, Object>> respondReviewPackage(@RequestBody Map<String, Object> payload) {
+        HumanEvaluationRequest evaluation = new HumanEvaluationRequest(
+                integerMap(payload.get("scores")), stringMap(payload.get("comments")),
+                optional(payload, "mainGuidance"), optional(payload, "revisionReason"));
+        return ResponseEntity.status(HttpStatus.CREATED).body(reviewExchange.createResponse(
+                packageBytes(payload), required(payload, "secret"), required(payload, "reviewer"), evaluation));
+    }
+
+    @PostMapping("/review-packages/import")
+    public ResponseEntity<Map<String, Object>> importReviewPackage(@RequestBody Map<String, Object> payload) {
+        return ResponseEntity.ok(reviewExchange.importResponse(packageBytes(payload), required(payload, "secret")));
+    }
+
+    @PostMapping("/essays/{id}/human-review-request/cancel")
+    public ResponseEntity<Map<String, Object>> cancelReviewPackage(@PathVariable Long id) {
+        return ResponseEntity.ok(reviewExchange.cancel(id));
+    }
+
+    @PostMapping("/essays/{id}/training-cards")
+    public ResponseEntity<List<Map<String, Object>>> generateTrainingCards(@PathVariable Long id) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(trainingCards.generate(id));
+    }
+
+    @GetMapping("/training/cards")
+    public ResponseEntity<List<Map<String, Object>>> trainingCards(
+            @RequestParam(defaultValue = "false") boolean dueOnly) {
+        return ResponseEntity.ok(trainingCards.cards(dueOnly));
+    }
+
+    @PostMapping("/training/cards/{id}/review")
+    public ResponseEntity<Map<String, Object>> reviewTrainingCard(@PathVariable Long id,
+            @RequestBody Map<String, Object> payload) {
+        if (!(payload.get("quality") instanceof Number quality))
+            throw new IllegalArgumentException("quality obrigatório");
+        Long sessionId = payload.get("sessionId") instanceof Number number ? number.longValue() : null;
+        return ResponseEntity.ok(trainingCards.review(id, quality.intValue(), sessionId));
+    }
+
+    @GetMapping("/training/stats")
+    public ResponseEntity<Map<String, Object>> trainingStats() {
+        return ResponseEntity.ok(trainingCards.stats());
+    }
+
+    @PutMapping("/training/goal")
+    public ResponseEntity<Map<String, Object>> trainingGoal(@RequestBody Map<String, Object> payload) {
+        if (!(payload.get("dailyReviews") instanceof Number dailyReviews))
+            throw new IllegalArgumentException("dailyReviews obrigatório");
+        return ResponseEntity.ok(trainingCards.setGoal(dailyReviews.intValue()));
+    }
+
+    @PostMapping("/training/sessions")
+    public ResponseEntity<Map<String, Object>> startTrainingSession() {
+        return ResponseEntity.status(HttpStatus.CREATED).body(trainingCards.startSession());
+    }
+
+    @PostMapping("/training/sessions/{id}/complete")
+    public ResponseEntity<Map<String, Object>> completeTrainingSession(@PathVariable Long id) {
+        return ResponseEntity.ok(trainingCards.completeSession(id));
+    }
+
     @GetMapping("/reviewer/review-requests")
     public ResponseEntity<List<Map<String, Object>>> reviewerQueue(
             @RequestParam(required = false) String status) {
@@ -322,6 +404,42 @@ public class EssayController {
     @PostMapping("/benchmark/compare")
     public ResponseEntity<Map<String, Object>> compareBenchmark(@Validated @RequestBody BenchmarkComparisonRequest request) {
         return ResponseEntity.ok(essayService.compareProfiles(request.temaId(), request.profiles(), request.texts()));
+    }
+
+    private static byte[] packageBytes(Map<String, Object> payload) {
+        try {
+            return Base64.getDecoder().decode(required(payload, "packageBase64"));
+        } catch (IllegalArgumentException ex) {
+            throw new IllegalArgumentException("packageBase64 inválido");
+        }
+    }
+
+    private static String required(Map<String, Object> payload, String field) {
+        String value = optional(payload, field);
+        if (value == null) throw new IllegalArgumentException(field + " obrigatório");
+        return value;
+    }
+
+    private static String optional(Map<String, Object> payload, String field) {
+        Object value = payload == null ? null : payload.get(field);
+        return value == null || String.valueOf(value).isBlank() ? null : String.valueOf(value);
+    }
+
+    private static Map<String, Integer> integerMap(Object value) {
+        if (!(value instanceof Map<?, ?> map)) return Map.of();
+        Map<String, Integer> result = new java.util.LinkedHashMap<>();
+        map.forEach((key, item) -> {
+            if (!(item instanceof Number number)) throw new IllegalArgumentException("Notas devem ser numéricas");
+            result.put(String.valueOf(key), number.intValue());
+        });
+        return result;
+    }
+
+    private static Map<String, String> stringMap(Object value) {
+        if (!(value instanceof Map<?, ?> map)) return Map.of();
+        Map<String, String> result = new java.util.LinkedHashMap<>();
+        map.forEach((key, item) -> result.put(String.valueOf(key), String.valueOf(item)));
+        return result;
     }
 
 }

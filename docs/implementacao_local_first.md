@@ -35,7 +35,7 @@ Este arquivo acompanha a execução de `plano_redator_local_first.md`. Um item s
 ## Fase 3 — avaliação e RAG
 
 - [ ] Contrato único de prompt e schema.
-- [ ] Cache limitado/persistente por fingerprint.
+- [x] Cache SQLite limitado, persistente, com TTL e LRU por fingerprint completo do contrato/configuração.
 - [x] Fingerprint lógico determinístico consistente com SQLite WAL/checkpoints.
 - [ ] Deduplicação aproximada e isolamento de splits.
 - [ ] Benchmark humano congelado e gates de qualidade.
@@ -43,10 +43,10 @@ Este arquivo acompanha a execução de `plano_redator_local_first.md`. Um item s
 ## Fase 4 — pacote do professor
 
 - [x] Envelope criptográfico versionado compartilhado por pedido e resposta.
-- [ ] Cifragem, integridade e expiração concluídas; proteção persistente contra replay ainda pendente.
-- [ ] Importação idempotente e transacional.
+- [x] Cifragem AES-256-GCM, integridade, expiração, revogação e proteção persistente contra replay.
+- [x] Importação idempotente e transacional.
 - [ ] Modo Professor em banco independente.
-- [ ] E2E de ida e volta por arquivo.
+- [x] E2E de ida e volta por arquivo, incluindo pacote incompleto e revogação.
 
 ## Fase 5 — portal/relay opcional
 
@@ -57,10 +57,10 @@ Este arquivo acompanha a execução de `plano_redator_local_first.md`. Um item s
 
 ## Fase 6 — treino estilo Anki
 
-- [ ] Cartões derivados das competências.
-- [ ] Agenda local de repetição espaçada.
-- [ ] Sessões, metas e progresso explicável.
-- [ ] Backup/restauração dos cartões.
+- [x] Cartões derivados das competências publicadas pela IA ou pelo professor.
+- [x] Agenda local de repetição espaçada.
+- [x] Sessões, metas e progresso diário explicável e isolado por perfil.
+- [x] Backup/restauração dos cartões, metas e sessões junto da coleção SQLite integral.
 
 ## Fase 7 — distribuição
 
@@ -71,7 +71,7 @@ Este arquivo acompanha a execução de `plano_redator_local_first.md`. Um item s
 
 ## Último baseline
 
-- Java offline: 67 executados, 66 aprovados, 1 teste Ollama/Gemma live ignorado por ser opt-in.
+- Java offline: 76 executados, 75 aprovados, 1 teste Ollama/Gemma live ignorado por ser opt-in.
 - Java live: `OllamaLiveIntegrationTest` aprovado em 271 s com Ollama 0.40.4 e Gemma `gemma4:e2b-it-q4_K_M` no digest fixado.
-- Playwright: 15 aprovados, incluindo isolamento local e exportação/restauração contra backend e SQLite reais.
+- Playwright: 19 aprovados, incluindo isolamento local, pacote cifrado do professor, treino espaçado e exportação/restauração contra backend e SQLite reais.
 - `git diff --check`: sem erros.

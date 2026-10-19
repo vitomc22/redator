@@ -9,6 +9,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
@@ -19,19 +20,27 @@ public class LlmGateway {
     private final String provider;
     private final OllamaLlmProvider ollama;
     private final LocalEvaluationContract contract;
-    private final Map<String, EvaluationOutput> cache = new ConcurrentHashMap<>();
+    private final EvaluationCache cache;
+    private final Map<String, EvaluationOutput> fallbackCache = new ConcurrentHashMap<>();
     private final AtomicBoolean activeInference = new AtomicBoolean();
     private final AtomicLong cacheHitCount = new AtomicLong();
 
+    @Autowired
     public LlmGateway(@Value("${app.llm.provider:ollama}") String provider,
                       OllamaLlmProvider ollama,
-                      LocalEvaluationContract contract) {
+                      LocalEvaluationContract contract,
+                      EvaluationCache cache) {
         this.provider = provider == null ? "ollama" : provider.trim().toLowerCase();
         if (!List.of("fake", "ollama").contains(this.provider)) {
             throw new IllegalArgumentException("app.llm.provider deve ser fake ou ollama");
         }
         this.ollama = ollama;
         this.contract = contract;
+        this.cache = cache;
+    }
+
+    public LlmGateway(String provider, OllamaLlmProvider ollama, LocalEvaluationContract contract) {
+        this(provider, ollama, contract, null);
     }
 
     public EvaluationOutput evaluate(String essayText, Tema theme, long revision,
@@ -41,7 +50,7 @@ public class LlmGateway {
             String key = LocalEvaluationContract.hash("fake|" + contract.promptHash() + "|"
                     + contract.rubricHash() + "|" + contract.schemaHash() + "|"
                     + profile.name() + "|" + theme + "|" + essayText);
-            EvaluationOutput cached = cache.get(key);
+            EvaluationOutput cached = getCached(key);
             if (cached != null) {
                 cacheHitCount.incrementAndGet();
                 return cached.withCacheHit(true);
@@ -60,12 +69,12 @@ public class LlmGateway {
                     List.of("FAKE_PROVIDER"),
                     List.of("Provider fake: resultado determinístico para testes; não é correção por LLM."),
                     audit, false);
-            cache.put(key, output);
+            putCached(key, output);
             return output;
         }
 
         OllamaLlmProvider.Prepared prepared = ollama.prepare(essayText, theme, revision);
-        EvaluationOutput cached = cache.get(prepared.cacheKey());
+        EvaluationOutput cached = getCached(prepared.cacheKey());
         if (cached != null) {
             cacheHitCount.incrementAndGet();
             return cached.withCacheHit(true);
@@ -79,7 +88,7 @@ public class LlmGateway {
             LocalEvaluationContract.Validated validated = generated.result();
             EvaluationOutput output = new EvaluationOutput(validated.competences(), validated.needsReview(),
                     validated.reviewReasons(), validated.limitations(), generated.audit(), false);
-            cache.put(prepared.cacheKey(), output);
+            putCached(prepared.cacheKey(), output);
             return output;
         } finally {
             activeInference.set(false);
@@ -101,7 +110,17 @@ public class LlmGateway {
     }
 
     public long cacheHitCount() { return cacheHitCount.get(); }
-    public int cacheSize() { return cache.size(); }
+    public int cacheSize() { return cache == null ? fallbackCache.size() : cache.size(); }
+
+    private EvaluationOutput getCached(String key) {
+        if (cache == null) return fallbackCache.get(key);
+        return cache.get(key).orElse(null);
+    }
+
+    private void putCached(String key, EvaluationOutput output) {
+        if (cache != null) cache.put(key, output);
+        else fallbackCache.put(key, output);
+    }
 
     public record EvaluationOutput(Map<String, CompetenceResult> competences,
                                    boolean needsReview,
@@ -109,7 +128,7 @@ public class LlmGateway {
                                    List<String> limitations,
                                    Map<String, Object> audit,
                                    boolean cacheHit) {
-        EvaluationOutput withCacheHit(boolean value) {
+        public EvaluationOutput withCacheHit(boolean value) {
             return new EvaluationOutput(competences, needsReview, reviewReasons, limitations, audit, value);
         }
     }
