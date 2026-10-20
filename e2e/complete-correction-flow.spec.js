@@ -112,7 +112,10 @@ test('fluxo completo: aluno, IA, solicitação, corretor e comparação final', 
     await page.locator(`#comment-${c}`).fill(`Justificativa humana para ${c}.`);
   }
   await page.getByLabel('Orientação principal').fill('Aprofundar dados e integrar melhor o repertório aos argumentos.');
+  const correctionPublished = page.waitForResponse(response =>
+    response.request().method() === 'POST' && response.url().endsWith('/api/reviewer/review-requests/81/publish'));
   await page.getByRole('button', { name: 'Publicar' }).click();
+  expect((await correctionPublished).ok()).toBe(true);
   await expect(page.getByRole('status')).toContainText('Correção publicada.');
 
   await page.goto('/#result/9100');

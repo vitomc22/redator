@@ -20,6 +20,7 @@
     <properties>
         <java.version>21</java.version>
         <maven.compiler.release>21</maven.compiler.release>
+        <project.build.outputTimestamp>2026-10-19T00:00:00Z</project.build.outputTimestamp>
     </properties>
 
     <dependencies>
@@ -86,6 +87,24 @@
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
+            </plugin>
+            <plugin>
+                <groupId>org.cyclonedx</groupId>
+                <artifactId>cyclonedx-maven-plugin</artifactId>
+                <version>2.9.1</version>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                        <goals><goal>makeAggregateBom</goal></goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <schemaVersion>1.6</schemaVersion>
+                    <includeBomSerialNumber>false</includeBomSerialNumber>
+                    <includeCompileScope>true</includeCompileScope>
+                    <includeTestScope>false</includeTestScope>
+                    <outputReactorProjects>false</outputReactorProjects>
+                </configuration>
             </plugin>
         </plugins>
     </build>

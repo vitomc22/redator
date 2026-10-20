@@ -6,6 +6,8 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.redator.corretor.service.ReviewPackageCrypto;
+import com.redator.corretor.service.ProfessorReviewService;
+import com.redator.corretor.model.HumanEvaluationRequest;
 import java.nio.charset.StandardCharsets;
 import java.time.Clock;
 import java.time.Instant;
@@ -74,5 +76,23 @@ class ReviewPackageCryptoTest {
         assertThat(metadata.type()).isEqualTo("REQUEST");
         assertThat(metadata.requestId()).isEqualTo("pkg-2");
         assertThat(metadata.revisionHash()).isEqualTo("rev-2");
+    }
+
+    @Test
+    void professorModeProducesResponseWithoutAnyDatabaseDependency() {
+        assertThat(java.util.Arrays.stream(ProfessorReviewService.class.getDeclaredFields())
+                .map(field -> field.getType().getName()))
+                .noneMatch(type -> type.contains("Jdbc") || type.contains("DataSource") || type.contains("LocalUser"));
+        var request = crypto.seal("REQUEST", "independent-1", "rev-independent",
+                NOW.instant().plusSeconds(3600), Map.of("essayText", "Texto privado", "theme", "Tema"));
+        var professor = new ProfessorReviewService(crypto);
+        Map<String, Integer> scores = Map.of("C1", 160, "C2", 160, "C3", 160, "C4", 160, "C5", 160);
+
+        var response = professor.respond(request.envelope(), request.secret(), "Professora",
+                new HumanEvaluationRequest(scores, Map.of(), "Revisar argumentos", null));
+        byte[] bytes = java.util.Base64.getDecoder().decode(String.valueOf(response.get("packageBase64")));
+
+        assertThat(crypto.open(bytes, request.secret(), "RESPONSE", "rev-independent").payload())
+                .containsEntry("reviewer", "Professora").containsEntry("scores", scores);
     }
 }

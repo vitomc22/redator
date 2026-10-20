@@ -42,6 +42,13 @@ class PublicHumanCorpusTest {
             var excluded = corpus.retrieve("educação midiática", "Desinformação no Brasil", 10,
                     List.of(PublicHumanCorpus.hashText(first.essayText())));
             assertThat(excluded).isEmpty();
+
+            var benchmark = corpus.benchmarkExamples("test", 10);
+            assertThat(benchmark).hasSize(1);
+            assertThat(benchmark.getFirst().sourceId()).isEqualTo("a-2");
+            assertThat(benchmark.getFirst().scores()).containsExactly(120, 120, 120, 120, 120);
+            assertThatThrownBy(() -> corpus.benchmarkExamples("train", 10))
+                    .isInstanceOf(IllegalArgumentException.class).hasMessageContaining("validation ou test");
         }
     }
 
@@ -53,6 +60,20 @@ class PublicHumanCorpusTest {
                     List.of(entry("test-1", "test", "Tema", " mesmo TEXTO integral. ", "original", 160)), "v1"))
                     .isInstanceOf(IllegalArgumentException.class)
                     .hasMessageContaining("atravessa splits");
+        }
+    }
+
+    @Test
+    void rejectsNearDuplicateLeakageAcrossReservedSplits() throws Exception {
+        try (PublicHumanCorpus corpus = new PublicHumanCorpus(temp.resolve("near-leak.db"))) {
+            String original = "A educação midiática ajuda cidadãos a verificar fontes e combater notícias falsas nas redes sociais.";
+            String nearCopy = "A educação midiática ajuda os cidadãos a verificar as fontes e combater notícias falsas nas redes sociais.";
+            corpus.importEntries(List.of(entry("train-near", "train", "Tema", original, "original", 160)), "v1");
+
+            assertThatThrownBy(() -> corpus.importEntries(
+                    List.of(entry("test-near", "test", "Tema", nearCopy, "original", 160)), "v1"))
+                    .isInstanceOf(IllegalArgumentException.class)
+                    .hasMessageContaining("quase duplicada atravessa splits");
         }
     }
 

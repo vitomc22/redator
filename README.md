@@ -20,7 +20,32 @@ O sistema não substitui a correção oficial. Uma nota só é publicada quando 
 
 Neste host, o smoke, a persistência após reinício e o E2E real passaram com Ollama 0.40.4 e Gemma 4 E2B/Q4_K_M. O runtime técnico está fixado por digest em [local-runtime-lock.json](eval/config/local-runtime-lock.json). Isso não aprova a qualidade das notas: a concordância contra corretores humanos ainda precisa ser medida com corpus autorizado. As evidências estão em [local-integration-status.md](eval/reports/local-integration-status.md).
 
-## Subir o runtime real
+## Instalar e iniciar localmente
+
+O launcher prepara um diretório privado por usuário, escolhe uma porta livre somente
+em `127.0.0.1`, valida Java 21, instala ou encontra o Ollama nativo, inicia/verifica
+Ollama + Gemma, aguarda a interface
+ficar pronta e mantém PID, porta e logs fora do repositório:
+
+```bash
+./scripts/redator-launch.sh check
+./scripts/redator-launch.sh start
+./scripts/redator-launch.sh status
+./scripts/redator-launch.sh stop
+```
+
+Use `run` no lugar de `start` para manter o backend em primeiro plano. No Linux, os
+dados ficam por padrão em `${XDG_DATA_HOME:-$HOME/.local/share}/redator-enem`; no
+macOS, em `$HOME/Library/Application Support/Redator ENEM`. `REDATOR_DATA_DIR` e
+`REDATOR_PORT` permitem escolha explícita sem expor o serviço na rede.
+
+O bootstrap usa o instalador oficial do Ollama por HTTPS, confere seu SHA-256 fixado
+antes de executá-lo e fixa a versão aprovada. Se o arquivo oficial mudar, a instalação
+é interrompida para revisão em vez de executar conteúdo novo silenciosamente. Defina
+`OLLAMA_AUTO_INSTALL=false` para apenas diagnosticar uma instalação existente;
+`OLLAMA_RUNTIME=docker` mantém o Compose como opção avançada explícita.
+
+### Desenvolvimento do runtime real
 
 Requisitos: Java 21, Maven, Docker Compose, `curl` e `jq`. O modelo ocupa vários gigabytes; os limites do Compose precisam ser conferidos no hardware real.
 
@@ -163,12 +188,28 @@ java -cp "target/classes:$(cat target/classpath.txt)" \
 
 O benchmark calcula métricas por competência, matriz de confusão, erro absoluto, viés e QWK somente quando a amostra é válida e há variação suficiente. Casos de fuga temática também devem medir a decisão de revisão/anulação. LoRA permanece fora do runtime; os pré-requisitos estão em [LORA-READINESS.md](eval/LORA-READINESS.md).
 
+O benchmark público congelado é exportado somente dos splits reservados, em ordem
+determinística, com hashes de cada redação, fingerprint lógico do corpus e fingerprint
+da seleção. O artefato versionado atual contém 69 redações humanas do split `test`:
+
+```bash
+java -cp "target/classes:$(cat target/classpath.txt)" \
+  com.redator.corretor.cli.FrozenBenchmarkCli \
+  --database dataset/public-corpus.db --split test --limit 100 \
+  --output eval/frozen/public-test-v1.json
+```
+
+Isso congela a população e os rótulos, mas não aprova o RAG sozinho. A aprovação exige
+predições pareadas do mesmo Gemma/configuração com RAG desligado e ligado; o gate usa
+a escala correta de seis níveis por competência e reprova QWK não calculável.
+
 ## Testes
 
 ```bash
 mvn -q test
 bash -n scripts/ollama-smoke.sh
 bash -n scripts/ollama-prerequisites.sh
+bash -n scripts/redator-launch.sh
 ```
 
 Os testes de Ollama usam SQLite real para o corpus e um servidor HTTP local controlado:

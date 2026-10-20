@@ -115,6 +115,7 @@ public final class PublicHumanCorpus implements AutoCloseable {
                       subset_name TEXT NOT NULL,
                       source_id TEXT NOT NULL,
                       essay_hash TEXT NOT NULL UNIQUE,
+                      near_signature INTEGER NOT NULL,
                       split_name TEXT NOT NULL CHECK (split_name IN ('train','validation','test')),
                       theme_group TEXT NOT NULL,
                       theme TEXT NOT NULL,
@@ -155,6 +156,43 @@ public final class PublicHumanCorpus implements AutoCloseable {
                     )
                     """);
         }
+        ensureNearSignatureColumn();
+    }
+
+    private void ensureNearSignatureColumn() throws SQLException {
+        boolean present = false;
+        try (Statement statement = connection.createStatement(); ResultSet columns = statement.executeQuery("PRAGMA table_info(public_essay)")) {
+            while (columns.next()) if ("near_signature".equals(columns.getString("name"))) present = true;
+        }
+        if (!present) try (Statement statement = connection.createStatement()) {
+            statement.execute("ALTER TABLE public_essay ADD COLUMN near_signature INTEGER NOT NULL DEFAULT 0");
+        }
+        try (PreparedStatement select = connection.prepareStatement("SELECT id, essay_text FROM public_essay WHERE near_signature=0");
+             ResultSet rows = select.executeQuery();
+             PreparedStatement update = connection.prepareStatement("UPDATE public_essay SET near_signature=? WHERE id=?")) {
+            while (rows.next()) {
+                update.setLong(1, nearSignature(rows.getString(2)));
+                update.setLong(2, rows.getLong(1));
+                update.addBatch();
+            }
+            update.executeBatch();
+        }
+    }
+
+    private void assertNoNearDuplicateAcrossSplits(ImportEntry entry) throws SQLException {
+        long signature = nearSignature(entry.essayText());
+        try (PreparedStatement statement = connection.prepareStatement(
+                "SELECT source_id, split_name, near_signature FROM public_essay WHERE split_name<>?")) {
+            statement.setString(1, entry.split());
+            try (ResultSet rows = statement.executeQuery()) {
+                while (rows.next()) {
+                    if (Long.bitCount(signature ^ rows.getLong("near_signature")) <= 8) {
+                        throw new IllegalArgumentException("redacao quase duplicada atravessa splits: "
+                                + entry.sourceId() + " / " + rows.getString("source_id"));
+                    }
+                }
+            }
+        }
     }
 
     public ImportResult importEntries(List<ImportEntry> entries, String corpusVersion) throws SQLException {
@@ -170,6 +208,7 @@ public final class PublicHumanCorpus implements AutoCloseable {
                 String hash = hashText(entry.essayText());
                 Long essayId = findEssayId(hash);
                 if (essayId == null) {
+                    assertNoNearDuplicateAcrossSplits(entry);
                     essayId = insertEssay(entry, hash);
                     essays++;
                 } else {
@@ -248,6 +287,41 @@ public final class PublicHumanCorpus implements AutoCloseable {
         return stats;
     }
 
+    /** Seleção determinística e cega; exemplos reservados nunca passam pela recuperação RAG. */
+    public List<Example> benchmarkExamples(String split, int limit) throws SQLException {
+        String normalizedSplit = normalizeSplit(split);
+        if ("train".equals(normalizedSplit)) throw new IllegalArgumentException("benchmark exige validation ou test");
+        if (limit < 1 || limit > 10_000) throw new IllegalArgumentException("limit deve ficar entre 1 e 10000");
+        List<Example> examples = new ArrayList<>();
+        try (PreparedStatement statement = connection.prepareStatement("""
+                SELECT e.id, e.essay_hash, e.source, e.subset_name, e.source_id, e.split_name,
+                       e.theme, e.essay_text, e.license_spdx, COUNT(h.id) grader_count,
+                       CAST(ROUND(AVG(h.c1)) AS INTEGER) c1,
+                       CAST(ROUND(AVG(h.c2)) AS INTEGER) c2,
+                       CAST(ROUND(AVG(h.c3)) AS INTEGER) c3,
+                       CAST(ROUND(AVG(h.c4)) AS INTEGER) c4,
+                       CAST(ROUND(AVG(h.c5)) AS INTEGER) c5
+                FROM public_essay e JOIN public_human_evaluation h ON h.essay_id=e.id
+                WHERE e.split_name=? AND h.eligible_for_benchmark=1 AND h.human_verified=1
+                GROUP BY e.id ORDER BY e.essay_hash LIMIT ?
+                """)) {
+            statement.setString(1, normalizedSplit);
+            statement.setInt(2, limit);
+            try (ResultSet rows = statement.executeQuery()) {
+                while (rows.next()) {
+                    List<Integer> scores = List.of(rows.getInt("c1"), rows.getInt("c2"), rows.getInt("c3"),
+                            rows.getInt("c4"), rows.getInt("c5"));
+                    examples.add(new Example(rows.getLong("id"), rows.getString("essay_hash"),
+                            rows.getString("source"), rows.getString("subset_name"), rows.getString("source_id"),
+                            rows.getString("split_name"), rows.getString("theme"), rows.getString("essay_text"),
+                            rows.getString("license_spdx"), "human-mean:" + rows.getInt("grader_count"), scores,
+                            scores.stream().mapToInt(Integer::intValue).sum(), 0));
+                }
+            }
+        }
+        return List.copyOf(examples);
+    }
+
     /** Hashes logical rows, so WAL/checkpoint state cannot change or hide the corpus identity. */
     public String fingerprint() throws SQLException {
         try {
@@ -306,23 +380,24 @@ public final class PublicHumanCorpus implements AutoCloseable {
     private long insertEssay(ImportEntry entry, String hash) throws SQLException {
         try (PreparedStatement statement = connection.prepareStatement("""
                 INSERT INTO public_essay
-                  (source, subset_name, source_id, essay_hash, split_name, theme_group, theme, essay_text,
+                  (source, subset_name, source_id, essay_hash, near_signature, split_name, theme_group, theme, essay_text,
                    essay_year, license_spdx, license_url, source_url, imported_at)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                 """, Statement.RETURN_GENERATED_KEYS)) {
             statement.setString(1, entry.source());
             statement.setString(2, entry.subset());
             statement.setString(3, entry.sourceId());
             statement.setString(4, hash);
-            statement.setString(5, entry.split());
-            statement.setString(6, entry.themeGroup());
-            statement.setString(7, entry.theme());
-            statement.setString(8, entry.essayText().strip());
-            if (entry.year() == null) statement.setNull(9, java.sql.Types.INTEGER); else statement.setInt(9, entry.year());
-            statement.setString(10, entry.licenseSpdx());
-            statement.setString(11, entry.licenseUrl());
-            statement.setString(12, entry.sourceUrl());
-            statement.setString(13, Instant.now().toString());
+            statement.setLong(5, nearSignature(entry.essayText()));
+            statement.setString(6, entry.split());
+            statement.setString(7, entry.themeGroup());
+            statement.setString(8, entry.theme());
+            statement.setString(9, entry.essayText().strip());
+            if (entry.year() == null) statement.setNull(10, java.sql.Types.INTEGER); else statement.setInt(10, entry.year());
+            statement.setString(11, entry.licenseSpdx());
+            statement.setString(12, entry.licenseUrl());
+            statement.setString(13, entry.sourceUrl());
+            statement.setString(14, Instant.now().toString());
             statement.executeUpdate();
             try (ResultSet keys = statement.getGeneratedKeys()) {
                 if (!keys.next()) throw new SQLException("SQLite nao retornou o id da redacao");
@@ -388,6 +463,21 @@ public final class PublicHumanCorpus implements AutoCloseable {
 
     public static String hashText(String text) {
         return DatasetManifestValidator.sha256(normalize(text).getBytes(java.nio.charset.StandardCharsets.UTF_8));
+    }
+
+    static long nearSignature(String text) {
+        int[] weights = new int[64];
+        java.util.Arrays.stream(normalize(text).split("[^\\p{L}\\p{N}]+"))
+                .filter(token -> token.length() >= 3).forEach(token -> {
+                    byte[] digest;
+                    try { digest = MessageDigest.getInstance("SHA-256").digest(token.getBytes(StandardCharsets.UTF_8)); }
+                    catch (Exception ex) { throw new IllegalStateException(ex); }
+                    long hash = java.nio.ByteBuffer.wrap(digest).getLong();
+                    for (int bit = 0; bit < 64; bit++) weights[bit] += ((hash >>> bit) & 1L) == 1L ? 1 : -1;
+                });
+        long signature = 0;
+        for (int bit = 0; bit < 64; bit++) if (weights[bit] >= 0) signature |= 1L << bit;
+        return signature;
     }
 
     private static String normalize(String text) {

@@ -16,6 +16,8 @@ import com.redator.corretor.service.UploadValidationService;
 import com.redator.corretor.service.TrainingCycleService;
 import com.redator.corretor.service.ReviewExchangeService;
 import com.redator.corretor.service.TrainingCardService;
+import com.redator.corretor.service.ProfessorReviewService;
+import com.redator.corretor.service.OpaqueRelayService;
 import java.util.Base64;
 import java.util.List;
 import java.util.Map;
@@ -46,16 +48,21 @@ public class EssayController {
     private final TrainingCycleService trainingCycle;
     private final ReviewExchangeService reviewExchange;
     private final TrainingCardService trainingCards;
+    private final ProfessorReviewService professorReviews;
+    private final OpaqueRelayService relay;
 
     public EssayController(EssayService essayService, UploadValidationService uploadValidationService, LlmGateway llmGateway,
                            TrainingCycleService trainingCycle, ReviewExchangeService reviewExchange,
-                           TrainingCardService trainingCards) {
+                           TrainingCardService trainingCards, ProfessorReviewService professorReviews,
+                           OpaqueRelayService relay) {
         this.essayService = essayService;
         this.uploadValidationService = uploadValidationService;
         this.llmGateway = llmGateway;
         this.trainingCycle = trainingCycle;
         this.reviewExchange = reviewExchange;
         this.trainingCards = trainingCards;
+        this.professorReviews = professorReviews;
+        this.relay = relay;
     }
 
     @GetMapping("/temas")
@@ -295,7 +302,7 @@ public class EssayController {
 
     @PostMapping("/review-packages/open")
     public ResponseEntity<Map<String, Object>> openReviewPackage(@RequestBody Map<String, Object> payload) {
-        return ResponseEntity.ok(reviewExchange.openRequest(packageBytes(payload), required(payload, "secret")));
+        return ResponseEntity.ok(professorReviews.open(packageBytes(payload), required(payload, "secret")));
     }
 
     @PostMapping("/review-packages/respond")
@@ -303,13 +310,40 @@ public class EssayController {
         HumanEvaluationRequest evaluation = new HumanEvaluationRequest(
                 integerMap(payload.get("scores")), stringMap(payload.get("comments")),
                 optional(payload, "mainGuidance"), optional(payload, "revisionReason"));
-        return ResponseEntity.status(HttpStatus.CREATED).body(reviewExchange.createResponse(
+        return ResponseEntity.status(HttpStatus.CREATED).body(professorReviews.respond(
                 packageBytes(payload), required(payload, "secret"), required(payload, "reviewer"), evaluation));
     }
 
     @PostMapping("/review-packages/import")
     public ResponseEntity<Map<String, Object>> importReviewPackage(@RequestBody Map<String, Object> payload) {
         return ResponseEntity.ok(reviewExchange.importResponse(packageBytes(payload), required(payload, "secret")));
+    }
+
+    @PostMapping("/relay/channels")
+    public ResponseEntity<Map<String, Object>> createRelay(@RequestBody Map<String, Object> payload) {
+        Integer ttl = payload.get("ttlHours") instanceof Number number ? number.intValue() : null;
+        return ResponseEntity.status(HttpStatus.CREATED).body(relay.create(required(payload, "blobBase64"), ttl));
+    }
+
+    @GetMapping("/relay/professor/{token}")
+    public ResponseEntity<Map<String, Object>> relayRequest(@PathVariable String token) {
+        return ResponseEntity.ok(relay.readRequest(token));
+    }
+
+    @PostMapping("/relay/professor/{token}/response")
+    public ResponseEntity<Map<String, Object>> relayResponse(@PathVariable String token,
+            @RequestBody Map<String, Object> payload) {
+        return ResponseEntity.ok(relay.writeResponse(token, required(payload, "blobBase64")));
+    }
+
+    @GetMapping("/relay/student/{token}/response")
+    public ResponseEntity<Map<String, Object>> relayStudentResponse(@PathVariable String token) {
+        return ResponseEntity.ok(relay.readResponse(token));
+    }
+
+    @PostMapping("/relay/student/{token}/revoke")
+    public ResponseEntity<Map<String, Object>> revokeRelay(@PathVariable String token) {
+        return ResponseEntity.ok(relay.revoke(token));
     }
 
     @PostMapping("/essays/{id}/human-review-request/cancel")
