@@ -17,7 +17,7 @@ class RagPrerequisiteInitializerTest {
     @Test
     void failsOllamaStartupWithoutUsableHumanCorpus() {
         var initializer = new RagPrerequisiteInitializer("ollama",
-                new RagService(temp.resolve("missing.db"), true, 3, 1200));
+                new RagService(temp.resolve("missing.db"), true, 3, 1200), true);
         assertThatThrownBy(() -> initializer.run(null))
                 .isInstanceOf(IllegalStateException.class)
                 .hasMessageContaining("RAG obrigatório");
@@ -33,7 +33,14 @@ class RagPrerequisiteInitializerTest {
                     "https://example.test/source",
                     new PublicHumanCorpus.HumanScore("human", 160, 160, 160, 160, 160, 800))), "v1");
         }
-        var initializer = new RagPrerequisiteInitializer("ollama", new RagService(database, true, 3, 1200));
+        var initializer = new RagPrerequisiteInitializer("ollama", new RagService(database, true, 3, 1200), true);
+        assertThatCode(() -> initializer.run(null)).doesNotThrowAnyException();
+    }
+
+    @Test
+    void permitsExplicitBenchmarkBaselineWithoutRag() {
+        var initializer = new RagPrerequisiteInitializer("ollama",
+                new RagService(temp.resolve("missing.db"), false, 3, 1200), false);
         assertThatCode(() -> initializer.run(null)).doesNotThrowAnyException();
     }
 }

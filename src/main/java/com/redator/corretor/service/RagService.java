@@ -67,6 +67,7 @@ public class RagService {
         if (enabled && Files.isRegularFile(database)) {
             try (PublicHumanCorpus corpus = new PublicHumanCorpus(database)) {
                 status.putAll(corpus.statistics());
+                status.put("fingerprint", corpus.fingerprint());
             } catch (Exception error) {
                 status.put("available", false);
                 status.put("error", "CORPUS_UNAVAILABLE");

@@ -12,15 +12,18 @@ import org.springframework.stereotype.Component;
 public class RagPrerequisiteInitializer implements ApplicationRunner {
     private final String provider;
     private final RagService rag;
+    private final boolean requiredOnStartup;
 
-    public RagPrerequisiteInitializer(@Value("${app.llm.provider:ollama}") String provider, RagService rag) {
+    public RagPrerequisiteInitializer(@Value("${app.llm.provider:ollama}") String provider, RagService rag,
+                                      @Value("${app.rag.require-on-startup:true}") boolean requiredOnStartup) {
         this.provider = provider;
         this.rag = rag;
+        this.requiredOnStartup = requiredOnStartup;
     }
 
     @Override
     public void run(ApplicationArguments args) {
-        if (!"ollama".equalsIgnoreCase(provider)) return;
+        if (!"ollama".equalsIgnoreCase(provider) || !requiredOnStartup) return;
         Map<String, Object> status = rag.status();
         long eligible = status.get("ragEligible") instanceof Number number ? number.longValue() : 0;
         if (!Boolean.TRUE.equals(status.get("enabled")) || !Boolean.TRUE.equals(status.get("available")) || eligible < 1) {

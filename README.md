@@ -190,7 +190,9 @@ O benchmark calcula métricas por competência, matriz de confusão, erro absolu
 
 O benchmark público congelado é exportado somente dos splits reservados, em ordem
 determinística, com hashes de cada redação, fingerprint lógico do corpus e fingerprint
-da seleção. O artefato versionado atual contém 69 redações humanas do split `test`:
+da seleção. O exportador só admite consenso humano na escala oficial C1–C5
+(0/40/80/120/160/200), sem arredondar rótulos intermediários. O artefato versionado
+atual contém 11 redações humanas válidas do split `test`:
 
 ```bash
 java -cp "target/classes:$(cat target/classpath.txt)" \
@@ -200,7 +202,29 @@ java -cp "target/classes:$(cat target/classpath.txt)" \
 ```
 
 Isso congela a população e os rótulos, mas não aprova o RAG sozinho. A aprovação exige
-predições pareadas do mesmo Gemma/configuração com RAG desligado e ligado; o gate usa
+predições pareadas do mesmo Gemma/configuração com RAG desligado e ligado. Cada braço
+usa um banco operacional isolado, grava progresso a cada amostra e registra configuração,
+auditoria e hashes:
+
+```bash
+java -cp "target/classes:$(cat target/classpath.txt)" \
+  com.redator.corretor.cli.PairedBenchmarkCli \
+  --benchmark eval/frozen/public-test-v1.json --arm baseline \
+  --data-directory target/benchmark-baseline --output eval/results/baseline-v1.json
+
+java -cp "target/classes:$(cat target/classpath.txt)" \
+  com.redator.corretor.cli.PairedBenchmarkCli \
+  --benchmark eval/frozen/public-test-v1.json --arm rag \
+  --data-directory target/benchmark-rag --output eval/results/rag-v1.json
+
+java -cp "target/classes:$(cat target/classpath.txt)" \
+  com.redator.corretor.cli.RagQualityGateCli \
+  eval/frozen/public-test-v1.json eval/results/baseline-v1.json \
+  eval/results/rag-v1.json eval/results/gate-v1.json
+```
+
+O gate identifica amostras pelo hash, recalcula a impressão do benchmark, rejeita
+duplicatas/cobertura parcial e exige provider, modelo e parâmetros idênticos. Ele usa
 a escala correta de seis níveis por competência e reprova QWK não calculável.
 
 ## Testes

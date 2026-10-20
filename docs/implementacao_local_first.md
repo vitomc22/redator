@@ -38,7 +38,7 @@ Este arquivo acompanha a execução de `plano_redator_local_first.md`. Um item s
 - [x] Cache SQLite limitado, persistente, com TTL e LRU por fingerprint completo do contrato/configuração.
 - [x] Fingerprint lógico determinístico consistente com SQLite WAL/checkpoints.
 - [x] Deduplicação exata e aproximada por SimHash, com bloqueio transacional de vazamento entre splits.
-- [ ] Benchmark humano congelado em 69 amostras públicas, exportação reproduzível e gate matemático corrigido; falta executar e versionar os dois braços Gemma sem RAG × com RAG e aplicar o gate no release.
+- [ ] Benchmark humano congelado em 11 amostras públicas estritamente compatíveis com os seis níveis oficiais, exportação reproduzível, executor pareado auditável e gate por hash/configuração; falta concluir e versionar os dois braços Gemma sem RAG × com RAG e aplicar o gate no release.
 
 ## Fase 4 — pacote do professor
 

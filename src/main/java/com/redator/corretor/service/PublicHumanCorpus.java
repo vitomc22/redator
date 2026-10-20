@@ -303,7 +303,13 @@ public final class PublicHumanCorpus implements AutoCloseable {
                        CAST(ROUND(AVG(h.c5)) AS INTEGER) c5
                 FROM public_essay e JOIN public_human_evaluation h ON h.essay_id=e.id
                 WHERE e.split_name=? AND h.eligible_for_benchmark=1 AND h.human_verified=1
-                GROUP BY e.id ORDER BY e.essay_hash LIMIT ?
+                GROUP BY e.id
+                HAVING CAST(ROUND(AVG(h.c1)) AS INTEGER) % 40 = 0
+                   AND CAST(ROUND(AVG(h.c2)) AS INTEGER) % 40 = 0
+                   AND CAST(ROUND(AVG(h.c3)) AS INTEGER) % 40 = 0
+                   AND CAST(ROUND(AVG(h.c4)) AS INTEGER) % 40 = 0
+                   AND CAST(ROUND(AVG(h.c5)) AS INTEGER) % 40 = 0
+                ORDER BY e.essay_hash LIMIT ?
                 """)) {
             statement.setString(1, normalizedSplit);
             statement.setInt(2, limit);
