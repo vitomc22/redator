@@ -1,0 +1,193 @@
+{
+  "status": "PREPARED_NOT_ACTIVATED",
+  "controlledSource": "Playwright local-flow test fixture",
+  "sourceCounts": {
+    "essay": 7,
+    "run": 3,
+    "human_evaluation": 4,
+    "training_card": 5,
+    "training_session": 2
+  },
+  "manifest": {
+    "schemaVersion": 1,
+    "status": "PREPARED_NOT_ACTIVATED",
+    "source": "/home/victor/Documentos/git/redator/target/playwright-offline-bafad7c9-04c7-4dcc-8de2-116c9e491088.db",
+    "sourceSchemaSha256": "43225ab911bbaeeae8cbf6cfc920b0d08289e256dec9504252184e5992b3d3df",
+    "legacySnapshot": {
+      "file": "legacy-snapshot.sqlite",
+      "sha256": "d5c1c310a8a326df042616f31447d4be0a1c7d8bc7858c6af5e7a353252c8357"
+    },
+    "profiles": {
+      "alice-1792577374711-0": {
+        "humanEvaluations": 0,
+        "file": "profiles/alice-1792577374711-0/redator.sqlite",
+        "sha256": "5e0000e8c26a279ea129f9534be079f50f3e03301b8154f9af0cbdc67eca024f",
+        "essays": 1,
+        "trainingCards": 0,
+        "runs": 0
+      },
+      "history-1792577375309-1": {
+        "humanEvaluations": 0,
+        "file": "profiles/history-1792577375309-1/redator.sqlite",
+        "sha256": "c61f4fbe66d79e46d30f14875605a5c262b666ffead93c08584169c47034fdb3",
+        "essays": 2,
+        "trainingCards": 0,
+        "runs": 1
+      },
+      "pdf-84406b3e-2938-4da8-b22b-2ba4680394eb": {
+        "humanEvaluations": 2,
+        "file": "profiles/pdf-84406b3e-2938-4da8-b22b-2ba4680394eb/redator.sqlite",
+        "sha256": "77e056c9cac96f532011393393a2eaa0cb17dd267e86f644f53b83ff19117f77",
+        "essays": 1,
+        "trainingCards": 0,
+        "runs": 1
+      },
+      "student-cancel-1792577380543-1": {
+        "humanEvaluations": 0,
+        "file": "profiles/student-cancel-1792577380543-1/redator.sqlite",
+        "sha256": "c0b0d84b06e0ac77e5a265557262eb3586d4bad2fabfecbadde2044d6ef26ea7",
+        "essays": 1,
+        "trainingCards": 0,
+        "runs": 0
+      },
+      "student-review-1792577377302-0": {
+        "humanEvaluations": 1,
+        "file": "profiles/student-review-1792577377302-0/redator.sqlite",
+        "sha256": "f15ee48ddac741f27e5d7c7cc0960dbf834bea5760cb33868cfe6191f26f8496",
+        "essays": 1,
+        "trainingCards": 0,
+        "runs": 0
+      },
+      "training-1792577381565-1": {
+        "humanEvaluations": 1,
+        "file": "profiles/training-1792577381565-1/redator.sqlite",
+        "sha256": "89df20da57c128e59f944d475433197284bc85817af94729fdb59ad456d3183f",
+        "essays": 1,
+        "trainingCards": 5,
+        "runs": 1
+      }
+    },
+    "unassignedData": {
+      "preservedInLegacySnapshot": true,
+      "unlinkedLlmCalls": 0,
+      "evaluationCacheEntries": 3,
+      "relayChannels": 0
+    }
+  },
+  "verifiedProfiles": {
+    "alice-1792577374711-0": {
+      "expectedEssays": 1,
+      "actualEssays": 1,
+      "integrity": "ok",
+      "foreignKeys": "ok"
+    },
+    "history-1792577375309-1": {
+      "expectedEssays": 2,
+      "actualEssays": 2,
+      "integrity": "ok",
+      "foreignKeys": "ok"
+    },
+    "pdf-84406b3e-2938-4da8-b22b-2ba4680394eb": {
+      "expectedEssays": 1,
+      "actualEssays": 1,
+      "integrity": "ok",
+      "foreignKeys": "ok"
+    },
+    "student-cancel-1792577380543-1": {
+      "expectedEssays": 1,
+      "actualEssays": 1,
+      "integrity": "ok",
+      "foreignKeys": "ok"
+    },
+    "student-review-1792577377302-0": {
+      "expectedEssays": 1,
+      "actualEssays": 1,
+      "integrity": "ok",
+      "foreignKeys": "ok"
+    },
+    "training-1792577381565-1": {
+      "expectedEssays": 1,
+      "actualEssays": 1,
+      "integrity": "ok",
+      "foreignKeys": "ok"
+    }
+  },
+  "sourceFilesSha256": {
+    "src/main/java/com/redator/corretor/service/ProfileCollectionExporter.java": "4b1e8ae1768f5149148f8b43d7d2418e666b01c23361082d3b468c7ee4084590",
+    "src/main/java/com/redator/corretor/cli/ProfileCollectionCli.java": "8343f4809411df6ba87269c3b4cc04844fbe5ec64bc3f78357fca12703cc29f2",
+    "src/test/java/com/redator/corretor/ProfileCollectionExporterIntegrationTest.java": "5a92288cb384a89c4ba31d7678fa8dad2a3f359964c100adbcef1f4f92a89239"
+  },
+  "logicalRowVerification": {
+    "essay": {
+      "sourceRows": 7,
+      "exportedRows": 7,
+      "logicalRowsSha256": "19b35a1c12f0200bfa46d8b0ed9b2b13553ac27bc5f4e034446d95ed1bbcecdf"
+    },
+    "run": {
+      "sourceRows": 3,
+      "exportedRows": 3,
+      "logicalRowsSha256": "e577869661ece9a1b9df4b661fdb0c2b935751674b3b5ca4eb688313e9c497f9"
+    },
+    "competence_result": {
+      "sourceRows": 15,
+      "exportedRows": 15,
+      "logicalRowsSha256": "1fb78db71ec65e1fbfd630c84b17422ecc3773583fb230f76c8b8e40d277615f"
+    },
+    "llm_call": {
+      "sourceRows": 3,
+      "exportedRows": 3,
+      "logicalRowsSha256": "11cb7da4057fa7c42baaef8f2032a969fe4507a0f848791a8be8c6ab94f6c1fc"
+    },
+    "human_score": {
+      "sourceRows": 0,
+      "exportedRows": 0,
+      "logicalRowsSha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b"
+    },
+    "human_review_request": {
+      "sourceRows": 4,
+      "exportedRows": 4,
+      "logicalRowsSha256": "519bceae16d5af461408b9296fe5a8b7e417da15a9982811337e38026da08408"
+    },
+    "human_evaluation": {
+      "sourceRows": 4,
+      "exportedRows": 4,
+      "logicalRowsSha256": "fd99e810687d378fc568bf4b9a026e9172d64b1924753c99c0194bcf15169d0c"
+    },
+    "student_checklist": {
+      "sourceRows": 1,
+      "exportedRows": 1,
+      "logicalRowsSha256": "caf6a45c444808b84167e69f35ed5f17e5e2c93fd7a5da54ab5e1a2599a3334d"
+    },
+    "review_package": {
+      "sourceRows": 3,
+      "exportedRows": 3,
+      "logicalRowsSha256": "4e72707cbba4c6b64cb81775c5cbc2f8e6ad7a72bcfaeb4d8c4cbced2371051f"
+    },
+    "training_card": {
+      "sourceRows": 5,
+      "exportedRows": 5,
+      "logicalRowsSha256": "6b4ddefcf2342138fc58c3b43aebb5ba1bca43653896fd361fe870926f305e17"
+    },
+    "training_card_review": {
+      "sourceRows": 1,
+      "exportedRows": 1,
+      "logicalRowsSha256": "586ee88490c73777dcd09b4c074ad3de79fb563d181478c1afe4610f9cc142bb"
+    },
+    "training_goal": {
+      "sourceRows": 1,
+      "exportedRows": 1,
+      "logicalRowsSha256": "5109a61de185a4dfaf25a5ddd38af8de313c4d39283131282e3f7cbc91613d5c"
+    },
+    "training_session": {
+      "sourceRows": 2,
+      "exportedRows": 2,
+      "logicalRowsSha256": "9108b72d708769354c4453ca038f75d17257e0904ea16db03ee7b3ea6a5cea0e"
+    }
+  },
+  "validation": {
+    "unitPassed": 99,
+    "integrationPassed": 46,
+    "integrationSkipped": 1,
+    "profileExportIntegrationCases": 10
+  }
+}

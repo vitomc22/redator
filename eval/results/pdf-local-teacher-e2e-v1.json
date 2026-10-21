@@ -1,0 +1,277 @@
+{
+  "fixtureScoresAreWorkflowTestData": true,
+  "uploaded": {
+    "id": 1,
+    "tema_id": 1,
+    "text": "A educacao publica e um direito e reduz as diferencas sociais. No Brasil, muitas escolas ainda nao contam com livros e salas seguras. O apoio aos docentes e a oferta de merenda ajudam o aluno a aprender. A falta de verbas limita o acesso ao ensino e amplia a evasao escolar. Por isso, o governo deve ampliar o apoio as escolas e formar professores. As metas devem ser claras e revistas em cada ano com a comunidade.",
+    "status": "NEEDS_REVIEW",
+    "created_at": "2026-10-21T07:09:28.114622190-03:00",
+    "student_id": "pdf-84406b3e-2938-4da8-b22b-2ba4680394eb",
+    "title": "PDF com extração e conferência reais",
+    "source_type": "pdf",
+    "group_id": 1,
+    "parent_essay_id": null,
+    "attempt_number": 1,
+    "revision_hash": "ced9b6166e34babf99f9c6bc4667a5044580a1eda6da402146682316dd4c04fe",
+    "approved_at": null,
+    "frozen": 0,
+    "theme": {
+      "id": 1,
+      "titulo": "Educacao como direito fundamental",
+      "recorte": "Como a educacao impacta a mobilidade social e a qualidade de vida?",
+      "motivadores": "A educacao e um direito humano essencial. O acesso a escola e a formacao ampliam oportunidades, reduz desigualdades estruturais e fortalece a cidadania."
+    },
+    "humanReview": {}
+  },
+  "approved": {
+    "id": 1,
+    "tema_id": 1,
+    "text": "A educacao publica e um direito e reduz as diferencas sociais. No Brasil, muitas escolas ainda nao contam com livros e salas seguras. O apoio aos docentes e a oferta de merenda ajudam os alunos a aprender. A falta de verbas limita o acesso ao ensino e amplia a evasao escolar. Por isso, o governo deve ampliar o apoio as escolas e formar professores. As metas devem ser claras e revistas em cada ano com a comunidade.",
+    "status": "READY",
+    "created_at": "2026-10-21T07:09:28.114622190-03:00",
+    "student_id": "pdf-84406b3e-2938-4da8-b22b-2ba4680394eb",
+    "title": "PDF com extração e conferência reais",
+    "source_type": "pdf",
+    "group_id": 1,
+    "parent_essay_id": null,
+    "attempt_number": 1,
+    "revision_hash": "7d97297f12506dddcb1a5449db4f287f6c03f26a84ab0f3c9cbf1306d6dea8b4",
+    "approved_at": "2026-10-21T07:09:29.103360554-03:00",
+    "frozen": 1,
+    "theme": {
+      "id": 1,
+      "titulo": "Educacao como direito fundamental",
+      "recorte": "Como a educacao impacta a mobilidade social e a qualidade de vida?",
+      "motivadores": "A educacao e um direito humano essencial. O acesso a escola e a formacao ampliam oportunidades, reduz desigualdades estruturais e fortalece a cidadania."
+    },
+    "humanReview": {}
+  },
+  "unreviewedEvaluationStatus": 409,
+  "frozenEditStatus": 409,
+  "fakeResult": {
+    "runId": 1,
+    "essayId": 1,
+    "profile": "normal",
+    "status": "NEEDS_REVIEW",
+    "total": null,
+    "provider": "fake",
+    "model": "deterministic-baseline",
+    "limitations": [
+      "Provider fake: resultado determinístico para testes; não é correção por LLM."
+    ],
+    "reviewStage": "EVALUATION",
+    "reviewReasons": [
+      "FAKE_PROVIDER"
+    ],
+    "failureCode": null,
+    "failureMessage": null,
+    "createdAt": "2026-10-21T07:09:29.312113623-03:00",
+    "experimental": true,
+    "competences": [
+      {
+        "competencia": "C1",
+        "nota": 40,
+        "nivelSugerido": 160,
+        "evidencias": "Palavras avaliadas: 77 | Ocorrencias de registro informal: 0",
+        "problemas": "Texto breve ou insuficiente",
+        "needsReview": 1,
+        "motivos": "Dominio da modalidade escrita formal"
+      },
+      {
+        "competencia": "C2",
+        "nota": 40,
+        "nivelSugerido": 160,
+        "evidencias": "paragrafos=1; linhas=1; palavras=77 | Tema identificado: educacao e cidadania",
+        "problemas": "Estrutura insuficiente para a competencia de proposta",
+        "needsReview": 1,
+        "motivos": "Compreensao da proposta e tipo textual"
+      },
+      {
+        "competencia": "C3",
+        "nota": 40,
+        "nivelSugerido": 160,
+        "evidencias": "Paragrafos: 1 | Conclusao e desenvolvimento foram avaliados em conjunto",
+        "problemas": "",
+        "needsReview": 1,
+        "motivos": "Selecao, relacao e organizacao de argumentos"
+      },
+      {
+        "competencia": "C4",
+        "nota": 80,
+        "nivelSugerido": 160,
+        "evidencias": "Conectivos de coesao e transicao foram detectados | Linguagem e progressao textual analisadas",
+        "problemas": "",
+        "needsReview": 1,
+        "motivos": "Mecanismos linguisticos de coesao"
+      },
+      {
+        "competencia": "C5",
+        "nota": 80,
+        "nivelSugerido": 160,
+        "evidencias": "A proposta foi avaliada pela clareza e viabilidade da intervencao | Tema e solucao apresentados de forma sustentavel",
+        "problemas": "",
+        "needsReview": 1,
+        "motivos": "Proposta de intervencao"
+      }
+    ],
+    "llmCalls": [
+      {
+        "provider": "fake",
+        "model": "deterministic-baseline",
+        "promptHash": "c0c31ce9fe4c2010cfcf3dc2f2b64c9dafdc6bf6e0913186c1985cac186e782a",
+        "schemaHash": "f4d935329ba0f51e9814c1b7072ff16f3f4fcdf14285b134ab8f0556aaf89a50",
+        "costUsd": 0,
+        "latencyMs": 0,
+        "status": "ok",
+        "createdAt": "2026-10-21T07:09:29.312113623-03:00",
+        "cacheHit": 0,
+        "auditJson": "{\"provider\":\"fake\",\"model\":\"deterministic-baseline\",\"cacheKey\":\"10f725c5cc1d2b30c7925c55a6c0df1a446c310f10ec874a3513b9224c457663\",\"promptHash\":\"c0c31ce9fe4c2010cfcf3dc2f2b64c9dafdc6bf6e0913186c1985cac186e782a\",\"rubricHash\":\"2c1049af9ee0080fc7668575e5729125c4081fdcd8e77b8ad815c45817f14634\",\"schemaHash\":\"f4d935329ba0f51e9814c1b7072ff16f3f4fcdf14285b134ab8f0556aaf89a50\",\"costUsd\":0.0,\"wallMs\":0.0}"
+      }
+    ]
+  },
+  "publishedResult": {
+    "runId": 1,
+    "essayId": 1,
+    "profile": "normal",
+    "status": "NEEDS_REVIEW",
+    "total": null,
+    "provider": "fake",
+    "model": "deterministic-baseline",
+    "limitations": [
+      "Provider fake: resultado determinístico para testes; não é correção por LLM."
+    ],
+    "reviewStage": "EVALUATION",
+    "reviewReasons": [
+      "FAKE_PROVIDER"
+    ],
+    "failureCode": null,
+    "failureMessage": null,
+    "createdAt": "2026-10-21T07:09:29.312113623-03:00",
+    "experimental": true,
+    "competences": [
+      {
+        "competencia": "C1",
+        "nota": 40,
+        "nivelSugerido": 160,
+        "evidencias": "Palavras avaliadas: 77 | Ocorrencias de registro informal: 0",
+        "problemas": "Texto breve ou insuficiente",
+        "needsReview": 1,
+        "motivos": "Dominio da modalidade escrita formal"
+      },
+      {
+        "competencia": "C2",
+        "nota": 40,
+        "nivelSugerido": 160,
+        "evidencias": "paragrafos=1; linhas=1; palavras=77 | Tema identificado: educacao e cidadania",
+        "problemas": "Estrutura insuficiente para a competencia de proposta",
+        "needsReview": 1,
+        "motivos": "Compreensao da proposta e tipo textual"
+      },
+      {
+        "competencia": "C3",
+        "nota": 40,
+        "nivelSugerido": 160,
+        "evidencias": "Paragrafos: 1 | Conclusao e desenvolvimento foram avaliados em conjunto",
+        "problemas": "",
+        "needsReview": 1,
+        "motivos": "Selecao, relacao e organizacao de argumentos"
+      },
+      {
+        "competencia": "C4",
+        "nota": 80,
+        "nivelSugerido": 160,
+        "evidencias": "Conectivos de coesao e transicao foram detectados | Linguagem e progressao textual analisadas",
+        "problemas": "",
+        "needsReview": 1,
+        "motivos": "Mecanismos linguisticos de coesao"
+      },
+      {
+        "competencia": "C5",
+        "nota": 80,
+        "nivelSugerido": 160,
+        "evidencias": "A proposta foi avaliada pela clareza e viabilidade da intervencao | Tema e solucao apresentados de forma sustentavel",
+        "problemas": "",
+        "needsReview": 1,
+        "motivos": "Proposta de intervencao"
+      }
+    ],
+    "llmCalls": [
+      {
+        "provider": "fake",
+        "model": "deterministic-baseline",
+        "promptHash": "c0c31ce9fe4c2010cfcf3dc2f2b64c9dafdc6bf6e0913186c1985cac186e782a",
+        "schemaHash": "f4d935329ba0f51e9814c1b7072ff16f3f4fcdf14285b134ab8f0556aaf89a50",
+        "costUsd": 0,
+        "latencyMs": 0,
+        "status": "ok",
+        "createdAt": "2026-10-21T07:09:29.312113623-03:00",
+        "cacheHit": 0,
+        "auditJson": "{\"provider\":\"fake\",\"model\":\"deterministic-baseline\",\"cacheKey\":\"10f725c5cc1d2b30c7925c55a6c0df1a446c310f10ec874a3513b9224c457663\",\"promptHash\":\"c0c31ce9fe4c2010cfcf3dc2f2b64c9dafdc6bf6e0913186c1985cac186e782a\",\"rubricHash\":\"2c1049af9ee0080fc7668575e5729125c4081fdcd8e77b8ad815c45817f14634\",\"schemaHash\":\"f4d935329ba0f51e9814c1b7072ff16f3f4fcdf14285b134ab8f0556aaf89a50\",\"costUsd\":0.0,\"wallMs\":0.0}"
+      }
+    ]
+  },
+  "progress": {
+    "nullExcluded": true,
+    "fakeExcluded": true,
+    "points": [
+      {
+        "essayId": 1,
+        "groupId": 1,
+        "attemptNumber": 1,
+        "createdAt": "2026-10-21T07:09:28.114622190-03:00",
+        "text": "A educacao publica e um direito e reduz as diferencas sociais. No Brasil, muitas escolas ainda nao contam com livros e salas seguras. O apoio aos docentes e a oferta de merenda ajudam os alunos a aprender. A falta de verbas limita o acesso ao ensino e amplia a evasao escolar. Por isso, o governo deve ampliar o apoio as escolas e formar professores. As metas devem ser claras e revistas em cada ano com a comunidade.",
+        "theme": "Educacao como direito fundamental",
+        "runId": null,
+        "total": null,
+        "provider": null,
+        "model": null,
+        "scores": [],
+        "human": {
+          "total": 800,
+          "publishedAt": "2026-10-21T07:09:32.339508395-03:00",
+          "scores": {
+            "C1": 160,
+            "C2": 160,
+            "C3": 160,
+            "C4": 160,
+            "C5": 160
+          }
+        }
+      }
+    ],
+    "student": "pdf-84406b3e-2938-4da8-b22b-2ba4680394eb"
+  },
+  "sourceFilesSha256": {
+    "e2e/document-upload-integration.spec.js": "4483d13fbd724f7d6c1b081e54c059852d2f36a8f4239173c807b647f75e110b",
+    "playwright.config.js": "0b930ac45e56bea1119b47e7151ded947f37c1f89647f548452cef6c7f7671b5",
+    "src/main/resources/static/api-client.js": "323693bb4616bd185f911fb23ad35fd567c9b5cde495bff6c47b4f6633fee03d",
+    "src/main/resources/static/index.html": "a2035fd0d1490e20d875c2163b9b2cea65279470da5deb962a12ac1cd2268efa",
+    "src/main/java/com/redator/corretor/service/TrainingCycleService.java": "04759969e957eb1ed6752162d6c1637e76cb656e309756f6fe1ad999ee6f8075"
+  },
+  "ownedServerBaseUrl": "http://127.0.0.1:18080",
+  "sqliteVerification": {
+    "database": "target/playwright-offline-bafad7c9-04c7-4dcc-8de2-116c9e491088.db",
+    "essay": {
+      "id": 1,
+      "source_type": "pdf",
+      "frozen": 1,
+      "approved_at": "2026-10-21T07:09:29.103360554-03:00",
+      "revision_hash": "7d97297f12506dddcb1a5449db4f287f6c03f26a84ab0f3c9cbf1306d6dea8b4"
+    },
+    "humanVersions": [
+      {
+        "id": 1,
+        "version": 1,
+        "status": "DRAFT",
+        "total": 800
+      },
+      {
+        "id": 2,
+        "version": 2,
+        "status": "PUBLISHED",
+        "total": 800
+      }
+    ],
+    "textMatchesApproved": true
+  }
+}

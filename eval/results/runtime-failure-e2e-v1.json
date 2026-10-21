@@ -1,0 +1,92 @@
+{
+  "httpStatus": 503,
+  "runtime": {
+    "provider": "ollama",
+    "experimental": true,
+    "synchronous": true,
+    "profilesAliases": true,
+    "model": "gemma4:e2b-it-q4_K_M",
+    "options": {
+      "num_thread": 4,
+      "num_predict": 1200,
+      "seed": 42,
+      "temperature": 0,
+      "num_ctx": 8192
+    },
+    "keep_alive": "5m",
+    "timeoutSeconds": 600,
+    "runtimeQuarantined": false,
+    "rag": {
+      "enabled": false,
+      "database": "/home/victor/Documentos/git/redator/dataset/public-corpus.db",
+      "available": true,
+      "maxExamples": 3,
+      "policy": "lexical-v1",
+      "excerptChars": 1200
+    }
+  },
+  "failure": {
+    "timestamp": "2026-10-21T06:41:36.627872557-03:00",
+    "status": 503,
+    "error": "Ollama indisponível ou conexão interrompida; nenhuma nota gerada.",
+    "code": "RUNTIME_UNAVAILABLE",
+    "runId": 1
+  },
+  "result": {
+    "runId": 1,
+    "essayId": 1,
+    "profile": "normal",
+    "status": "FAILED",
+    "total": null,
+    "provider": null,
+    "model": null,
+    "limitations": [],
+    "reviewStage": null,
+    "reviewReasons": [],
+    "failureCode": "RUNTIME_UNAVAILABLE",
+    "failureMessage": "Ollama indisponível ou conexão interrompida; nenhuma nota gerada.",
+    "createdAt": "2026-10-21T06:41:36.507699813-03:00",
+    "experimental": true,
+    "competences": [],
+    "llmCalls": []
+  },
+  "run": {
+    "runId": 1,
+    "essayId": 1,
+    "profile": "normal",
+    "status": "FAILED",
+    "total": null,
+    "provider": null,
+    "model": null,
+    "limitations": [],
+    "reviewStage": null,
+    "reviewReasons": [],
+    "failureCode": "RUNTIME_UNAVAILABLE",
+    "failureMessage": "Ollama indisponível ou conexão interrompida; nenhuma nota gerada.",
+    "createdAt": "2026-10-21T06:41:36.507699813-03:00",
+    "experimental": true,
+    "competences": [],
+    "llmCalls": []
+  },
+  "human": {
+    "id": 1,
+    "essayId": 1,
+    "referenceRunId": 1,
+    "status": "REQUESTED",
+    "reviewerId": null,
+    "requestedAt": "2026-10-21T06:41:36.846214009-03:00",
+    "claimedAt": null,
+    "completedAt": null
+  },
+  "sqliteVerification": {
+    "database": "target/playwright-runtime-failure-f85c6d24-b32e-4be1-9d10-406fa6697e46.db",
+    "runStatus": "FAILED",
+    "failureCode": "RUNTIME_UNAVAILABLE",
+    "internalPlaceholderTotal": 0,
+    "publishedCompetenceRows": 0,
+    "llmCallRows": 0,
+    "humanRequestStatus": "REQUESTED",
+    "referenceRunId": 1
+  },
+  "testSourceSha256": "b468efea95b2a2c9b9ce54236a85a9e917102064a81f526cc02bc30e37c51b83"
+}

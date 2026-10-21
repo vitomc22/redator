@@ -1,0 +1,196 @@
+{
+  "humanLabelPolicy" : "individual-raters-macro-average-v1",
+  "essayCount" : 3,
+  "annotationCount" : 6,
+  "byRater" : {
+    "grader_a" : {
+      "datasetFingerprint" : "00bff50acd7944f29cbaa1f9e5a3b2b1d59b1f41f9c77dbb01019a055ae43a45",
+      "passed" : false,
+      "baselineQwk" : 0.0,
+      "candidateQwk" : -0.07547169811320692,
+      "competences" : {
+        "C1" : {
+          "baselineMae" : 0.0,
+          "candidateMae" : 0.0,
+          "baselineQwk" : "NaN",
+          "candidateQwk" : "NaN",
+          "passed" : true
+        },
+        "C2" : {
+          "baselineMae" : 26.666666666666668,
+          "candidateMae" : 26.666666666666668,
+          "baselineQwk" : 0.0,
+          "candidateQwk" : 0.0,
+          "passed" : true
+        },
+        "C3" : {
+          "baselineMae" : 26.666666666666668,
+          "candidateMae" : 53.333333333333336,
+          "baselineQwk" : 4.16333634234431E-15,
+          "candidateQwk" : 0.09999999999999826,
+          "passed" : false
+        },
+        "C4" : {
+          "baselineMae" : 26.666666666666668,
+          "candidateMae" : 26.666666666666668,
+          "baselineQwk" : 0.0,
+          "candidateQwk" : 0.0,
+          "passed" : true
+        },
+        "C5" : {
+          "baselineMae" : 40.0,
+          "candidateMae" : 66.66666666666667,
+          "baselineQwk" : 1.6653345369377297E-15,
+          "candidateQwk" : 0.1818181818181814,
+          "passed" : false
+        }
+      },
+      "failures" : [ "C3 regrediu MAE de 26.666666666666668 para 53.333333333333336", "C5 regrediu MAE de 40.0 para 66.66666666666667", "QWK agregado regrediu de 0.0 para -0.07547169811320692" ]
+    },
+    "grader_b" : {
+      "datasetFingerprint" : "00bff50acd7944f29cbaa1f9e5a3b2b1d59b1f41f9c77dbb01019a055ae43a45",
+      "passed" : false,
+      "baselineQwk" : -2.775557561562889E-15,
+      "candidateQwk" : 0.030769230769230622,
+      "competences" : {
+        "C1" : {
+          "baselineMae" : 26.666666666666668,
+          "candidateMae" : 26.666666666666668,
+          "baselineQwk" : 0.0,
+          "candidateQwk" : 0.0,
+          "passed" : true
+        },
+        "C2" : {
+          "baselineMae" : 26.666666666666668,
+          "candidateMae" : 26.666666666666668,
+          "baselineQwk" : 0.0,
+          "candidateQwk" : 0.0,
+          "passed" : true
+        },
+        "C3" : {
+          "baselineMae" : 26.666666666666668,
+          "candidateMae" : 26.666666666666668,
+          "baselineQwk" : 0.0,
+          "candidateQwk" : 0.49999999999999895,
+          "passed" : true
+        },
+        "C4" : {
+          "baselineMae" : 13.333333333333334,
+          "candidateMae" : 13.333333333333334,
+          "baselineQwk" : 8.32667268468862E-15,
+          "candidateQwk" : 8.32667268468862E-15,
+          "passed" : true
+        },
+        "C5" : {
+          "baselineMae" : 53.333333333333336,
+          "candidateMae" : 80.0,
+          "baselineQwk" : -1.040834085586084E-15,
+          "candidateQwk" : 0.08695652173913046,
+          "passed" : false
+        }
+      },
+      "failures" : [ "C5 regrediu MAE de 53.333333333333336 para 80.0" ]
+    }
+  },
+  "humanAgreement" : {
+    "count" : 15,
+    "mae" : 26.666666666666668,
+    "rmse" : 35.77708763999664,
+    "exactAgreement" : 0.4,
+    "adjacentAgreement" : 0.9333333333333333,
+    "meanBias" : 0.0,
+    "qwk" : 0.47058823529411686
+  },
+  "humanAgreementByCompetence" : {
+    "C1" : {
+      "count" : 3,
+      "mae" : 26.666666666666668,
+      "rmse" : 32.65986323710904,
+      "exactAgreement" : 0.3333333333333333,
+      "adjacentAgreement" : 1.0,
+      "meanBias" : 0.0,
+      "qwk" : 0.0
+    },
+    "C2" : {
+      "count" : 3,
+      "mae" : 26.666666666666668,
+      "rmse" : 32.65986323710904,
+      "exactAgreement" : 0.3333333333333333,
+      "adjacentAgreement" : 1.0,
+      "meanBias" : 0.0,
+      "qwk" : 0.4999999999999979
+    },
+    "C3" : {
+      "count" : 3,
+      "mae" : 26.666666666666668,
+      "rmse" : 32.65986323710904,
+      "exactAgreement" : 0.3333333333333333,
+      "adjacentAgreement" : 1.0,
+      "meanBias" : 26.666666666666668,
+      "qwk" : 0.4999999999999979
+    },
+    "C4" : {
+      "count" : 3,
+      "mae" : 40.0,
+      "rmse" : 51.63977794943222,
+      "exactAgreement" : 0.3333333333333333,
+      "adjacentAgreement" : 0.6666666666666666,
+      "meanBias" : -13.333333333333334,
+      "qwk" : -0.6666666666666676
+    },
+    "C5" : {
+      "count" : 3,
+      "mae" : 13.333333333333334,
+      "rmse" : 23.094010767585033,
+      "exactAgreement" : 0.6666666666666666,
+      "adjacentAgreement" : 1.0,
+      "meanBias" : -13.333333333333334,
+      "qwk" : 0.8000000000000004
+    }
+  },
+  "qualityGate" : {
+    "datasetFingerprint" : "00bff50acd7944f29cbaa1f9e5a3b2b1d59b1f41f9c77dbb01019a055ae43a45",
+    "passed" : false,
+    "baselineQwk" : -1.3877787807814445E-15,
+    "candidateQwk" : -0.02235123367198815,
+    "competences" : {
+      "C1" : {
+        "baselineMae" : 13.333333333333334,
+        "candidateMae" : 13.333333333333334,
+        "baselineQwk" : "NaN",
+        "candidateQwk" : "NaN",
+        "passed" : true
+      },
+      "C2" : {
+        "baselineMae" : 26.666666666666668,
+        "candidateMae" : 26.666666666666668,
+        "baselineQwk" : 0.0,
+        "candidateQwk" : 0.0,
+        "passed" : true
+      },
+      "C3" : {
+        "baselineMae" : 26.666666666666668,
+        "candidateMae" : 40.0,
+        "baselineQwk" : 2.081668171172155E-15,
+        "candidateQwk" : 0.2999999999999986,
+        "passed" : false
+      },
+      "C4" : {
+        "baselineMae" : 20.0,
+        "candidateMae" : 20.0,
+        "baselineQwk" : 4.16333634234431E-15,
+        "candidateQwk" : 4.16333634234431E-15,
+        "passed" : true
+      },
+      "C5" : {
+        "baselineMae" : 46.66666666666667,
+        "candidateMae" : 73.33333333333334,
+        "baselineQwk" : 3.122502256758228E-16,
+        "candidateQwk" : 0.13438735177865593,
+        "passed" : false
+      }
+    },
+    "failures" : [ "C3 regrediu MAE médio de 26.666666666666668 para 40.0", "C5 regrediu MAE médio de 46.66666666666667 para 73.33333333333334", "QWK médio regrediu de -1.3877787807814445E-15 para -0.02235123367198815" ]
+  },
+  "passed" : false
+}

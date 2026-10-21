@@ -10,21 +10,31 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.test.context.DynamicPropertyRegistry;
+import org.springframework.test.context.DynamicPropertySource;
 
-/** Opt-in: performs a real generation against the local Ollama container. */
+/** Opt-in: performs a real local Ollama/Gemma generation with an isolated SQLite collection. */
 @EnabledIfEnvironmentVariable(named = "LLM_LIVE_TEST", matches = "true")
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT, properties = {
-        "spring.datasource.url=jdbc:sqlite:./target/ollama-live-test.db",
         "app.llm.provider=ollama",
         "app.local-api-token.enabled=false"
 })
 class OllamaLiveIntegrationTest {
+    private static final String DATABASE = "jdbc:sqlite:./target/ollama-live-" + java.util.UUID.randomUUID() + ".db";
+
+    @DynamicPropertySource
+    static void isolatedCollection(DynamicPropertyRegistry registry) {
+        registry.add("spring.datasource.url", () -> DATABASE);
+    }
 
     @Autowired
     private TestRestTemplate restTemplate;
 
+    @Autowired
+    private com.redator.corretor.service.LocalEvaluationContract contract;
+
     @Test
-    void shouldEvaluateAndPersistOneRealStructuredGeneration() {
+    void shouldEvaluateAndPersistOneRealStructuredGeneration() throws Exception {
         ResponseEntity<Map> runtime = restTemplate.getForEntity("/api/runtime", Map.class);
         assertThat(runtime.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(runtime.getBody()).containsEntry("provider", "ollama");
@@ -53,7 +63,14 @@ class OllamaLiveIntegrationTest {
 
         ResponseEntity<Map> persisted = restTemplate.getForEntity("/api/runs/{id}", Map.class, runId.longValue());
         assertThat(persisted.getStatusCode()).isEqualTo(HttpStatus.OK);
-        assertThat((java.util.List<?>) persisted.getBody().get("llmCalls")).hasSize(1);
+        var calls = (java.util.List<?>) persisted.getBody().get("llmCalls");
+        assertThat(calls).hasSize(1);
+        var call = (Map<?, ?>) calls.getFirst();
+        assertThat(call.get("cacheHit")).isEqualTo(0);
+        var audit = new com.fasterxml.jackson.databind.ObjectMapper().readTree(call.get("auditJson").toString());
+        assertThat(audit.path("promptHash").asText()).isEqualTo(contract.promptHash());
+        assertThat(audit.path("ragPolicy").asText()).isEqualTo(System.getenv().getOrDefault("RAG_POLICY", "lexical-v1"));
+        assertThat(audit.path("requestMessagesHash").asText()).matches("[a-f0-9]{64}");
         assertThat(persisted.getBody()).containsEntry("provider", "ollama");
     }
 }

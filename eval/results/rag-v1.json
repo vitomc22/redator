@@ -1,0 +1,355 @@
+{
+  "schemaVersion" : 1,
+  "arm" : "rag",
+  "selectionFingerprint" : "2957acd82d3e326efb1933b1aeaf8b708f382cab5216c65b83e889084347c13f",
+  "runtime" : {
+    "provider" : "ollama",
+    "experimental" : true,
+    "synchronous" : true,
+    "profilesAliases" : true,
+    "model" : "gemma4:e2b-it-q4_K_M",
+    "options" : {
+      "temperature" : 0.0,
+      "seed" : 42,
+      "num_predict" : 1200,
+      "num_thread" : 4,
+      "num_ctx" : 8192
+    },
+    "keep_alive" : "5m",
+    "timeoutSeconds" : 600,
+    "runtimeQuarantined" : false,
+    "rag" : {
+      "enabled" : true,
+      "database" : "/home/victor/Documentos/git/redator/dataset/public-corpus.db",
+      "available" : true,
+      "maxExamples" : 3,
+      "essays" : 385,
+      "humanEvaluations" : 770,
+      "ragEligible" : 250,
+      "benchmarkEligible" : 135,
+      "splits" : {
+        "test" : 69,
+        "train" : 250,
+        "validation" : 66
+      },
+      "fingerprint" : "480b13dd5e8e0f6aaf54b1f38e35d296d6ff888682eaaefaca39ae1bb055cd57"
+    }
+  },
+  "rag" : {
+    "enabled" : true,
+    "database" : "/home/victor/Documentos/git/redator/dataset/public-corpus.db",
+    "available" : true,
+    "maxExamples" : 3,
+    "essays" : 385,
+    "humanEvaluations" : 770,
+    "ragEligible" : 250,
+    "benchmarkEligible" : 135,
+    "splits" : {
+      "test" : 69,
+      "train" : 250,
+      "validation" : 66
+    },
+    "fingerprint" : "480b13dd5e8e0f6aaf54b1f38e35d296d6ff888682eaaefaca39ae1bb055cd57"
+  },
+  "configFingerprint" : "69a7a7190409197d167c8d62c80640dcc7d5d8debac99a28b4d027c914a5a246",
+  "results" : [ {
+    "essayHash" : "05995342c7f41f098b32c6c9b86fb72af32f6331d62e8bcfba8fb0b778687a16",
+    "status" : "READY",
+    "runId" : 1,
+    "provider" : "ollama",
+    "model" : "gemma4:e2b-it-q4_K_M",
+    "scores" : {
+      "C1" : 160,
+      "C2" : 160,
+      "C3" : 160,
+      "C4" : 160,
+      "C5" : 120
+    },
+    "needsReview" : false,
+    "reviewReasons" : [ ],
+    "llmCalls" : [ {
+      "provider" : "ollama",
+      "model" : "gemma4:e2b-it-q4_K_M",
+      "promptHash" : "c0c31ce9fe4c2010cfcf3dc2f2b64c9dafdc6bf6e0913186c1985cac186e782a",
+      "schemaHash" : "ac30f89beff72273464a700ba6b6e713a66c1616c51dc3be3edd5b1471abb1ea",
+      "costUsd" : 0.0,
+      "latencyMs" : 347521,
+      "status" : "ok",
+      "createdAt" : "2026-10-20T20:39:46.347798693-03:00",
+      "cacheHit" : 0,
+      "auditJson" : "{\"provider\":\"ollama\",\"model\":\"gemma4:e2b-it-q4_K_M\",\"modelDigest\":\"b37049369adfe3d2b653af0ab301a062ca5cbe96ace6aa0d3f2559ee9b563fc2\",\"runtimeVersion\":\"0.40.4\",\"promptHash\":\"c0c31ce9fe4c2010cfcf3dc2f2b64c9dafdc6bf6e0913186c1985cac186e782a\",\"rubricHash\":\"2c1049af9ee0080fc7668575e5729125c4081fdcd8e77b8ad815c45817f14634\",\"schemaVersionHash\":\"f4d935329ba0f51e9814c1b7072ff16f3f4fcdf14285b134ab8f0556aaf89a50\",\"schemaHash\":\"ac30f89beff72273464a700ba6b6e713a66c1616c51dc3be3edd5b1471abb1ea\",\"evidenceCandidateCount\":15,\"generationParameters\":{\"temperature\":0.0,\"seed\":42,\"num_predict\":1200,\"num_thread\":4,\"num_ctx\":8192},\"thinkingControl\":\"disabled\",\"keepAlive\":\"5m\",\"essayRevision\":1,\"textHash\":\"88d7575947f9129aff1b66d5324a2be11826fac89520be46ce486b3edbbd03c4\",\"themeHash\":\"a252b98d127425690de13b567581e3ec01cf31c6edbaf40ebc77c85f568e43de\",\"ragEnabled\":true,\"ragCorpusFingerprint\":\"480b13dd5e8e0f6aaf54b1f38e35d296d6ff888682eaaefaca39ae1bb055cd57\",\"ragExampleCount\":3,\"ragExamples\":[{\"id\":151,\"relevance\":30.0,\"sourceId\":\"JBCS2025:train:16.html\",\"source\":\"kamel-usp/aes_enem_dataset\",\"license\":\"Apache-2.0\",\"hash\":\"1ca8d60f74ff9f7d51c6d3652500ccf386240e8096ebdb512d9a8c161b0dc39b\"},{\"id\":4,\"relevance\":30.0,\"sourceId\":\"JBCS2025:train:2.html\",\"source\":\"kamel-usp/aes_enem_dataset\",\"license\":\"Apache-2.0\",\"hash\":\"4e31efda5b7926182abb7e388c07899d337706522003c09e7f24b02a7d8f5466\"},{\"id\":242,\"relevance\":30.0,\"sourceId\":\"JBCS2025:train:15.html\",\"source\":\"kamel-usp/aes_enem_dataset\",\"license\":\"Apache-2.0\",\"hash\":\"80ff6dd0b90fe5cd2fa8d6c5e9c03357d27330ea3b289a21f747516c18a62841\"}],\"contextGuard\":\"utf8-bytes/3 estimate + output + 256 template reserve; not exact token count\",\"estimatedInputTokens\":6695,\"cacheKey\":\"08f5bd952f0b1f31fcf9b18ac64f788943e81eaa26da5812132681318f4337e5\",\"wallMs\":347521.411743,\"total_duration\":347507368040,\"total_duration_ms\":347507.36804,\"load_duration\":22616210317,\"load_duration_ms\":22616.210317,\"prompt_eval_duration\":185585562000,\"prompt_eval_duration_ms\":185585.562,\"eval_duration\":139185654000,\"eval_duration_ms\":139185.654,\"prompt_eval_count\":3896,\"eval_count\":658,\"generationTokensPerSecond\":4.727498711900294,\"costUsd\":0,\"doneReason\":\"stop\"}"
+    } ]
+  }, {
+    "essayHash" : "3de1b13d6e595b8d92f04daa6ee75c09a42f9ceae81541f423cec68510d2ca0b",
+    "status" : "READY",
+    "runId" : 2,
+    "provider" : "ollama",
+    "model" : "gemma4:e2b-it-q4_K_M",
+    "scores" : {
+      "C1" : 160,
+      "C2" : 160,
+      "C3" : 160,
+      "C4" : 160,
+      "C5" : 160
+    },
+    "needsReview" : false,
+    "reviewReasons" : [ ],
+    "llmCalls" : [ {
+      "provider" : "ollama",
+      "model" : "gemma4:e2b-it-q4_K_M",
+      "promptHash" : "c0c31ce9fe4c2010cfcf3dc2f2b64c9dafdc6bf6e0913186c1985cac186e782a",
+      "schemaHash" : "5cbe484f82135894c65deb6aa76c7e4ed212d80f07adc83ed4b337e1c53ce103",
+      "costUsd" : 0.0,
+      "latencyMs" : 208146,
+      "status" : "ok",
+      "createdAt" : "2026-10-20T20:45:34.306967017-03:00",
+      "cacheHit" : 0,
+      "auditJson" : "{\"provider\":\"ollama\",\"model\":\"gemma4:e2b-it-q4_K_M\",\"modelDigest\":\"b37049369adfe3d2b653af0ab301a062ca5cbe96ace6aa0d3f2559ee9b563fc2\",\"runtimeVersion\":\"0.40.4\",\"promptHash\":\"c0c31ce9fe4c2010cfcf3dc2f2b64c9dafdc6bf6e0913186c1985cac186e782a\",\"rubricHash\":\"2c1049af9ee0080fc7668575e5729125c4081fdcd8e77b8ad815c45817f14634\",\"schemaVersionHash\":\"f4d935329ba0f51e9814c1b7072ff16f3f4fcdf14285b134ab8f0556aaf89a50\",\"schemaHash\":\"5cbe484f82135894c65deb6aa76c7e4ed212d80f07adc83ed4b337e1c53ce103\",\"evidenceCandidateCount\":10,\"generationParameters\":{\"temperature\":0.0,\"seed\":42,\"num_predict\":1200,\"num_thread\":4,\"num_ctx\":8192},\"thinkingControl\":\"disabled\",\"keepAlive\":\"5m\",\"essayRevision\":2,\"textHash\":\"08d9b2f36f972cc398c7ca602315c79050e70c377f82890b1073728199f236f3\",\"themeHash\":\"07abc936c81e3ef21482571bb91c8cee2f348c23f5f26edf57b28973a15ee6e6\",\"ragEnabled\":true,\"ragCorpusFingerprint\":\"480b13dd5e8e0f6aaf54b1f38e35d296d6ff888682eaaefaca39ae1bb055cd57\",\"ragExampleCount\":3,\"ragExamples\":[{\"id\":151,\"relevance\":30.0,\"sourceId\":\"JBCS2025:train:16.html\",\"source\":\"kamel-usp/aes_enem_dataset\",\"license\":\"Apache-2.0\",\"hash\":\"1ca8d60f74ff9f7d51c6d3652500ccf386240e8096ebdb512d9a8c161b0dc39b\"},{\"id\":4,\"relevance\":30.0,\"sourceId\":\"JBCS2025:train:2.html\",\"source\":\"kamel-usp/aes_enem_dataset\",\"license\":\"Apache-2.0\",\"hash\":\"4e31efda5b7926182abb7e388c07899d337706522003c09e7f24b02a7d8f5466\"},{\"id\":242,\"relevance\":30.0,\"sourceId\":\"JBCS2025:train:15.html\",\"source\":\"kamel-usp/aes_enem_dataset\",\"license\":\"Apache-2.0\",\"hash\":\"80ff6dd0b90fe5cd2fa8d6c5e9c03357d27330ea3b289a21f747516c18a62841\"}],\"contextGuard\":\"utf8-bytes/3 estimate + output + 256 template reserve; not exact token count\",\"estimatedInputTokens\":6125,\"cacheKey\":\"cae105741be46b6ac1bd91d539c89514ea9ce83551267970d481940ef9920ca5\",\"wallMs\":208146.073089,\"total_duration\":208140701376,\"total_duration_ms\":208140.701376,\"load_duration\":1814481,\"load_duration_ms\":1.814481,\"prompt_eval_duration\":41973823000,\"prompt_eval_duration_ms\":41973.823,\"eval_duration\":166071998000,\"eval_duration_ms\":166071.998,\"prompt_eval_count\":3671,\"eval_count\":837,\"generationTokensPerSecond\":5.039982718820544,\"costUsd\":0,\"doneReason\":\"stop\"}"
+    } ]
+  }, {
+    "essayHash" : "489bde4a4d3a0745fd31ebf3c00d50e3dbe8952c89c4055a5d36bf69c6cc43ab",
+    "status" : "READY",
+    "runId" : 3,
+    "provider" : "ollama",
+    "model" : "gemma4:e2b-it-q4_K_M",
+    "scores" : {
+      "C1" : 160,
+      "C2" : 160,
+      "C3" : 160,
+      "C4" : 160,
+      "C5" : 160
+    },
+    "needsReview" : false,
+    "reviewReasons" : [ ],
+    "llmCalls" : [ {
+      "provider" : "ollama",
+      "model" : "gemma4:e2b-it-q4_K_M",
+      "promptHash" : "c0c31ce9fe4c2010cfcf3dc2f2b64c9dafdc6bf6e0913186c1985cac186e782a",
+      "schemaHash" : "6c41d89a439dbbce4de4a036f7d6a18b524a954cd630129930374c364ce47133",
+      "costUsd" : 0.0,
+      "latencyMs" : 351958,
+      "status" : "ok",
+      "createdAt" : "2026-10-20T20:49:02.727210302-03:00",
+      "cacheHit" : 0,
+      "auditJson" : "{\"provider\":\"ollama\",\"model\":\"gemma4:e2b-it-q4_K_M\",\"modelDigest\":\"b37049369adfe3d2b653af0ab301a062ca5cbe96ace6aa0d3f2559ee9b563fc2\",\"runtimeVersion\":\"0.40.4\",\"promptHash\":\"c0c31ce9fe4c2010cfcf3dc2f2b64c9dafdc6bf6e0913186c1985cac186e782a\",\"rubricHash\":\"2c1049af9ee0080fc7668575e5729125c4081fdcd8e77b8ad815c45817f14634\",\"schemaVersionHash\":\"f4d935329ba0f51e9814c1b7072ff16f3f4fcdf14285b134ab8f0556aaf89a50\",\"schemaHash\":\"6c41d89a439dbbce4de4a036f7d6a18b524a954cd630129930374c364ce47133\",\"evidenceCandidateCount\":24,\"generationParameters\":{\"temperature\":0.0,\"seed\":42,\"num_predict\":1200,\"num_thread\":4,\"num_ctx\":8192},\"thinkingControl\":\"disabled\",\"keepAlive\":\"5m\",\"essayRevision\":3,\"textHash\":\"70b735cb77ce43746a9c16bb180c539d6369ab8d34077ae85a9ab0df76e3d953\",\"themeHash\":\"fcfd3e1b7aa21c3171bb76f9b4a999c35e35046a66b2cfdb4397657b299e001e\",\"ragEnabled\":true,\"ragCorpusFingerprint\":\"480b13dd5e8e0f6aaf54b1f38e35d296d6ff888682eaaefaca39ae1bb055cd57\",\"ragExampleCount\":3,\"ragExamples\":[{\"id\":123,\"relevance\":36.0,\"sourceId\":\"JBCS2025:train:17.html\",\"source\":\"kamel-usp/aes_enem_dataset\",\"license\":\"Apache-2.0\",\"hash\":\"36e330e3548541cdb51b2b679e79a0a546d4f63538bfb7a56633d2d05e772f33\"},{\"id\":25,\"relevance\":35.0,\"sourceId\":\"JBCS2025:train:0.html\",\"source\":\"kamel-usp/aes_enem_dataset\",\"license\":\"Apache-2.0\",\"hash\":\"023cdb4aeabb882504be47ed885acbcb40283d91f43bcf6ee8a69e5a76e14b89\"},{\"id\":62,\"relevance\":35.0,\"sourceId\":\"JBCS2025:train:13.html\",\"source\":\"kamel-usp/aes_enem_dataset\",\"license\":\"Apache-2.0\",\"hash\":\"4ecd5915126b4c834135d78f218880ae881ffbf7c6a25ec5aa4c2926c471fe52\"}],\"contextGuard\":\"utf8-bytes/3 estimate + output + 256 template reserve; not exact token count\",\"estimatedInputTokens\":7318,\"cacheKey\":\"614cd80e7f42f6d0274890445b04681f32276d083bc2db6e2c2e5b54c2de83a0\",\"wallMs\":351958.438325,\"total_duration\":351953009199,\"total_duration_ms\":351953.009199,\"load_duration\":2679424,\"load_duration_ms\":2.679424,\"prompt_eval_duration\":209028459000,\"prompt_eval_duration_ms\":209028.459,\"eval_duration\":142786264000,\"eval_duration_ms\":142786.264,\"prompt_eval_count\":4030,\"eval_count\":701,\"generationTokensPerSecond\":4.909435826404143,\"costUsd\":0,\"doneReason\":\"stop\"}"
+    } ]
+  }, {
+    "essayHash" : "62ba62cc2ae5c2928d481034368f7a7adad98858dd23446d6c5e69653a3734d0",
+    "status" : "READY",
+    "runId" : 4,
+    "provider" : "ollama",
+    "model" : "gemma4:e2b-it-q4_K_M",
+    "scores" : {
+      "C1" : 160,
+      "C2" : 160,
+      "C3" : 160,
+      "C4" : 160,
+      "C5" : 120
+    },
+    "needsReview" : false,
+    "reviewReasons" : [ ],
+    "llmCalls" : [ {
+      "provider" : "ollama",
+      "model" : "gemma4:e2b-it-q4_K_M",
+      "promptHash" : "c0c31ce9fe4c2010cfcf3dc2f2b64c9dafdc6bf6e0913186c1985cac186e782a",
+      "schemaHash" : "58acd9cd0104661735b0980dd6b7afe017a16b4428808985178b3f85568e9ddf",
+      "costUsd" : 0.0,
+      "latencyMs" : 210932,
+      "status" : "ok",
+      "createdAt" : "2026-10-20T20:54:54.932726516-03:00",
+      "cacheHit" : 0,
+      "auditJson" : "{\"provider\":\"ollama\",\"model\":\"gemma4:e2b-it-q4_K_M\",\"modelDigest\":\"b37049369adfe3d2b653af0ab301a062ca5cbe96ace6aa0d3f2559ee9b563fc2\",\"runtimeVersion\":\"0.40.4\",\"promptHash\":\"c0c31ce9fe4c2010cfcf3dc2f2b64c9dafdc6bf6e0913186c1985cac186e782a\",\"rubricHash\":\"2c1049af9ee0080fc7668575e5729125c4081fdcd8e77b8ad815c45817f14634\",\"schemaVersionHash\":\"f4d935329ba0f51e9814c1b7072ff16f3f4fcdf14285b134ab8f0556aaf89a50\",\"schemaHash\":\"58acd9cd0104661735b0980dd6b7afe017a16b4428808985178b3f85568e9ddf\",\"evidenceCandidateCount\":13,\"generationParameters\":{\"temperature\":0.0,\"seed\":42,\"num_predict\":1200,\"num_thread\":4,\"num_ctx\":8192},\"thinkingControl\":\"disabled\",\"keepAlive\":\"5m\",\"essayRevision\":4,\"textHash\":\"3eb3ab27ee89d0e382c7f1c2ca101514cf569c4b630150b3fdc63ce3f6ca4703\",\"themeHash\":\"c8ac5ee91cebaf2cc8134b481e4a3e3764f9dde6d35804a884fb8e7c52e8abdd\",\"ragEnabled\":true,\"ragCorpusFingerprint\":\"480b13dd5e8e0f6aaf54b1f38e35d296d6ff888682eaaefaca39ae1bb055cd57\",\"ragExampleCount\":3,\"ragExamples\":[{\"id\":151,\"relevance\":30.0,\"sourceId\":\"JBCS2025:train:16.html\",\"source\":\"kamel-usp/aes_enem_dataset\",\"license\":\"Apache-2.0\",\"hash\":\"1ca8d60f74ff9f7d51c6d3652500ccf386240e8096ebdb512d9a8c161b0dc39b\"},{\"id\":4,\"relevance\":30.0,\"sourceId\":\"JBCS2025:train:2.html\",\"source\":\"kamel-usp/aes_enem_dataset\",\"license\":\"Apache-2.0\",\"hash\":\"4e31efda5b7926182abb7e388c07899d337706522003c09e7f24b02a7d8f5466\"},{\"id\":242,\"relevance\":30.0,\"sourceId\":\"JBCS2025:train:15.html\",\"source\":\"kamel-usp/aes_enem_dataset\",\"license\":\"Apache-2.0\",\"hash\":\"80ff6dd0b90fe5cd2fa8d6c5e9c03357d27330ea3b289a21f747516c18a62841\"}],\"contextGuard\":\"utf8-bytes/3 estimate + output + 256 template reserve; not exact token count\",\"estimatedInputTokens\":6235,\"cacheKey\":\"b0a553869773af5e5436452057b73c008328bd83d1b588adbf7928b3c8350d5c\",\"wallMs\":210932.192824,\"total_duration\":210927365410,\"total_duration_ms\":210927.36541,\"load_duration\":3627719,\"load_duration_ms\":3.627719,\"prompt_eval_duration\":46467943000,\"prompt_eval_duration_ms\":46467.943,\"eval_duration\":164313645000,\"eval_duration_ms\":164313.645,\"prompt_eval_count\":3734,\"eval_count\":834,\"generationTokensPerSecond\":5.075658810928331,\"costUsd\":0,\"doneReason\":\"stop\"}"
+    } ]
+  }, {
+    "essayHash" : "8484ddc12d0100af6aa9029b98fbe10af720b3d7d9f864ba88d2dc4269e1882a",
+    "status" : "READY",
+    "runId" : 5,
+    "provider" : "ollama",
+    "model" : "gemma4:e2b-it-q4_K_M",
+    "scores" : {
+      "C1" : 160,
+      "C2" : 160,
+      "C3" : 160,
+      "C4" : 160,
+      "C5" : 160
+    },
+    "needsReview" : false,
+    "reviewReasons" : [ ],
+    "llmCalls" : [ {
+      "provider" : "ollama",
+      "model" : "gemma4:e2b-it-q4_K_M",
+      "promptHash" : "c0c31ce9fe4c2010cfcf3dc2f2b64c9dafdc6bf6e0913186c1985cac186e782a",
+      "schemaHash" : "2e3ba3f79eb761088f72c528dd40d9df177044f710d90f92d4a0db92eb7787cc",
+      "costUsd" : 0.0,
+      "latencyMs" : 347979,
+      "status" : "ok",
+      "createdAt" : "2026-10-20T20:58:26.117271427-03:00",
+      "cacheHit" : 0,
+      "auditJson" : "{\"provider\":\"ollama\",\"model\":\"gemma4:e2b-it-q4_K_M\",\"modelDigest\":\"b37049369adfe3d2b653af0ab301a062ca5cbe96ace6aa0d3f2559ee9b563fc2\",\"runtimeVersion\":\"0.40.4\",\"promptHash\":\"c0c31ce9fe4c2010cfcf3dc2f2b64c9dafdc6bf6e0913186c1985cac186e782a\",\"rubricHash\":\"2c1049af9ee0080fc7668575e5729125c4081fdcd8e77b8ad815c45817f14634\",\"schemaVersionHash\":\"f4d935329ba0f51e9814c1b7072ff16f3f4fcdf14285b134ab8f0556aaf89a50\",\"schemaHash\":\"2e3ba3f79eb761088f72c528dd40d9df177044f710d90f92d4a0db92eb7787cc\",\"evidenceCandidateCount\":23,\"generationParameters\":{\"temperature\":0.0,\"seed\":42,\"num_predict\":1200,\"num_thread\":4,\"num_ctx\":8192},\"thinkingControl\":\"disabled\",\"keepAlive\":\"5m\",\"essayRevision\":5,\"textHash\":\"c4c8223ddfcbdc27d89bbd0ffe7572731ef5c25350ec91432197d0c4a51986ae\",\"themeHash\":\"3fdf2742176d01b4ac45afb207a13ac36e0e87840ab52b5b186babf8c7d27b7a\",\"ragEnabled\":true,\"ragCorpusFingerprint\":\"480b13dd5e8e0f6aaf54b1f38e35d296d6ff888682eaaefaca39ae1bb055cd57\",\"ragExampleCount\":3,\"ragExamples\":[{\"id\":118,\"relevance\":36.0,\"sourceId\":\"JBCS2025:train:19.html\",\"source\":\"kamel-usp/aes_enem_dataset\",\"license\":\"Apache-2.0\",\"hash\":\"5c72213bc8154c726ceb76045387f22d60bf55cb384714d781785027445eb040\"},{\"id\":83,\"relevance\":34.0,\"sourceId\":\"JBCS2025:train:5.html\",\"source\":\"kamel-usp/aes_enem_dataset\",\"license\":\"Apache-2.0\",\"hash\":\"38edd22fb066a1e85de31511d94dcf7d315a7e0e1a0c498a48d7a439467c7046\"},{\"id\":109,\"relevance\":24.0,\"sourceId\":\"JBCS2025:train:12.html\",\"source\":\"kamel-usp/aes_enem_dataset\",\"license\":\"Apache-2.0\",\"hash\":\"1a625d8f3a7a049f1d0144db0a4909a297d35f56b4e5859b3814b92da89fbf4a\"}],\"contextGuard\":\"utf8-bytes/3 estimate + output + 256 template reserve; not exact token count\",\"estimatedInputTokens\":7266,\"cacheKey\":\"dfd0495c89904e2c809fd5dffaf7cdd957099a05267f3ef6c7650b0de1489eb0\",\"wallMs\":347979.198947,\"total_duration\":347973117548,\"total_duration_ms\":347973.117548,\"load_duration\":1695958,\"load_duration_ms\":1.695958,\"prompt_eval_duration\":212040869000,\"prompt_eval_duration_ms\":212040.869,\"eval_duration\":135771054000,\"eval_duration_ms\":135771.054,\"prompt_eval_count\":4268,\"eval_count\":619,\"generationTokensPerSecond\":4.559145574578806,\"costUsd\":0,\"doneReason\":\"stop\"}"
+    } ]
+  }, {
+    "essayHash" : "8dcd263d76e35af576061c7ee7be6db4336c6b49e27a901ecaf44c5a3b6e9cd8",
+    "status" : "READY",
+    "runId" : 6,
+    "provider" : "ollama",
+    "model" : "gemma4:e2b-it-q4_K_M",
+    "scores" : {
+      "C1" : 160,
+      "C2" : 160,
+      "C3" : 160,
+      "C4" : 160,
+      "C5" : 120
+    },
+    "needsReview" : false,
+    "reviewReasons" : [ ],
+    "llmCalls" : [ {
+      "provider" : "ollama",
+      "model" : "gemma4:e2b-it-q4_K_M",
+      "promptHash" : "c0c31ce9fe4c2010cfcf3dc2f2b64c9dafdc6bf6e0913186c1985cac186e782a",
+      "schemaHash" : "f047f06c39c002ade2b5d1be135417d26b2c8bd2cd7d010049da79f02475407a",
+      "costUsd" : 0.0,
+      "latencyMs" : 196920,
+      "status" : "ok",
+      "createdAt" : "2026-10-20T21:04:14.423818072-03:00",
+      "cacheHit" : 0,
+      "auditJson" : "{\"provider\":\"ollama\",\"model\":\"gemma4:e2b-it-q4_K_M\",\"modelDigest\":\"b37049369adfe3d2b653af0ab301a062ca5cbe96ace6aa0d3f2559ee9b563fc2\",\"runtimeVersion\":\"0.40.4\",\"promptHash\":\"c0c31ce9fe4c2010cfcf3dc2f2b64c9dafdc6bf6e0913186c1985cac186e782a\",\"rubricHash\":\"2c1049af9ee0080fc7668575e5729125c4081fdcd8e77b8ad815c45817f14634\",\"schemaVersionHash\":\"f4d935329ba0f51e9814c1b7072ff16f3f4fcdf14285b134ab8f0556aaf89a50\",\"schemaHash\":\"f047f06c39c002ade2b5d1be135417d26b2c8bd2cd7d010049da79f02475407a\",\"evidenceCandidateCount\":13,\"generationParameters\":{\"temperature\":0.0,\"seed\":42,\"num_predict\":1200,\"num_thread\":4,\"num_ctx\":8192},\"thinkingControl\":\"disabled\",\"keepAlive\":\"5m\",\"essayRevision\":6,\"textHash\":\"e16df330f05c7e94140cf25644180e73ae58d5700e1352f4f23fe85753084a17\",\"themeHash\":\"8be6ced09b17ef3480ee59b9b2f63bae0f6b605891dcd857ddd47cc5d9360f76\",\"ragEnabled\":true,\"ragCorpusFingerprint\":\"480b13dd5e8e0f6aaf54b1f38e35d296d6ff888682eaaefaca39ae1bb055cd57\",\"ragExampleCount\":3,\"ragExamples\":[{\"id\":151,\"relevance\":30.0,\"sourceId\":\"JBCS2025:train:16.html\",\"source\":\"kamel-usp/aes_enem_dataset\",\"license\":\"Apache-2.0\",\"hash\":\"1ca8d60f74ff9f7d51c6d3652500ccf386240e8096ebdb512d9a8c161b0dc39b\"},{\"id\":4,\"relevance\":30.0,\"sourceId\":\"JBCS2025:train:2.html\",\"source\":\"kamel-usp/aes_enem_dataset\",\"license\":\"Apache-2.0\",\"hash\":\"4e31efda5b7926182abb7e388c07899d337706522003c09e7f24b02a7d8f5466\"},{\"id\":242,\"relevance\":30.0,\"sourceId\":\"JBCS2025:train:15.html\",\"source\":\"kamel-usp/aes_enem_dataset\",\"license\":\"Apache-2.0\",\"hash\":\"80ff6dd0b90fe5cd2fa8d6c5e9c03357d27330ea3b289a21f747516c18a62841\"}],\"contextGuard\":\"utf8-bytes/3 estimate + output + 256 template reserve; not exact token count\",\"estimatedInputTokens\":6362,\"cacheKey\":\"59b094561e1676a7487a031ddccf2637e229ad52bf461cae17855cbaf3ba8148\",\"wallMs\":196920.150646,\"total_duration\":196916417796,\"total_duration_ms\":196916.417796,\"load_duration\":1744117,\"load_duration_ms\":1.744117,\"prompt_eval_duration\":52752923000,\"prompt_eval_duration_ms\":52752.923,\"eval_duration\":144000665000,\"eval_duration_ms\":144000.665,\"prompt_eval_count\":3812,\"eval_count\":686,\"generationTokensPerSecond\":4.763866889086936,\"costUsd\":0,\"doneReason\":\"stop\"}"
+    } ]
+  }, {
+    "essayHash" : "8dde049c50d583445397a2cba8994b4686000cef89933c6c94293238be309ad8",
+    "status" : "READY",
+    "runId" : 7,
+    "provider" : "ollama",
+    "model" : "gemma4:e2b-it-q4_K_M",
+    "scores" : {
+      "C1" : 160,
+      "C2" : 160,
+      "C3" : 160,
+      "C4" : 160,
+      "C5" : 200
+    },
+    "needsReview" : false,
+    "reviewReasons" : [ ],
+    "llmCalls" : [ {
+      "provider" : "ollama",
+      "model" : "gemma4:e2b-it-q4_K_M",
+      "promptHash" : "c0c31ce9fe4c2010cfcf3dc2f2b64c9dafdc6bf6e0913186c1985cac186e782a",
+      "schemaHash" : "4ec645e1df4ec3aeb863777e09b0299c3fb249fed34af5e8bdd3b6638f34795b",
+      "costUsd" : 0.0,
+      "latencyMs" : 339597,
+      "status" : "ok",
+      "createdAt" : "2026-10-20T21:07:31.593188324-03:00",
+      "cacheHit" : 0,
+      "auditJson" : "{\"provider\":\"ollama\",\"model\":\"gemma4:e2b-it-q4_K_M\",\"modelDigest\":\"b37049369adfe3d2b653af0ab301a062ca5cbe96ace6aa0d3f2559ee9b563fc2\",\"runtimeVersion\":\"0.40.4\",\"promptHash\":\"c0c31ce9fe4c2010cfcf3dc2f2b64c9dafdc6bf6e0913186c1985cac186e782a\",\"rubricHash\":\"2c1049af9ee0080fc7668575e5729125c4081fdcd8e77b8ad815c45817f14634\",\"schemaVersionHash\":\"f4d935329ba0f51e9814c1b7072ff16f3f4fcdf14285b134ab8f0556aaf89a50\",\"schemaHash\":\"4ec645e1df4ec3aeb863777e09b0299c3fb249fed34af5e8bdd3b6638f34795b\",\"evidenceCandidateCount\":24,\"generationParameters\":{\"temperature\":0.0,\"seed\":42,\"num_predict\":1200,\"num_thread\":4,\"num_ctx\":8192},\"thinkingControl\":\"disabled\",\"keepAlive\":\"5m\",\"essayRevision\":7,\"textHash\":\"e816c7ca743a00cf2bde1046d188e8606aeeb468517c9ae652d135d11b8598e3\",\"themeHash\":\"85ef709fc2fc95ab6296182aab4a6422014be74f54267b934044b55724b52058\",\"ragEnabled\":true,\"ragCorpusFingerprint\":\"480b13dd5e8e0f6aaf54b1f38e35d296d6ff888682eaaefaca39ae1bb055cd57\",\"ragExampleCount\":3,\"ragExamples\":[{\"id\":123,\"relevance\":36.0,\"sourceId\":\"JBCS2025:train:17.html\",\"source\":\"kamel-usp/aes_enem_dataset\",\"license\":\"Apache-2.0\",\"hash\":\"36e330e3548541cdb51b2b679e79a0a546d4f63538bfb7a56633d2d05e772f33\"},{\"id\":25,\"relevance\":35.0,\"sourceId\":\"JBCS2025:train:0.html\",\"source\":\"kamel-usp/aes_enem_dataset\",\"license\":\"Apache-2.0\",\"hash\":\"023cdb4aeabb882504be47ed885acbcb40283d91f43bcf6ee8a69e5a76e14b89\"},{\"id\":62,\"relevance\":35.0,\"sourceId\":\"JBCS2025:train:13.html\",\"source\":\"kamel-usp/aes_enem_dataset\",\"license\":\"Apache-2.0\",\"hash\":\"4ecd5915126b4c834135d78f218880ae881ffbf7c6a25ec5aa4c2926c471fe52\"}],\"contextGuard\":\"utf8-bytes/3 estimate + output + 256 template reserve; not exact token count\",\"estimatedInputTokens\":6934,\"cacheKey\":\"c4b308a049549d9c9d5bcee894ced289ef2293e4acf3a00e09ddb28ba86a52a3\",\"wallMs\":339596.63947,\"total_duration\":339592734462,\"total_duration_ms\":339592.734462,\"load_duration\":2273703,\"load_duration_ms\":2.273703,\"prompt_eval_duration\":188919927000,\"prompt_eval_duration_ms\":188919.927,\"eval_duration\":150530557000,\"eval_duration_ms\":150530.557,\"prompt_eval_count\":3834,\"eval_count\":793,\"generationTokensPerSecond\":5.2680333867362235,\"costUsd\":0,\"doneReason\":\"stop\"}"
+    } ]
+  }, {
+    "essayHash" : "930ebcf6db953d154212dbf3f6eefbf309f0872d9e88d9cbd19a1766357e0642",
+    "status" : "READY",
+    "runId" : 8,
+    "provider" : "ollama",
+    "model" : "gemma4:e2b-it-q4_K_M",
+    "scores" : {
+      "C1" : 160,
+      "C2" : 160,
+      "C3" : 160,
+      "C4" : 160,
+      "C5" : 200
+    },
+    "needsReview" : false,
+    "reviewReasons" : [ ],
+    "llmCalls" : [ {
+      "provider" : "ollama",
+      "model" : "gemma4:e2b-it-q4_K_M",
+      "promptHash" : "c0c31ce9fe4c2010cfcf3dc2f2b64c9dafdc6bf6e0913186c1985cac186e782a",
+      "schemaHash" : "e3d5a0f6ccd288256457a06a55167d6f4b21ef32693ad54c626fe04418ac971c",
+      "costUsd" : 0.0,
+      "latencyMs" : 222958,
+      "status" : "ok",
+      "createdAt" : "2026-10-20T21:13:11.406725124-03:00",
+      "cacheHit" : 0,
+      "auditJson" : "{\"provider\":\"ollama\",\"model\":\"gemma4:e2b-it-q4_K_M\",\"modelDigest\":\"b37049369adfe3d2b653af0ab301a062ca5cbe96ace6aa0d3f2559ee9b563fc2\",\"runtimeVersion\":\"0.40.4\",\"promptHash\":\"c0c31ce9fe4c2010cfcf3dc2f2b64c9dafdc6bf6e0913186c1985cac186e782a\",\"rubricHash\":\"2c1049af9ee0080fc7668575e5729125c4081fdcd8e77b8ad815c45817f14634\",\"schemaVersionHash\":\"f4d935329ba0f51e9814c1b7072ff16f3f4fcdf14285b134ab8f0556aaf89a50\",\"schemaHash\":\"e3d5a0f6ccd288256457a06a55167d6f4b21ef32693ad54c626fe04418ac971c\",\"evidenceCandidateCount\":22,\"generationParameters\":{\"temperature\":0.0,\"seed\":42,\"num_predict\":1200,\"num_thread\":4,\"num_ctx\":8192},\"thinkingControl\":\"disabled\",\"keepAlive\":\"5m\",\"essayRevision\":8,\"textHash\":\"0b202d1b04244cd57d5fe0f5233e24d3ac783e8dc615d4b06c5ba6175661fe40\",\"themeHash\":\"db4795d01120a135c6c42c8e5bd08e40e48f05d765c9e4bfb1ac086619c3412b\",\"ragEnabled\":true,\"ragCorpusFingerprint\":\"480b13dd5e8e0f6aaf54b1f38e35d296d6ff888682eaaefaca39ae1bb055cd57\",\"ragExampleCount\":3,\"ragExamples\":[{\"id\":151,\"relevance\":30.0,\"sourceId\":\"JBCS2025:train:16.html\",\"source\":\"kamel-usp/aes_enem_dataset\",\"license\":\"Apache-2.0\",\"hash\":\"1ca8d60f74ff9f7d51c6d3652500ccf386240e8096ebdb512d9a8c161b0dc39b\"},{\"id\":4,\"relevance\":30.0,\"sourceId\":\"JBCS2025:train:2.html\",\"source\":\"kamel-usp/aes_enem_dataset\",\"license\":\"Apache-2.0\",\"hash\":\"4e31efda5b7926182abb7e388c07899d337706522003c09e7f24b02a7d8f5466\"},{\"id\":242,\"relevance\":30.0,\"sourceId\":\"JBCS2025:train:15.html\",\"source\":\"kamel-usp/aes_enem_dataset\",\"license\":\"Apache-2.0\",\"hash\":\"80ff6dd0b90fe5cd2fa8d6c5e9c03357d27330ea3b289a21f747516c18a62841\"}],\"contextGuard\":\"utf8-bytes/3 estimate + output + 256 template reserve; not exact token count\",\"estimatedInputTokens\":7354,\"cacheKey\":\"86f73f1e84c74e1b2a526a74a1c8e615e31159eee57c897b0942fcf329a6a97d\",\"wallMs\":222958.16624,\"total_duration\":222952687140,\"total_duration_ms\":222952.68714,\"load_duration\":2662380,\"load_duration_ms\":2.66238,\"prompt_eval_duration\":68856561000,\"prompt_eval_duration_ms\":68856.561,\"eval_duration\":153967606000,\"eval_duration_ms\":153967.606,\"prompt_eval_count\":4168,\"eval_count\":793,\"generationTokensPerSecond\":5.150434046496768,\"costUsd\":0,\"doneReason\":\"stop\"}"
+    } ]
+  }, {
+    "essayHash" : "990963090781ea7bc7065fda956b851f41edb3369e05ea5b27e1b37aeac9bb3a",
+    "status" : "READY",
+    "runId" : 9,
+    "provider" : "ollama",
+    "model" : "gemma4:e2b-it-q4_K_M",
+    "scores" : {
+      "C1" : 80,
+      "C2" : 120,
+      "C3" : 120,
+      "C4" : 80,
+      "C5" : 160
+    },
+    "needsReview" : false,
+    "reviewReasons" : [ ],
+    "llmCalls" : [ {
+      "provider" : "ollama",
+      "model" : "gemma4:e2b-it-q4_K_M",
+      "promptHash" : "c0c31ce9fe4c2010cfcf3dc2f2b64c9dafdc6bf6e0913186c1985cac186e782a",
+      "schemaHash" : "7c6d59bc6689faf12985cb3c6b83f74e209e5a26b8b85aade4944c1c1bce7b6f",
+      "costUsd" : 0.0,
+      "latencyMs" : 342632,
+      "status" : "ok",
+      "createdAt" : "2026-10-20T21:16:54.606606642-03:00",
+      "cacheHit" : 0,
+      "auditJson" : "{\"provider\":\"ollama\",\"model\":\"gemma4:e2b-it-q4_K_M\",\"modelDigest\":\"b37049369adfe3d2b653af0ab301a062ca5cbe96ace6aa0d3f2559ee9b563fc2\",\"runtimeVersion\":\"0.40.4\",\"promptHash\":\"c0c31ce9fe4c2010cfcf3dc2f2b64c9dafdc6bf6e0913186c1985cac186e782a\",\"rubricHash\":\"2c1049af9ee0080fc7668575e5729125c4081fdcd8e77b8ad815c45817f14634\",\"schemaVersionHash\":\"f4d935329ba0f51e9814c1b7072ff16f3f4fcdf14285b134ab8f0556aaf89a50\",\"schemaHash\":\"7c6d59bc6689faf12985cb3c6b83f74e209e5a26b8b85aade4944c1c1bce7b6f\",\"evidenceCandidateCount\":13,\"generationParameters\":{\"temperature\":0.0,\"seed\":42,\"num_predict\":1200,\"num_thread\":4,\"num_ctx\":8192},\"thinkingControl\":\"disabled\",\"keepAlive\":\"5m\",\"essayRevision\":9,\"textHash\":\"c6ebe52e306da91ea4e66d80f84046b94c18e80c9bc63a2493885f7042146fd3\",\"themeHash\":\"c67fe5369b8017ad45f8d5b3a7cf00d122bff02de542e85d3260f27841d0b50d\",\"ragEnabled\":true,\"ragCorpusFingerprint\":\"480b13dd5e8e0f6aaf54b1f38e35d296d6ff888682eaaefaca39ae1bb055cd57\",\"ragExampleCount\":3,\"ragExamples\":[{\"id\":118,\"relevance\":36.0,\"sourceId\":\"JBCS2025:train:19.html\",\"source\":\"kamel-usp/aes_enem_dataset\",\"license\":\"Apache-2.0\",\"hash\":\"5c72213bc8154c726ceb76045387f22d60bf55cb384714d781785027445eb040\"},{\"id\":83,\"relevance\":34.0,\"sourceId\":\"JBCS2025:train:5.html\",\"source\":\"kamel-usp/aes_enem_dataset\",\"license\":\"Apache-2.0\",\"hash\":\"38edd22fb066a1e85de31511d94dcf7d315a7e0e1a0c498a48d7a439467c7046\"},{\"id\":109,\"relevance\":24.0,\"sourceId\":\"JBCS2025:train:12.html\",\"source\":\"kamel-usp/aes_enem_dataset\",\"license\":\"Apache-2.0\",\"hash\":\"1a625d8f3a7a049f1d0144db0a4909a297d35f56b4e5859b3814b92da89fbf4a\"}],\"contextGuard\":\"utf8-bytes/3 estimate + output + 256 template reserve; not exact token count\",\"estimatedInputTokens\":6545,\"cacheKey\":\"108aaba0c29fe120c030dbb4622b1234701ae470a87a040f3b8c5e72b5d938ab\",\"wallMs\":342631.917697,\"total_duration\":342627183245,\"total_duration_ms\":342627.183245,\"load_duration\":1809936,\"load_duration_ms\":1.809936,\"prompt_eval_duration\":200422822000,\"prompt_eval_duration_ms\":200422.822,\"eval_duration\":142091111000,\"eval_duration_ms\":142091.111,\"prompt_eval_count\":3980,\"eval_count\":722,\"generationTokensPerSecond\":5.081246778343509,\"costUsd\":0,\"doneReason\":\"stop\"}"
+    } ]
+  }, {
+    "essayHash" : "ad31293d5d2fe92ebecd4eeca5503aaa6d956992b348dd8c05737a3965b706ca",
+    "status" : "READY",
+    "runId" : 10,
+    "provider" : "ollama",
+    "model" : "gemma4:e2b-it-q4_K_M",
+    "scores" : {
+      "C1" : 160,
+      "C2" : 160,
+      "C3" : 160,
+      "C4" : 160,
+      "C5" : 120
+    },
+    "needsReview" : false,
+    "reviewReasons" : [ ],
+    "llmCalls" : [ {
+      "provider" : "ollama",
+      "model" : "gemma4:e2b-it-q4_K_M",
+      "promptHash" : "c0c31ce9fe4c2010cfcf3dc2f2b64c9dafdc6bf6e0913186c1985cac186e782a",
+      "schemaHash" : "589ec7bcb4e51a33cd663161f57a4b64341d568519245c416f1bc4684798c413",
+      "costUsd" : 0.0,
+      "latencyMs" : 191145,
+      "status" : "ok",
+      "createdAt" : "2026-10-20T21:22:37.477698182-03:00",
+      "cacheHit" : 0,
+      "auditJson" : "{\"provider\":\"ollama\",\"model\":\"gemma4:e2b-it-q4_K_M\",\"modelDigest\":\"b37049369adfe3d2b653af0ab301a062ca5cbe96ace6aa0d3f2559ee9b563fc2\",\"runtimeVersion\":\"0.40.4\",\"promptHash\":\"c0c31ce9fe4c2010cfcf3dc2f2b64c9dafdc6bf6e0913186c1985cac186e782a\",\"rubricHash\":\"2c1049af9ee0080fc7668575e5729125c4081fdcd8e77b8ad815c45817f14634\",\"schemaVersionHash\":\"f4d935329ba0f51e9814c1b7072ff16f3f4fcdf14285b134ab8f0556aaf89a50\",\"schemaHash\":\"589ec7bcb4e51a33cd663161f57a4b64341d568519245c416f1bc4684798c413\",\"evidenceCandidateCount\":17,\"generationParameters\":{\"temperature\":0.0,\"seed\":42,\"num_predict\":1200,\"num_thread\":4,\"num_ctx\":8192},\"thinkingControl\":\"disabled\",\"keepAlive\":\"5m\",\"essayRevision\":10,\"textHash\":\"8b5f28a540046a58239620cb809d42ed4b94bab62a85d6c48539b598c699f6fd\",\"themeHash\":\"9011419e8d266c879df065aaedc75be75b9b68fde65df42dbba568c47df63db4\",\"ragEnabled\":true,\"ragCorpusFingerprint\":\"480b13dd5e8e0f6aaf54b1f38e35d296d6ff888682eaaefaca39ae1bb055cd57\",\"ragExampleCount\":3,\"ragExamples\":[{\"id\":151,\"relevance\":30.0,\"sourceId\":\"JBCS2025:train:16.html\",\"source\":\"kamel-usp/aes_enem_dataset\",\"license\":\"Apache-2.0\",\"hash\":\"1ca8d60f74ff9f7d51c6d3652500ccf386240e8096ebdb512d9a8c161b0dc39b\"},{\"id\":4,\"relevance\":30.0,\"sourceId\":\"JBCS2025:train:2.html\",\"source\":\"kamel-usp/aes_enem_dataset\",\"license\":\"Apache-2.0\",\"hash\":\"4e31efda5b7926182abb7e388c07899d337706522003c09e7f24b02a7d8f5466\"},{\"id\":242,\"relevance\":30.0,\"sourceId\":\"JBCS2025:train:15.html\",\"source\":\"kamel-usp/aes_enem_dataset\",\"license\":\"Apache-2.0\",\"hash\":\"80ff6dd0b90fe5cd2fa8d6c5e9c03357d27330ea3b289a21f747516c18a62841\"}],\"contextGuard\":\"utf8-bytes/3 estimate + output + 256 template reserve; not exact token count\",\"estimatedInputTokens\":7039,\"cacheKey\":\"4f9ec0739dee443e837ee403c792410849baf2ff809b52b8108d688cd457e88d\",\"wallMs\":191145.325981,\"total_duration\":191141810794,\"total_duration_ms\":191141.810794,\"load_duration\":2890663,\"load_duration_ms\":2.890663,\"prompt_eval_duration\":58153082000,\"prompt_eval_duration_ms\":58153.082,\"eval_duration\":132829557999,\"eval_duration_ms\":132829.557999,\"prompt_eval_count\":4004,\"eval_count\":631,\"generationTokensPerSecond\":4.750448691583769,\"costUsd\":0,\"doneReason\":\"stop\"}"
+    } ]
+  }, {
+    "essayHash" : "cedcb56c19bbba53c4c54482a1ba2522c3add361984a01e92b4b16bb4dee459a",
+    "status" : "READY",
+    "runId" : 11,
+    "provider" : "ollama",
+    "model" : "gemma4:e2b-it-q4_K_M",
+    "scores" : {
+      "C1" : 160,
+      "C2" : 160,
+      "C3" : 200,
+      "C4" : 160,
+      "C5" : 200
+    },
+    "needsReview" : false,
+    "reviewReasons" : [ ],
+    "llmCalls" : [ {
+      "provider" : "ollama",
+      "model" : "gemma4:e2b-it-q4_K_M",
+      "promptHash" : "c0c31ce9fe4c2010cfcf3dc2f2b64c9dafdc6bf6e0913186c1985cac186e782a",
+      "schemaHash" : "6f278523cc39d0a13ce756909fc1f68f7026c167f872f16764abc7aba739b81b",
+      "costUsd" : 0.0,
+      "latencyMs" : 328883,
+      "status" : "ok",
+      "createdAt" : "2026-10-20T21:25:48.92511909-03:00",
+      "cacheHit" : 0,
+      "auditJson" : "{\"provider\":\"ollama\",\"model\":\"gemma4:e2b-it-q4_K_M\",\"modelDigest\":\"b37049369adfe3d2b653af0ab301a062ca5cbe96ace6aa0d3f2559ee9b563fc2\",\"runtimeVersion\":\"0.40.4\",\"promptHash\":\"c0c31ce9fe4c2010cfcf3dc2f2b64c9dafdc6bf6e0913186c1985cac186e782a\",\"rubricHash\":\"2c1049af9ee0080fc7668575e5729125c4081fdcd8e77b8ad815c45817f14634\",\"schemaVersionHash\":\"f4d935329ba0f51e9814c1b7072ff16f3f4fcdf14285b134ab8f0556aaf89a50\",\"schemaHash\":\"6f278523cc39d0a13ce756909fc1f68f7026c167f872f16764abc7aba739b81b\",\"evidenceCandidateCount\":22,\"generationParameters\":{\"temperature\":0.0,\"seed\":42,\"num_predict\":1200,\"num_thread\":4,\"num_ctx\":8192},\"thinkingControl\":\"disabled\",\"keepAlive\":\"5m\",\"essayRevision\":11,\"textHash\":\"fcb8595c2309d34a3cd47bb37a20a83b3f2ac2c7f7c2ef4a4819af9d2ca5e1e2\",\"themeHash\":\"d804e69accfc8dda6ada022ac896f087966445b1b35090e0f43061d76887a6eb\",\"ragEnabled\":true,\"ragCorpusFingerprint\":\"480b13dd5e8e0f6aaf54b1f38e35d296d6ff888682eaaefaca39ae1bb055cd57\",\"ragExampleCount\":3,\"ragExamples\":[{\"id\":162,\"relevance\":26.0,\"sourceId\":\"JBCS2025:train:15.html\",\"source\":\"kamel-usp/aes_enem_dataset\",\"license\":\"Apache-2.0\",\"hash\":\"9025ac30942cb78fad9442807935e4b259cb6e160f7a62d23dc726c979e4b60a\"},{\"id\":177,\"relevance\":25.0,\"sourceId\":\"JBCS2025:train:8.html\",\"source\":\"kamel-usp/aes_enem_dataset\",\"license\":\"Apache-2.0\",\"hash\":\"76b6e5c0edd5809a943996d64d9e8225a82f8d7303691690a4b8552b8f5016d9\"},{\"id\":139,\"relevance\":25.0,\"sourceId\":\"JBCS2025:train:19.html\",\"source\":\"kamel-usp/aes_enem_dataset\",\"license\":\"Apache-2.0\",\"hash\":\"f452c11d2fa536ad0a2b08df4fd4a8056fbb5a4bb5a951c0c3f7ef1a67fd67ae\"}],\"contextGuard\":\"utf8-bytes/3 estimate + output + 256 template reserve; not exact token count\",\"estimatedInputTokens\":6963,\"cacheKey\":\"fed0ae239095403d6b2e5747cc438c7000b955b15da6195e8e753b539c52d4b1\",\"wallMs\":328882.845009,\"total_duration\":328879317978,\"total_duration_ms\":328879.317978,\"load_duration\":2971928,\"load_duration_ms\":2.971928,\"prompt_eval_duration\":195881250000,\"prompt_eval_duration_ms\":195881.25,\"eval_duration\":132874730000,\"eval_duration_ms\":132874.73,\"prompt_eval_count\":4181,\"eval_count\":729,\"generationTokensPerSecond\":5.486370508523328,\"costUsd\":0,\"doneReason\":\"stop\"}"
+    } ]
+  } ],
+  "completedCount" : 11,
+  "complete" : true
+}

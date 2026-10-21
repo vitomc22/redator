@@ -47,13 +47,22 @@ public class OllamaLlmProvider {
         if (uncertainGeneration.get()) throw failure(HttpStatus.SERVICE_UNAVAILABLE, "RUNTIME_QUARANTINED",
                 "Geração anterior pode continuar no Ollama. Confirme sua interrupção e reinicie o backend antes de avaliar novamente.");
         RagService.Context ragContext = rag.retrieve(text, theme.titulo());
-        var messages = contract.messages(text, theme, ragContext);
+        int retrievedExamples = ragContext.references().size();
         JsonNode outputSchema = contract.schemaForText(text);
         // UTF-8 bytes are a conservative token upper estimate, with template reserve.
         // Include schema because constrained decoding overhead varies by runtime.
-        int estimate = contract.json(Map.of("messages", messages, "format", outputSchema)).getBytes(java.nio.charset.StandardCharsets.UTF_8).length;
-        if (estimate + config.getNumPredict() + 256 > config.getNumCtx() * 3) {
-            throw failure(HttpStatus.UNPROCESSABLE_ENTITY, "CONTEXT_LIMIT", "Texto, proposta e rubrica excedem o guard conservador de contexto; nada foi cortado.");
+        List<Map<String, String>> messages;
+        long estimatedInputTokens;
+        while (true) {
+            messages = contract.messages(text, theme, ragContext);
+            int inputBytes = contract.json(Map.of("messages", messages, "format", outputSchema))
+                    .getBytes(java.nio.charset.StandardCharsets.UTF_8).length;
+            estimatedInputTokens = (inputBytes + 2L) / 3;
+            if (estimatedInputTokens + config.getNumPredict() + 256 <= config.getNumCtx()) break;
+            if (!RagService.CALIBRATION_POLICY.equals(ragContext.policy()) || ragContext.references().size() <= 1)
+                throw failure(HttpStatus.UNPROCESSABLE_ENTITY, "CONTEXT_LIMIT", "Texto, proposta e rubrica excedem o guard conservador de contexto; nada foi cortado.");
+            ragContext = new RagService.Context(true, ragContext.corpusFingerprint(),
+                    List.copyOf(ragContext.references().subList(0, ragContext.references().size() - 1)), ragContext.policy());
         }
         JsonNode version = request("/api/version", null, false);
         if (!version.path("version").isTextual() || version.path("version").asText().isBlank()) throw invalid();
@@ -79,6 +88,7 @@ public class OllamaLlmProvider {
         Map<String, Object> audit = new LinkedHashMap<>();
         audit.put("provider", "ollama"); audit.put("model", config.getModel()); audit.put("modelDigest", digest);
         audit.put("runtimeVersion", version.path("version").asText()); audit.put("promptHash", contract.promptHash());
+        audit.put("requestMessagesHash", LocalEvaluationContract.hash(contract.json(messages)));
         audit.put("rubricHash", contract.rubricHash()); audit.put("schemaVersionHash", contract.schemaHash());
         audit.put("schemaHash", LocalEvaluationContract.hash(contract.json(outputSchema)));
         audit.put("evidenceCandidateCount", contract.evidenceCandidates(text).size());
@@ -86,9 +96,11 @@ public class OllamaLlmProvider {
         audit.put("keepAlive", config.getKeepAlive()); audit.put("essayRevision", revision); audit.put("textHash", LocalEvaluationContract.hash(text));
         audit.put("themeHash", LocalEvaluationContract.hash(contract.json(theme)));
         audit.put("ragEnabled", ragContext.enabled()); audit.put("ragCorpusFingerprint", ragContext.corpusFingerprint());
+        audit.put("ragPolicy", ragContext.policy());
+        audit.put("ragOmittedExamplesForContext", retrievedExamples - ragContext.references().size());
         audit.put("ragExampleCount", ragContext.references().size()); audit.put("ragExamples", ragContext.auditExamples());
         audit.put("contextGuard", "utf8-bytes/3 estimate + output + 256 template reserve; not exact token count");
-        audit.put("estimatedInputTokens", (int) Math.ceil(estimate / 3.0));
+        audit.put("estimatedInputTokens", estimatedInputTokens);
         String key = LocalEvaluationContract.hash(contract.json(audit) + contract.json(payload));
         audit.put("cacheKey", key);
         return new Prepared(payload, audit, key);

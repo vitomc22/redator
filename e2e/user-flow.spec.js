@@ -13,6 +13,29 @@ const scores = Object.fromEntries(['C1', 'C2', 'C3', 'C4', 'C5'].map(c => [c, {
   motivos: ['Justificativa conforme a rubrica.'], needsReview: false
 }]));
 
+test.beforeEach(async ({ page }) => {
+  await page.addInitScript(() => {
+    window.editorInputEvents = [];
+    for (const type of ['pointerdown', 'pointerup', 'click', 'scroll']) {
+      document.addEventListener(type, event => {
+        const button = document.querySelector('#continue');
+        if (!button) return;
+        const rect = button.getBoundingClientRect();
+        window.editorInputEvents.push({ type, time: performance.now(), target: event.target.id,
+          x: event.clientX, y: event.clientY, scrollY, handler: typeof button.onclick,
+          button: { x: rect.x, y: rect.y, width: rect.width, height: rect.height } });
+      }, true);
+    }
+  });
+});
+
+test.afterEach(async ({ page }, info) => {
+  if (info.status !== info.expectedStatus) await info.attach('editor-input-events', {
+    body: JSON.stringify(await page.evaluate(() => window.editorInputEvents), null, 2),
+    contentType: 'application/json'
+  });
+});
+
 test('aluno envia texto, confirma e vê a correção completa', async ({ page }) => {
   const essay = {
     id: 9001, tema_id: 3, text: essayText, status: 'READY', attempt_number: 1,
@@ -45,7 +68,7 @@ test('aluno envia texto, confirma e vê a correção completa', async ({ page })
   await expect(page.getByText(theme.recorte)).toBeVisible();
   await page.getByLabel('Título').fill('E2E UI');
   await page.getByLabel('Texto da redação').fill(essayText);
-  await page.getByRole('button', { name: 'Continuar para inspeção' }).click();
+  await page.getByRole('button', { name: 'Continuar para inspeção' }).click({ delay: 100 });
 
   await expect(page).toHaveURL(/#inspect\/9001$/);
   await expect(page.getByLabel('Texto da tentativa')).toHaveValue(essayText);

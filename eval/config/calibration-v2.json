@@ -1,0 +1,59 @@
+{
+  "schemaVersion": 1,
+  "status": "experimental-validation-only",
+  "policy": "calibration-v2",
+  "baseRevision": "7f1663fce21dd1acb726eac68bdaad07758c6025",
+  "benchmark": "eval/frozen/public-validation-v1.json",
+  "selectionFingerprint": "f6430ef344ea4cdfd765f0b5c4e34da65b73dca1ba092bc7190022ff4a6f3af6",
+  "corpusFingerprint": "480b13dd5e8e0f6aaf54b1f38e35d296d6ff888682eaaefaca39ae1bb055cd57",
+  "sampleCount": 3,
+  "baseline": "eval/results/validation-baseline-v1.json",
+  "legacyRag": "eval/results/validation-rag-v1.json",
+  "candidate": "eval/results/validation-rag-v2.json",
+  "runtime": {
+    "provider": "ollama",
+    "experimental": true,
+    "synchronous": true,
+    "profilesAliases": true,
+    "model": "gemma4:e2b-it-q4_K_M",
+    "options": {
+      "seed": 42,
+      "num_predict": 1200,
+      "num_thread": 4,
+      "num_ctx": 8192,
+      "temperature": 0.0
+    },
+    "keep_alive": "5m",
+    "timeoutSeconds": 600,
+    "runtimeQuarantined": false
+  },
+  "rag": {
+    "policy": "calibration-v2",
+    "maxReferences": 3,
+    "minimumReferencesWhenFitting": 1,
+    "excerptCodePoints": 1200,
+    "beginningShare": "2/3 of retained code points",
+    "endingShare": "1/3 of retained code points",
+    "omissionMarker": " […] ",
+    "humanScoreScope": "whole-essay-mean",
+    "contextFitting": "omit last optional reference until estimated input + 1200 output + 256 template <= 8192; never truncate student text"
+  },
+  "hypothesis": "Preserve conclusions and explicitly identify incomplete references to reduce misapplication of whole-essay human scores.",
+  "qualityUse": "Validation diagnostics only; test-v1 results remain unchanged and this population cannot qualify a release.",
+  "sourceFingerprintAlgorithm": "SHA-256 of sorted path + NUL + file SHA-256 + LF entries encoded as UTF-8",
+  "sourceFingerprint": "648d83745c4ab140d6e9b5d233a2ea5ccf0f574055dd22e4e983314e0bd4417f",
+  "sourceFiles": {
+    "pom.xml": "5798cdff5028983338d6468e54219f4d12eb0094943c3a834718908329a25d0b",
+    "src/main/java/com/redator/corretor/service/LlmGateway.java": "060c6b0ba7e15ebe9afd4f1aa31c30bd144e3a2c3e1d030db2e3ff95a8926ef0",
+    "src/main/java/com/redator/corretor/service/LocalEvaluationContract.java": "5871a5f8f612170c082c299c4c0e4f8cca0a7a935ba019186cd95a894bd877a9",
+    "src/main/java/com/redator/corretor/service/OllamaLlmProvider.java": "0b28371a12dbc2b499c1705d11d915aa61aecdb698bfd1942f5557f215ccac0a",
+    "src/main/java/com/redator/corretor/service/PairedBenchmarkRunner.java": "27ea73cb3547d33cac2a75b5c174e86d1792e8d4bb5c21c0c3e16459277948a9",
+    "src/main/java/com/redator/corretor/service/PublicHumanCorpus.java": "29d23e865ab92d0474109a65e1a4bc1564c5dfd8542953ebda6d39f0ef5f6e5f",
+    "src/main/java/com/redator/corretor/service/RagService.java": "215455a1367463b04e20eb5d99c1ed8a66ee1dd89e500d2b2569d4ba18999afe",
+    "src/main/resources/application.properties": "6b1943d12919f89cdc5dc99a4e7cd74c772fc2618d139d02366bdc3c5419775e",
+    "src/main/resources/prompts/enem-local-v1-system.txt": "1171b03236bcdfa6c54f67df95730855fa2670f2187f09e3b634dfad1a889cd3",
+    "src/main/resources/prompts/enem-local-v1-user.txt": "11b825f076e2b149c351c7b0dec7b0df60940e4380deabc04c55106839385ce8",
+    "src/main/resources/rubrics/enem-2026-v1.json": "2c1049af9ee0080fc7668575e5729125c4081fdcd8e77b8ad815c45817f14634",
+    "src/main/resources/schemas/enem-local-v1.json": "f4d935329ba0f51e9814c1b7072ff16f3f4fcdf14285b134ab8f0556aaf89a50"
+  }
+}

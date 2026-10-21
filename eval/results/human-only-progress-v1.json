@@ -1,0 +1,67 @@
+{
+  "essayId": 5,
+  "human": {
+    "id": 2,
+    "essayId": 5,
+    "referenceRunId": null,
+    "status": "COMPLETED",
+    "reviewerId": "Professora E2E",
+    "requestedAt": "2026-10-21T06:59:37.545290160-03:00",
+    "claimedAt": "2026-10-21T09:59:38.546895209Z",
+    "completedAt": "2026-10-21T09:59:38.546895209Z",
+    "evaluation": {
+      "version": 1,
+      "mainGuidance": "Integre o repertório diretamente à tese.",
+      "total": 880,
+      "reviewerId": "Professora E2E",
+      "publishedAt": "2026-10-21T09:59:38.546895209Z",
+      "scores": {
+        "C1": 160,
+        "C2": 200,
+        "C3": 160,
+        "C4": 160,
+        "C5": 200
+      },
+      "comments": {
+        "C1": "",
+        "C2": "",
+        "C3": "Aprofunde a relação de causa e consequência.",
+        "C4": "",
+        "C5": ""
+      }
+    }
+  },
+  "progress": {
+    "points": [
+      {
+        "essayId": 5,
+        "groupId": 5,
+        "attemptNumber": 1,
+        "createdAt": "2026-10-21T06:59:37.502253456-03:00",
+        "text": "A desinformação exige educação midiática, transparência algorítmica e participação cidadã.",
+        "theme": "Educacao como direito fundamental",
+        "runId": null,
+        "total": null,
+        "provider": null,
+        "model": null,
+        "scores": [],
+        "human": {
+          "total": 880,
+          "publishedAt": "2026-10-21T09:59:38.546895209Z",
+          "scores": {
+            "C1": 160,
+            "C2": 200,
+            "C3": 160,
+            "C4": 160,
+            "C5": 200
+          }
+        }
+      }
+    ],
+    "fakeExcluded": true,
+    "nullExcluded": true,
+    "student": "student-review-1792576777311-0"
+  },
+  "testSourceSha256": "2e2f28fdcde384faf170feb1c8dd2aa34e837a57632f7f9ec56e0ef5c85f1163",
+  "fixtureScoresAreWorkflowTestData": true
+}

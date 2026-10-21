@@ -5,6 +5,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.util.List;
 import java.util.Map;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
@@ -108,6 +110,68 @@ class TrainingCycleIntegrationTest {
         ResponseEntity<List> response = rest.getForEntity(
                 "/api/reviewer/review-requests", List.class);
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+    }
+
+    @ParameterizedTest
+    @ValueSource(booleans = {false, true})
+    void humanPublicationAppearsInProgressWithoutAReadyRealAiRun(boolean evaluateFakeFirst) {
+        HttpHeaders student = localUserHeaders("human-progress-" + java.util.UUID.randomUUID());
+        Map<String, Object> input = Map.of("temaId", 1, "text", "A educação pública promove direitos e cidadania.",
+                "title", "Correção humana independente", "sourceType", "text");
+        var created = rest.exchange("/api/attempts", HttpMethod.POST, new HttpEntity<>(input, student), Map.class);
+        long essayId = number((Map<?, ?>) created.getBody().get("essay"), "id");
+        if (evaluateFakeFirst) {
+            var simulated = rest.exchange("/api/essays/{id}/evaluate?profile=normal", HttpMethod.POST,
+                    new HttpEntity<>(null, student), Map.class, essayId);
+            assertThat(simulated.getBody()).containsEntry("status", "NEEDS_REVIEW").containsEntry("provider", "fake");
+        }
+        var before = rest.exchange("/api/me/progress", HttpMethod.GET, new HttpEntity<>(student), Map.class);
+        assertThat((List<?>) before.getBody().get("points")).isEmpty();
+        var requested = rest.exchange("/api/essays/{id}/human-review-requests", HttpMethod.POST,
+                new HttpEntity<>(Map.of(), student), Map.class, essayId);
+        long requestId = number(requested.getBody(), "id");
+        rest.exchange("/api/reviewer/review-requests/{id}/claim", HttpMethod.POST,
+                new HttpEntity<>(null, reviewerHeaders()), Map.class, requestId);
+        Map<String, Object> scores = Map.of("scores", Map.of("C1", 160, "C2", 160, "C3", 120, "C4", 120, "C5", 160),
+                "comments", Map.of("C3", "Aprofunde o argumento."), "mainGuidance", "Revise a tese.");
+        var draft = rest.exchange("/api/reviewer/review-requests/{id}/draft", HttpMethod.POST,
+                new HttpEntity<>(scores, reviewerHeaders()), Map.class, requestId);
+        assertThat(draft.getStatusCode()).isEqualTo(HttpStatus.OK);
+        var draftProgress = rest.exchange("/api/me/progress", HttpMethod.GET, new HttpEntity<>(student), Map.class);
+        assertThat((List<?>) draftProgress.getBody().get("points")).isEmpty();
+        var published = rest.exchange("/api/reviewer/review-requests/{id}/publish", HttpMethod.POST,
+                new HttpEntity<>(scores, reviewerHeaders()), Map.class, requestId);
+        assertThat(published.getStatusCode()).isEqualTo(HttpStatus.OK);
+
+        var progress = rest.exchange("/api/me/progress", HttpMethod.GET, new HttpEntity<>(student), Map.class);
+        List<Map<String, Object>> points = (List<Map<String, Object>>) progress.getBody().get("points");
+        assertThat(points).hasSize(1);
+        var point = points.getFirst();
+        assertThat(number(point, "essayId")).isEqualTo(essayId);
+        assertThat(point).containsEntry("total", null).containsEntry("runId", null)
+                .containsEntry("provider", null).containsEntry("model", null);
+        assertThat((List<?>) point.get("scores")).isEmpty();
+        var human = (Map<String, Object>) point.get("human");
+        assertThat(human).containsEntry("total", 720);
+        assertThat((Map<String, Object>) human.get("scores")).containsEntry("C3", 120);
+
+        var another = rest.exchange("/api/essays/{id}/human-review-requests", HttpMethod.POST,
+                new HttpEntity<>(Map.of(), student), Map.class, essayId);
+        long anotherId = number(another.getBody(), "id");
+        rest.exchange("/api/reviewer/review-requests/{id}/claim", HttpMethod.POST,
+                new HttpEntity<>(null, reviewerHeaders()), Map.class, anotherId);
+        var latest = Map.of("scores", Map.of("C1", 160, "C2", 200, "C3", 160, "C4", 160, "C5", 200),
+                "comments", Map.of("C3", "Nova correção publicada."), "mainGuidance", "Nova orientação.");
+        var newer = rest.exchange("/api/reviewer/review-requests/{id}/publish", HttpMethod.POST,
+                new HttpEntity<>(latest, reviewerHeaders()), Map.class, anotherId);
+        assertThat(newer.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(newer.getBody()).containsEntry("version", 1);
+        var refreshed = rest.exchange("/api/me/progress", HttpMethod.GET, new HttpEntity<>(student), Map.class);
+        var latestPoint = ((List<Map<String, Object>>) refreshed.getBody().get("points")).getFirst();
+        assertThat((Map<String, Object>) latestPoint.get("human")).containsEntry("total", 880);
+        var other = rest.exchange("/api/me/progress", HttpMethod.GET,
+                new HttpEntity<>(localUserHeaders("other-" + java.util.UUID.randomUUID())), Map.class);
+        assertThat((List<?>) other.getBody().get("points")).isEmpty();
     }
 
     @Test

@@ -241,16 +241,20 @@ public class TrainingCycleService {
                 SELECT e.id AS essayId, e.group_id AS groupId, e.attempt_number AS attemptNumber,
                        e.created_at AS createdAt, e.text, t.titulo AS theme, r.id AS runId, r.total AS total,
                        r.provider, r.model
-                FROM essay e JOIN tema t ON t.id=e.tema_id JOIN run r ON r.id=(
+                FROM essay e JOIN tema t ON t.id=e.tema_id LEFT JOIN run r ON r.id=(
                     SELECT r2.id FROM run r2 WHERE r2.essay_id=e.id AND r2.status='READY' AND r2.provider<>'fake' ORDER BY r2.id DESC LIMIT 1)
-                WHERE e.student_id=? ORDER BY e.created_at
+                WHERE e.student_id=? AND (r.id IS NOT NULL OR EXISTS (
+                    SELECT 1 FROM human_evaluation he JOIN human_review_request hr ON hr.id=he.request_id
+                    WHERE hr.essay_id=e.id AND he.status='PUBLISHED'))
+                ORDER BY e.created_at, e.id
                 """, users.current());
         for (Map<String, Object> point : points) {
-            point.put("scores", jdbc.queryForList("SELECT competencia, nota FROM competence_result WHERE run_id=? ORDER BY competencia", point.get("runId")));
+            point.put("scores", point.get("runId") == null ? List.of() : jdbc.queryForList(
+                    "SELECT competencia, nota FROM competence_result WHERE run_id=? ORDER BY competencia", point.get("runId")));
             List<Map<String, Object>> human = jdbc.queryForList("""
                     SELECT he.total, he.scores_json AS scoresJson, he.published_at AS publishedAt
                     FROM human_evaluation he JOIN human_review_request hr ON hr.id=he.request_id
-                    WHERE hr.essay_id=? AND he.status='PUBLISHED' ORDER BY he.version DESC LIMIT 1
+                    WHERE hr.essay_id=? AND he.status='PUBLISHED' ORDER BY he.id DESC LIMIT 1
                     """, point.get("essayId"));
             if (!human.isEmpty()) {
                 Map<String, Object> h = new LinkedHashMap<>(human.getFirst());

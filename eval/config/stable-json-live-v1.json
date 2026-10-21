@@ -1,0 +1,45 @@
+{
+  "schemaVersion": 1,
+  "purpose": "Functional integration of stable map serialization with Spring, SQLite and real Ollama/Gemma; no human-quality qualification.",
+  "serializationVersion": "stable-map-json-v1",
+  "environment": {
+    "APP_LLM_STABLE_JSON": "true",
+    "LLM_LIVE_TEST": "true",
+    "RAG_POLICY": "calibration-v2"
+  },
+  "sourceFiles": {
+    "pom.xml": "5798cdff5028983338d6468e54219f4d12eb0094943c3a834718908329a25d0b",
+    "src/main/java/com/redator/corretor/cli/RagQualityGateCli.java": "ff891917fc77af6e39bb9ee5c67e3852808f1c3be68df7a827ce5be284dd1961",
+    "src/main/java/com/redator/corretor/cli/TwoRaterBenchmarkCli.java": "96cfb416fe65a72514f4c789d9330e9c7f6df668c89bc4a9ce2778aa672819d8",
+    "src/main/java/com/redator/corretor/service/LlmGateway.java": "060c6b0ba7e15ebe9afd4f1aa31c30bd144e3a2c3e1d030db2e3ff95a8926ef0",
+    "src/main/java/com/redator/corretor/service/LocalEvaluationContract.java": "5871a5f8f612170c082c299c4c0e4f8cca0a7a935ba019186cd95a894bd877a9",
+    "src/main/java/com/redator/corretor/service/OllamaLlmProvider.java": "0b28371a12dbc2b499c1705d11d915aa61aecdb698bfd1942f5557f215ccac0a",
+    "src/main/java/com/redator/corretor/service/PairedBenchmarkGate.java": "120c7cb1a7030e5a7e6b5d82aa944d29168f6d77e6302976471a4047a9dd32ad",
+    "src/main/java/com/redator/corretor/service/PairedBenchmarkRunner.java": "27ea73cb3547d33cac2a75b5c174e86d1792e8d4bb5c21c0c3e16459277948a9",
+    "src/main/java/com/redator/corretor/service/PublicHumanCorpus.java": "29d23e865ab92d0474109a65e1a4bc1564c5dfd8542953ebda6d39f0ef5f6e5f",
+    "src/main/java/com/redator/corretor/service/RagService.java": "215455a1367463b04e20eb5d99c1ed8a66ee1dd89e500d2b2569d4ba18999afe",
+    "src/main/java/com/redator/corretor/service/StableJsonEvaluationContract.java": "a0b4635f7d1f9b617833fb56fa2865d76331c597e25afbcc8d260628b236c7f6",
+    "src/main/java/com/redator/corretor/service/TwoRaterBenchmarkExporter.java": "d41af9565657ebd3c1af89c99309645fb46693685c33980845ad213fce752011",
+    "src/main/java/com/redator/corretor/service/TwoRaterBenchmarkGate.java": "0991e65625feeebed1de0d214184e6e05ce99c2362a11a97321f7ddbd3e9f226",
+    "src/main/resources/application.properties": "6b1943d12919f89cdc5dc99a4e7cd74c772fc2618d139d02366bdc3c5419775e",
+    "src/main/resources/prompts/enem-local-v1-system.txt": "1171b03236bcdfa6c54f67df95730855fa2670f2187f09e3b634dfad1a889cd3",
+    "src/main/resources/prompts/enem-local-v1-user.txt": "11b825f076e2b149c351c7b0dec7b0df60940e4380deabc04c55106839385ce8",
+    "src/main/resources/rubrics/enem-2026-v1.json": "2c1049af9ee0080fc7668575e5729125c4081fdcd8e77b8ad815c45817f14634",
+    "src/main/resources/schemas/enem-local-v1.json": "f4d935329ba0f51e9814c1b7072ff16f3f4fcdf14285b134ab8f0556aaf89a50",
+    "src/test/java/com/redator/corretor/OllamaLiveIntegrationTest.java": "f9ac7c4743a68e9a1dd327c031eb6d9b769e789ab342197249ba7741d79a42ba"
+  },
+  "sourceFingerprintAlgorithm": "SHA-256 of sorted path + NUL + file SHA-256 + LF entries encoded as UTF-8",
+  "sourceFingerprint": "1685349efc6036d65bfcec97185fa8220bbb5729a43683afb8b0c142d0159564",
+  "runtimeVersion": "0.40.4",
+  "model": "gemma4:e2b-it-q4_K_M",
+  "modelDigest": "b37049369adfe3d2b653af0ab301a062ca5cbe96ace6aa0d3f2559ee9b563fc2",
+  "generationParameters": {
+    "seed": 42,
+    "num_predict": 1200,
+    "num_thread": 4,
+    "num_ctx": 8192,
+    "temperature": 0.0
+  },
+  "keepAlive": "5m",
+  "thinkingControl": "disabled"
+}

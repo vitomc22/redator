@@ -142,21 +142,30 @@ O código deste repositório é distribuído sob a licença [MIT](LICENSE). Cada
 dataset mantém sua própria licença e proveniência; a licença do software não
 substitui a licença do corpus.
 
+## Preparar coleções por perfil
+
+A [ferramenta offline](eval/reports/profile-collections-v1.md) prepara um snapshot completo e bancos SQLite separados a partir de uma coleção legada. Preserva a origem e gera um manifesto verificável; a ativação automática e o backup/restauração por perfil ainda estão em desenvolvimento.
+
 ## Testes E2E com Playwright
 
-A suíte em `e2e/` usa Chromium isolado, locators acessíveis, execução paralela e relatório HTML. Em falhas, guarda screenshot e vídeo; no primeiro retry, guarda trace. O backend é iniciado automaticamente com banco SQLite isolado e provider fake em CI. Localmente, um servidor já aberto em `127.0.0.1:8080` é reutilizado.
+A suíte em `e2e/` usa Chromium isolado, locators acessíveis, execução paralela e relatório HTML. Em falhas, guarda screenshot, vídeo e trace. Cada execução inicia seu próprio backend em `127.0.0.1:18080`, com diretório e SQLite novos; um servidor já aberto não é reutilizado. A suíte rápida usa provider fake: seus resultados são simulação e não publicam notas de IA.
 
 Os cenários rápidos cobrem: envio digitado; validação obrigatória; upload e
 conferência documental; avaliação e resultado C1–C5; falha de inferência sem nota;
 pedido de correção humana; fila, aceite e publicação pelo corretor; comparação IA ×
 humano; histórico e reescrita; plano de melhoria e checklist; progresso; e runtime
-indisponível. A inferência real permanece separada em `@live`.
+indisponível. Os testes com APIs interceptadas verificam a interface. Fluxos adicionais sem interceptação verificam Spring e SQLite reais, incluindo PDF comprimido, conferência obrigatória, fila local do professor, rascunho/retomada/publicação, importação cifrada e progresso humano sem IA. A inferência real permanece separada em `@live`.
 
 ```bash
 npm install
 npx playwright install chromium
+npm run test:config
+npm run test:frontend
 npm run e2e
+npm run e2e:failure
 ```
+
+`e2e:failure` usa o provider Ollama real contra uma porta local inacessível, em outro SQLite novo. Verifica HTTP 503, ausência de notas e persistência do pedido humano após recarregar. Apenas essa configuração de falha desativa o reparo automático do runtime. Não há interceptação de API nesse teste.
 
 Para assistir ao fluxo completo em velocidade reduzida — aluno, IA, pedido humano, área do corretor, publicação e comparação final:
 
@@ -167,16 +176,16 @@ npm run e2e:demo
 Para conferir pela UI um resultado real já persistido, sem gerar outra correção:
 
 ```bash
-E2E_LIVE_ESSAY_ID=719 npx playwright test e2e/live-ollama.spec.js --grep "resultado real"
+PLAYWRIGHT_EXTERNAL_SERVER=1 E2E_LIVE_ESSAY_ID=719 npx playwright test e2e/live-ollama.spec.js --grep "resultado real"
 ```
 
-O fluxo integral com inferência Ollama é opt-in, pode levar vários minutos e requer backend real já iniciado com `LLM_PROVIDER=ollama`:
+O fluxo integral com inferência Ollama é opt-in, pode levar vários minutos e inicia seu próprio backend Ollama com SQLite novo. Requer o runtime e o corpus configurados:
 
 ```bash
 npm run e2e:live
 ```
 
-O caso autorizado de referência (800 pontos, 160 por competência) está em `eval/e2e-desinformacao-800.json`. O teste live aceita erro absoluto de até 80 pontos no total; esse limiar serve para detectar regressão neste caso, não para validar qualidade geral do corretor.
+O caso autorizado de referência (800 pontos, 160 por competência) está em `eval/e2e-desinformacao-800.json`. `e2e:live` verifica o funcionamento; `npm run e2e:quality` exige adicionalmente erro absoluto de até 80 pontos no total. A execução registrada produziu 1000 e reprovou essa tolerância. Esse limiar de uma amostra não valida qualidade geral do corretor.
 
 Para tornar uma amostra elegível, obtenha autorização compatível, salve o texto em `dataset/private/` (ignorado pelo Git), registre SHA-256 e evidência de direitos, revise a extração e os cinco rótulos humanos. Sementes já vistas durante o planejamento ficam em `dev`, nunca em teste cego.
 
@@ -190,9 +199,10 @@ O benchmark calcula métricas por competência, matriz de confusão, erro absolu
 
 O benchmark público congelado é exportado somente dos splits reservados, em ordem
 determinística, com hashes de cada redação, fingerprint lógico do corpus e fingerprint
-da seleção. O exportador só admite consenso humano na escala oficial C1–C5
-(0/40/80/120/160/200), sem arredondar rótulos intermediários. O artefato versionado
-atual contém 11 redações humanas válidas do split `test`:
+da seleção. O exportador legado v1 só admite médias humanas integralmente na escala
+oficial C1–C5 (0/40/80/120/160/200), sem arredondar rótulos intermediários. Isso
+restringe a população mesmo quando as duas notas individuais são válidas. O artefato
+histórico v1 contém 11 redações do split `test` e permanece preservado:
 
 ```bash
 java -cp "target/classes:$(cat target/classpath.txt)" \
@@ -227,6 +237,85 @@ O gate identifica amostras pelo hash, recalcula a impressão do benchmark, rejei
 duplicatas/cobertura parcial e exige provider, modelo e parâmetros idênticos. Ele usa
 a escala correta de seis níveis por competência e reprova QWK não calculável.
 
+Os dois braços versionados concluíram 11/11 avaliações `READY`. O gate de
+20/10/2026 **reprovou o RAG**: MAE de C2 passou de 76,3636 para 80,0000, MAE de
+C5 de 80,0000 para 94,5455 e QWK agregado de 0,126394 para 0,031611. A qualidade
+do RAG permanece experimental e sua qualificação está pendente. Veja o
+[relatório completo e os artefatos](eval/reports/rag-public-test-v1.md).
+
+A política `calibration-v2` é opt-in para calibração: conserva início e conclusão
+das referências dentro de 1200 pontos de código, identifica as notas como médias
+da redação inteira e reduz a quantidade de exemplos quando necessário para
+reservar contexto para a saída. O texto do estudante é preservado. Política,
+hash das mensagens, hashes dos excertos e exemplos omitidos ficam na auditoria.
+O padrão continua `lexical-v1`; a configuração experimental está congelada em
+[calibration-v2.json](eval/config/calibration-v2.json).
+
+O conjunto legado de `validation` contém três amostras cujas médias satisfazem a
+restrição v1. Ele serve para diagnóstico de calibração e não qualifica um release:
+
+```bash
+RAG_POLICY=calibration-v2 java -cp "target/classes:$(cat target/classpath.txt)" \
+  com.redator.corretor.cli.PairedBenchmarkCli \
+  --benchmark eval/frozen/public-validation-v1.json --arm rag \
+  --data-directory target/validation-calibration-new-run \
+  --output target/validation-calibration-new-run.json
+```
+
+O protocolo v2 preserva **as duas correções humanas individuais**. Calcula MAE e
+QWK separadamente por avaliador e tira a média das duas métricas; não arredonda a
+média das notas nem calcula um único QWK juntando os avaliadores. Um QWK agregado
+indefinido em qualquer avaliador reprova o gate. Assim, as 66 redações de validação
+podem ser usadas, com suas 132 anotações originais. O novo gate também informa a
+concordância entre os humanos e conserva os mesmos controles de auditoria de release.
+
+```bash
+java -cp "target/classes:$(cat target/classpath.txt)" \
+  com.redator.corretor.cli.TwoRaterBenchmarkCli \
+  --database dataset/public-corpus.db --split validation \
+  --output eval/frozen/public-validation-two-raters-v2.json
+
+java -cp "target/classes:$(cat target/classpath.txt)" \
+  com.redator.corretor.cli.TwoRaterBenchmarkCli \
+  --database dataset/public-corpus.db --split test \
+  --exclude-benchmark eval/frozen/public-test-v1.json \
+  --output eval/frozen/public-test-unscored-two-raters-v2.json
+```
+
+A segunda seleção reserva as outras 58 redações de `test`, com 116 anotações;
+elas não pertencem ao `test-v1`. Compartilham a partição temática de teste já
+conhecida, portanto não representam uma nova coleta temática independente.
+O exportador verifica a impressão da seleção excluída e recusa substituir um
+arquivo congelado por uma população diferente. `PairedBenchmarkCli` aceita os
+dois formatos, e `RagQualityGateCli` escolhe o protocolo pela versão do benchmark.
+Veja o [protocolo e piloto com dois avaliadores](eval/reports/two-raters-v2.md).
+
+Para experimentos com ordem de chaves JSON estável entre processos Java, habilite
+`APP_LLM_STABLE_JSON=true` nos dois braços. Esse modo ordena mapas recursivamente,
+preserva a ordem das listas e os trechos literais, e recebe outro `promptHash` para
+separar auditoria e cache. O modo padrão e os experimentos congelados continuam
+com o contrato legado. O modo estável exige evidência própria; seu hash é
+rejeitado pelo gate de release do contrato legado.
+Veja a [verificação da ordenação estável](eval/reports/stable-json-v1.md).
+
+Para empacotar artefatos destinados à distribuição, execute:
+
+```bash
+mvn -Prelease-quality verify
+```
+
+O perfil executa o gate em `prepare-package` e bloqueia o empacotamento se houver
+reprovação. Ele exige `test`, Ollama/Gemma, a política esperada e auditorias
+compatíveis com o contrato atual, além de cobertura completa e métricas sem
+regressão. Os artefatos medidos atuais bloqueiam esse comando por C2, C5 e QWK.
+Os caminhos podem ser definidos por `rag.release.benchmark`,
+`rag.release.baseline` e `rag.release.candidate`; `rag.release.policy` identifica
+a política que o release pretende qualificar (padrão `lexical-v1`).
+
+A [calibração em validation](eval/reports/rag-validation-v2.md) concluiu os três
+braços com 3/3 `READY`. A variante melhorou MAE em C1 e C2, mas reprovou C4 e QWK
+agregado; segue opt-in, sem promoção do padrão.
+
 ## Testes
 
 ```bash
@@ -242,6 +331,21 @@ injeção das notas humanas no prompt, auditoria, exatamente uma chamada `/api/c
 schema, opções, ausência de thinking e evidência literal. O E2E real é opt-in
 (`LLM_LIVE_TEST=true mvn -q -Dtest=OllamaLiveIntegrationTest test`) e não aprova qualidade ENEM por si só.
 
+`npm run test:config` verifica os modos do Playwright. `npm run e2e:live` inicia
+o backend configurado para Ollama com uma coleção SQLite nova por execução, sem reutilizar um servidor
+existente, e verifica publicação, evidências literais e auditoria persistida.
+Para exercitar a variante, use `RAG_POLICY=calibration-v2 npm run e2e:live`.
+A suíte funcional valida o contrato e registra a comparação com a referência
+humana autorizada da fixture. `npm run e2e:quality` preserva a checagem histórica
+de qualidade, com tolerância de 80 pontos; pode reprovar mesmo quando publicação
+e persistência funcionam. O [diagnóstico observado](eval/results/browser-reference-v2.json)
+registrou 1000 contra referência 800, erro de 200 pontos.
+
+Para inspecionar uma correção humana já preparada em um servidor local, use
+`PLAYWRIGHT_EXTERNAL_SERVER=1`, `PLAYWRIGHT_BASE_URL` e `E2E_LIVE_ESSAY_ID` com
+`npx playwright test --grep 'referência humana independentes'`. Esse modo
+explícito usa o servidor informado e não inicia outro backend.
+
 ## Arquitetura
 
 ```text
@@ -251,7 +355,7 @@ Browser -> Spring Boot -> EssayService -> LlmGateway -> Ollama local
                     \-> SQLite/Flyway (run, competence_result, llm_call, human_review_request)
 ```
 
-Rubrica, schema e prompts versionados ficam em `src/main/resources/{rubrics,schemas,prompts}`. A Cartilha do Participante ENEM 2026 local é a fonte normativa registrada por hash. O plano de implementação e os critérios de aceite estão em [plano_corretor_enem_ia_mvp_v2.md](plano_corretor_enem_ia_mvp_v2.md).
+Rubrica, schema e prompts versionados ficam em `src/main/resources/{rubrics,schemas,prompts}`. A Cartilha do Participante ENEM 2026 local é a fonte normativa registrada por hash. O plano de implementação e os critérios de aceite estão em [plano_redator_local_first.md](plano_redator_local_first.md), com o progresso em [implementacao_local_first.md](docs/implementacao_local_first.md).
 
 ## Critério para dizer “pronto para uso”
 

@@ -98,6 +98,37 @@ class PairedBenchmarkGateTest {
         assertThat(PairedBenchmarkGate.evaluate(benchmark, baseline, rag).passed()).isTrue();
     }
 
+    @Test
+    void rejectsIncompleteArmEvenWithEverySamplePresent() throws Exception {
+        var benchmark = benchmark();
+        var baseline = arm("baseline", List.of(result("a", 80), result("b", 120)));
+        var rag = arm("rag", List.of(result("a", 80), result("b", 160)));
+        rag.put("complete", false);
+        assertThatThrownBy(() -> PairedBenchmarkGate.evaluate(benchmark, baseline, rag))
+                .isInstanceOf(IllegalArgumentException.class).hasMessageContaining("concluído");
+    }
+
+    @Test
+    void rejectsFractionalScoreInsteadOfTruncatingItToAnOfficialLevel() throws Exception {
+        var benchmark = benchmark();
+        var baseline = arm("baseline", List.of(result("a", 80), result("b", 120)));
+        Map<String, Object> fractional = new LinkedHashMap<>(result("b", 160));
+        fractional.put("scores", Map.of("C1", 160.5, "C2", 160, "C3", 160, "C4", 160, "C5", 160));
+        var rag = arm("rag", List.of(result("a", 80), fractional));
+        assertThatThrownBy(() -> PairedBenchmarkGate.evaluate(benchmark, baseline, rag))
+                .isInstanceOf(IllegalArgumentException.class).hasMessageContaining("inteira");
+    }
+
+    @Test
+    void rejectsCandidateFromAnotherCorpusEvenIfSelectionMatches() throws Exception {
+        var benchmark = benchmark();
+        var baseline = arm("baseline", List.of(result("a", 80), result("b", 120)));
+        var rag = arm("rag", List.of(result("a", 80), result("b", 160)));
+        rag.put("rag", Map.of("enabled", true, "available", true, "fingerprint", "e".repeat(64)));
+        assertThatThrownBy(() -> PairedBenchmarkGate.evaluate(benchmark, baseline, rag))
+                .isInstanceOf(IllegalArgumentException.class).hasMessageContaining("corpus congelado");
+    }
+
     private static Map<String, Object> benchmark() throws Exception {
         List<Map<String, Object>> samples = new ArrayList<>();
         samples.add(sample("a", 80));
@@ -132,9 +163,10 @@ class PairedBenchmarkGateTest {
         Map<String, Object> document = new LinkedHashMap<>();
         document.put("schemaVersion", 1); document.put("arm", arm);
         document.put("selectionFingerprint", benchmark.get("selectionFingerprint"));
+        document.put("complete", true); document.put("completedCount", results.size());
         document.put("runtime", new LinkedHashMap<>(Map.of("provider", "fake", "model", "deterministic-baseline")));
         document.put("rag", arm.equals("rag")
-                ? Map.of("enabled", true, "available", true, "fingerprint", "e".repeat(64))
+                ? Map.of("enabled", true, "available", true, "fingerprint", benchmark.get("corpusFingerprint"))
                 : Map.of("enabled", false, "available", false));
         document.put("results", results);
         return document;

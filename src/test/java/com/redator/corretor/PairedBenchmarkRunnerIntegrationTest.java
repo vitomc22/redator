@@ -7,6 +7,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.redator.corretor.service.DatasetManifestValidator;
 import com.redator.corretor.service.PairedBenchmarkRunner;
 import com.redator.corretor.service.PublicHumanCorpus;
+import com.redator.corretor.service.TwoRaterBenchmarkExporter;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.LinkedHashMap;
@@ -51,6 +52,32 @@ class PairedBenchmarkRunnerIntegrationTest {
 
         assertThatThrownBy(() -> runner.run(benchmark, temporary.resolve("rag.json"), "rag"))
                 .isInstanceOf(IllegalArgumentException.class).hasMessageContaining("app.rag.enabled=true");
+    }
+
+    @Test
+    void runsTwoRaterSamplesAgainstRealSqliteWithoutInventingAnAveragedLabel() throws Exception {
+        var benchmark = benchmarkDocument();
+        var samples = (List<Map<String, Object>>) benchmark.get("samples");
+        for (var sample : samples) {
+            sample.remove("humanScores"); sample.remove("humanTotal"); sample.remove("graderAggregation");
+            sample.put("humanEvaluations", List.of(
+                    Map.of("graderId", "fixture_a", "scores", List.of(120, 120, 120, 120, 120), "total", 600),
+                    Map.of("graderId", "fixture_b", "scores", List.of(160, 160, 160, 160, 160), "total", 800)));
+        }
+        benchmark.put("schemaVersion", 2); benchmark.put("humanLabelPolicy", TwoRaterBenchmarkExporter.LABEL_POLICY);
+        benchmark.put("annotationCount", samples.size() * 2); benchmark.put("raterIds", List.of("fixture_a", "fixture_b"));
+        benchmark.put("selectionFingerprint", DatasetManifestValidator.sha256(JSON.writeValueAsBytes(samples)));
+        Path input = temporary.resolve("two-raters.json"), output = temporary.resolve("two-raters-baseline.json");
+        Files.writeString(input, JSON.writeValueAsString(benchmark));
+        var result = runner.run(input, output, "baseline");
+        assertThat(result).containsEntry("complete", true).containsEntry("completedCount", 2)
+                .containsEntry("selectionFingerprint", benchmark.get("selectionFingerprint"));
+        assertThat((List<Map<String, Object>>) result.get("results")).allSatisfy(item -> {
+            assertThat(item).containsEntry("status", "NEEDS_REVIEW").containsEntry("needsReview", true);
+            assertThat((List<String>) item.get("reviewReasons")).contains("FAKE_PROVIDER");
+            assertThat((Map<?, ?>) item.get("scores")).hasSize(5);
+            assertThat((List<?>) item.get("llmCalls")).hasSize(1);
+        });
     }
 
     private static Map<String, Object> benchmarkDocument() throws Exception {

@@ -1,4 +1,11 @@
 const { defineConfig, devices } = require('@playwright/test');
+const { randomUUID } = require('node:crypto');
+const liveOllama = process.env.E2E_LIVE_OLLAMA === '1';
+const runtimeFailure = process.env.E2E_RUNTIME_FAILURE === '1';
+if (liveOllama && runtimeFailure) throw new Error('Real inference and deliberate runtime failure are mutually exclusive.');
+const externalServer = process.env.PLAYWRIGHT_EXTERNAL_SERVER === '1';
+const baseURL = (process.env.PLAYWRIGHT_BASE_URL || `http://127.0.0.1:${externalServer ? '8080' : '18080'}`).replace(/\/$/, '');
+const isolatedCollection = `./target/playwright-${runtimeFailure ? 'runtime-failure' : liveOllama ? 'live' : 'offline'}-${randomUUID()}`;
 
 module.exports = defineConfig({
   testDir: './e2e',
@@ -10,23 +17,29 @@ module.exports = defineConfig({
   timeout: 30_000,
   expect: { timeout: 8_000 },
   outputDir: 'test-results',
-  webServer: {
+  webServer: externalServer ? undefined : {
     command: 'mvn spring-boot:run',
-    url: 'http://127.0.0.1:8080/api/runtime',
-    reuseExistingServer: !process.env.CI,
+    url: `${baseURL}/api/runtime`,
+    reuseExistingServer: false,
     timeout: 120_000,
     env: {
       ...process.env,
-      LLM_PROVIDER: 'fake', // provider exclusivo da suíte; a aplicação normal exige Ollama
+      SERVER_PORT: new URL(baseURL).port || '80',
+      SERVER_ADDRESS: '127.0.0.1',
+      LLM_PROVIDER: liveOllama || runtimeFailure ? 'ollama' : 'fake',
+      ...(runtimeFailure ? {
+        OLLAMA_BASE_URL: 'http://127.0.0.1:1', RAG_ENABLED: 'false', RAG_REQUIRE_ON_STARTUP: 'false',
+        REDATOR_VERIFY_RUNTIME: 'false', OLLAMA_AUTO_PULL: 'false'
+      } : {}),
       REDATOR_LOCAL_API_TOKEN: 'true',
-      REDATOR_DATA_DIR: './target/playwright-data',
-      SPRING_DATASOURCE_URL: 'jdbc:sqlite:./target/playwright-redator.db'
+      REDATOR_DATA_DIR: isolatedCollection,
+      SPRING_DATASOURCE_URL: `jdbc:sqlite:${isolatedCollection}.db`
     }
   },
   use: {
-    baseURL: process.env.PLAYWRIGHT_BASE_URL || 'http://127.0.0.1:8080',
+    baseURL,
     launchOptions: { slowMo: Number(process.env.E2E_SLOW_MO || 0) },
-    trace: 'on-first-retry',
+    trace: 'retain-on-failure',
     screenshot: 'only-on-failure',
     video: 'retain-on-failure'
   },

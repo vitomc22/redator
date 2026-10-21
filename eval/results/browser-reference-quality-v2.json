@@ -1,0 +1,99 @@
+{
+  "schemaVersion": 1,
+  "evidenceType": "observed-browser-quality-run",
+  "sourceFixture": "eval/e2e-desinformacao-800.json",
+  "referenceSource": "human-reference-authorized-by-user",
+  "referenceScores": {
+    "C1": 160,
+    "C2": 160,
+    "C3": 160,
+    "C4": 160,
+    "C5": 160,
+    "total": 800
+  },
+  "observed": {
+    "runId": 1,
+    "status": "READY",
+    "total": 1000,
+    "provider": "ollama",
+    "model": "gemma4:e2b-it-q4_K_M",
+    "scores": {
+      "C1": 200,
+      "C2": 200,
+      "C3": 200,
+      "C4": 200,
+      "C5": 200
+    }
+  },
+  "absoluteTotalError": 200,
+  "historicalTolerance": 80,
+  "passed": false,
+  "audit": {
+    "provider": "ollama",
+    "model": "gemma4:e2b-it-q4_K_M",
+    "modelDigest": "b37049369adfe3d2b653af0ab301a062ca5cbe96ace6aa0d3f2559ee9b563fc2",
+    "runtimeVersion": "0.40.4",
+    "promptHash": "c0c31ce9fe4c2010cfcf3dc2f2b64c9dafdc6bf6e0913186c1985cac186e782a",
+    "requestMessagesHash": "b5d0b8271e4affec95d04937f0c7b76d127294698909daa0b497366d31114547",
+    "rubricHash": "2c1049af9ee0080fc7668575e5729125c4081fdcd8e77b8ad815c45817f14634",
+    "schemaVersionHash": "f4d935329ba0f51e9814c1b7072ff16f3f4fcdf14285b134ab8f0556aaf89a50",
+    "schemaHash": "1bb60a898bb812a61103bee7a34f87ba5809a529a1d9ffbee65b825c79e392f4",
+    "evidenceCandidateCount": 24,
+    "generationParameters": {
+      "seed": 42,
+      "temperature": 0.0,
+      "num_ctx": 8192,
+      "num_thread": 4,
+      "num_predict": 1200
+    },
+    "thinkingControl": "disabled",
+    "keepAlive": "5m",
+    "essayRevision": 1,
+    "textHash": "5e4229bf95dd0fee01dd5bf07cc7a5377714c543a14562d5985ef4a6e45b6e30",
+    "themeHash": "3283248d09172132045f232c7259a4e097542e01706f28a9da6dba4b07c13f1e",
+    "ragEnabled": true,
+    "ragCorpusFingerprint": "480b13dd5e8e0f6aaf54b1f38e35d296d6ff888682eaaefaca39ae1bb055cd57",
+    "ragPolicy": "calibration-v2",
+    "ragOmittedExamplesForContext": 1,
+    "ragExampleCount": 2,
+    "ragExamples": [
+      {
+        "id": 134,
+        "hash": "e560652e573e1b818443e1bccde449b71af5579410b21b5c337f78cdcc4ea23e",
+        "source": "kamel-usp/aes_enem_dataset",
+        "sourceId": "JBCS2025:train:7.html",
+        "license": "Apache-2.0",
+        "relevance": 28.0,
+        "excerptHash": "a88669920a49e0d45c17f4e1d152189b093ad2383ed6333b9bee28085b003358",
+        "excerptCoverage": "beginning-and-end"
+      },
+      {
+        "id": 56,
+        "hash": "36323c9e254e72bde7d267f917e3ca01c4e652c8709d1929398c5a7cfb9e2129",
+        "source": "kamel-usp/aes_enem_dataset",
+        "sourceId": "JBCS2025:train:2.html",
+        "license": "Apache-2.0",
+        "relevance": 26.0,
+        "excerptHash": "1666167f0765dda1c2452c42119c8d458e307b12edda90417b7cbfe9ecb22fad",
+        "excerptCoverage": "beginning-and-end"
+      }
+    ],
+    "contextGuard": "utf8-bytes/3 estimate + output + 256 template reserve; not exact token count",
+    "estimatedInputTokens": 6278,
+    "cacheKey": "b4b8ca82b2905862b7084bd1ce72a1ba3ecf8ddc38daa689874ae972a1e4b1af",
+    "wallMs": 142223.61398,
+    "total_duration": 142216091591,
+    "total_duration_ms": 142216.091591,
+    "load_duration": 2417894,
+    "load_duration_ms": 2.417894,
+    "prompt_eval_duration": 683124000,
+    "prompt_eval_duration_ms": 683.124,
+    "eval_duration": 141399121000,
+    "eval_duration_ms": 141399.121,
+    "prompt_eval_count": 3322,
+    "eval_count": 668,
+    "generationTokensPerSecond": 4.724216072036261,
+    "costUsd": 0,
+    "doneReason": "stop"
+  }
+}

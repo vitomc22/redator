@@ -2,8 +2,12 @@
   "name": "redator-e2e",
   "private": true,
   "scripts": {
-    "e2e": "playwright test --grep-invert @live",
+    "test:config": "node --test tests/playwright-config.test.cjs",
+    "test:frontend": "node --test tests/frontend-api.test.cjs",
+    "e2e": "playwright test --grep-invert \"@live|@runtime-failure\"",
+    "e2e:failure": "E2E_RUNTIME_FAILURE=1 playwright test --grep @runtime-failure",
     "e2e:live": "E2E_LIVE_OLLAMA=1 playwright test --grep @live",
+    "e2e:quality": "E2E_LIVE_OLLAMA=1 E2E_CHECK_REFERENCE_SCORE=1 playwright test --grep 'fluxo completo dispara'",
     "e2e:demo": "E2E_DEMO=1 E2E_SLOW_MO=900 playwright test e2e/complete-correction-flow.spec.js --headed --workers=1",
     "e2e:ui": "playwright test --ui"
   },

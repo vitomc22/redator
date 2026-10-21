@@ -1,0 +1,63 @@
+{
+  "schemaVersion" : 2,
+  "humanLabelPolicy" : "individual-raters-macro-average-v1",
+  "corpusFingerprint" : "480b13dd5e8e0f6aaf54b1f38e35d296d6ff888682eaaefaca39ae1bb055cd57",
+  "selectionFingerprint" : "00bff50acd7944f29cbaa1f9e5a3b2b1d59b1f41f9c77dbb01019a055ae43a45",
+  "split" : "validation",
+  "sampleCount" : 3,
+  "annotationCount" : 6,
+  "raterIds" : [ "grader_a", "grader_b" ],
+  "excludedEssayHashes" : [ "0c6a6d837d391b483c3efc0f90b3fe6cd28458d4e0242de6e13fde56f0841806", "9b82bb2ba0dd6887d043ddf58a873731f9425f63e5cc4dce4f26614dcc942d00", "ab576b022dcfd81fdcccb936870f3928a06cb6371bec6132c4308af610f11532" ],
+  "source" : "kamel-usp/aes_enem_dataset",
+  "subset" : "JBCS2025",
+  "samples" : [ {
+    "essayHash" : "05679c5cc0243c375acb2dff9cccd8b29cc32895b70cddcf4e56ec34b8708d4e",
+    "source" : "kamel-usp/aes_enem_dataset",
+    "sourceId" : "JBCS2025:validation:19.html",
+    "license" : "Apache-2.0",
+    "theme" : "As mudanças que afetam o clima de nosso planeta têm causado problemas preocupantes. No começo de 2019, um dos efeitos do aquecimento global provocou um grande e surpreendente transtorno para a população de um arquipélago remoto da Rússia, na região do Ártico. Com a redução das geleiras, o habitat natural e as áreas de caça dos ursos polares diminuíram. Resultado: eles têm invadido as cidades e aldeias locais, em busca de comida. Pior, também têm atacado seres humanos, particularmente crianças. No entanto, como a espécie está ameaçada de extinção, a legislação russa não permite matá-los. Isso cria um grande dilema ecológico para os habitantes do arquipélago. Como lidar com os ursos, sem colaborar com sua extinção? Leia a reportagem que segue, bem como os outros textos que a acompanham e responda, num texto dissertativo-argumentativo, como, na sua opinião, dilemas como esse podem ser resolvidos? Por quê? Veja, na coletânea, que há um caso semelhante no Brasil. O que isso significa?",
+    "text" : "A natureza possui um equilíbrio singular de modo que todos os seres vivos desempenham uma função - os ursos polares, por exemplo, ao se alimentarem de peixes e focas regulam a quantidade de indivíduos nessas populações. Contudo, os homens ainda não compreendem a importância do respeito ao meio ambiente para a preservação da própria espécie e, por isso, têm arcado com as consequências, como o ataque dos ursos polares a comunidades humanas por diminuição da oferta de alimentos, devido ao derretimento das geleiras.\nA preocupação com a preservação ambiental tornou-se uma pauta mais frequente a partir da década de 70, desde então vários acordos para diminuir as queimadas, o desmatamento e, principalmente, a emissão de gases poluentes foram assinados, mas não atingiram o efeito esperado, pois demandam uma mudança radical na economia, que parte dos países não está disposta a fazer. Como o Estados Unidos, segundo maior poluidor do mundo, que não participou do Tratado de Kyoto e se retirou do Acordo de Paris devido ao comprometimento econômico que eles acarretariam.\nUm dos impasses resultantes das mudanças climáticas é a maneira de lidar com animais que invadem as cidades, já que é necessário um cuidado maior para que as pessoas e os animais não se machuquem. O caso dos ursos polares é preocupante nesse aspecto, pois eles são violentos e precisam ser contidos depressa, mas, como estão em extinção, não podem ser mortos e, mesmo que pudessem, isso não resolveria o problema e ainda originaria outros desequilíbrios. Para efetivamente saná-lo, deve-se mitigar a causa, que é o aquecimento global através da redução do uso de combustíveis fosseis.\nEnquanto não há priorização desse assunto nas ações governamentais, a natureza e a sociedade, em geral, continuam sofrendo. É por essa razão que a população mundial precisa se mobilizar e valorizar politicas sustentáveis dado que o planeta é responsabilidade de todos e adiar a sua preservação pode trazer resultados irreparáveis.",
+    "humanEvaluations" : [ {
+      "graderId" : "grader_a",
+      "scores" : [ 160, 200, 160, 120, 120 ],
+      "total" : 760
+    }, {
+      "graderId" : "grader_b",
+      "scores" : [ 200, 200, 200, 160, 80 ],
+      "total" : 840
+    } ]
+  }, {
+    "essayHash" : "05ebf17c91cb661eb1c275c891c214311c660a8ef90a7e57a5f8aa212267f727",
+    "source" : "kamel-usp/aes_enem_dataset",
+    "sourceId" : "JBCS2025:validation:17.html",
+    "license" : "Apache-2.0",
+    "theme" : "Com o avanço da biotecnologia, da engenharia genética, da nanotecnologia, das ciências da computação e da neurociência, uma grande transformação pode estar prestes a acontecer: a revolução do Transumanismo ou mesmo do Pós-humanismo. O que significa isso? Basicamente, que os indivíduos da espécie humana podem ser aprimorados a ponto de ter suas capacidades aumentadas pelo implante de chips - que potencializam o funcionamento do cérebro - ou de outros dispositivos que aumentem suas faculdades físicas, tornando-os, por exemplo, mais fortes ou velozes. Além disso, seria possível impedir doenças, retardar o envelhecimento e até evitar a morte. Sem falar de medicamentos que estabilizam as emoções e podem criar uma sensação perene de bem-estar psicológico. A ciência garantiria a saúde, a juventude e a imortalidade. Você pode não acreditar, mas muitas dessas possibilidades estão previstas ainda para o século atual.",
+    "text" : "No filme \"Capitão América\", após procedimento biológico durante a segunda guerra mundial, um garoto passa a possuir grandes habilidades físicas além da capacidade humana. Embora fruto de ficção, pode-se afirmar que com a evolução dos meios científicos seja cada vez mais perigosa e alcançavel a revolução transumanista. Nesse contexto, é preciso analisar como a dependência das soluções e a segurança das tecnologias influenciam nessa questão.\nA princípio, criaria-se uma dependência dessas aplicações. Uma vez que o corpo humano necessita de estímulos para aperfeiçoar determinado aspecto. Por exemplo, ao tomar medicações que aumentem o fluxo de oxigênio para melhorar o desempenho em atividades físicas. Assim, invés de treinar o corpo estaria acostumado a drogas.\nAlém disso, a segurança das tecnologias são falhas. Dessa forma, qualquer tecnologia pode ser hackeada para uso indiscriminado. Então uma determinada tecnologia vital para o ser humano poderia ser desligada ou usada para outro fim. Portanto, certa população poderia ser dizimada.\nEm suma, infere-se que essa revolução seria prejudicial à humanidade devido a insegurança e dependência. Nesse contexto, é necessário que os setores de regulamentação médica criem normas e fiscalizem sua aplicação na sociedade.",
+    "humanEvaluations" : [ {
+      "graderId" : "grader_a",
+      "scores" : [ 160, 160, 120, 200, 80 ],
+      "total" : 720
+    }, {
+      "graderId" : "grader_b",
+      "scores" : [ 120, 120, 120, 120, 80 ],
+      "total" : 560
+    } ]
+  }, {
+    "essayHash" : "09d9f3e11688dc3569a965e40480a7c4e63a1a61327f1a32a69f4f6c7c956c1b",
+    "source" : "kamel-usp/aes_enem_dataset",
+    "sourceId" : "JBCS2025:validation:16.html",
+    "license" : "Apache-2.0",
+    "theme" : "As mudanças que afetam o clima de nosso planeta têm causado problemas preocupantes. No começo de 2019, um dos efeitos do aquecimento global provocou um grande e surpreendente transtorno para a população de um arquipélago remoto da Rússia, na região do Ártico. Com a redução das geleiras, o habitat natural e as áreas de caça dos ursos polares diminuíram. Resultado: eles têm invadido as cidades e aldeias locais, em busca de comida. Pior, também têm atacado seres humanos, particularmente crianças. No entanto, como a espécie está ameaçada de extinção, a legislação russa não permite matá-los. Isso cria um grande dilema ecológico para os habitantes do arquipélago. Como lidar com os ursos, sem colaborar com sua extinção? Leia a reportagem que segue, bem como os outros textos que a acompanham e responda, num texto dissertativo-argumentativo, como, na sua opinião, dilemas como esse podem ser resolvidos? Por quê? Veja, na coletânea, que há um caso semelhante no Brasil. O que isso significa?",
+    "text" : "Uma das problemáticas mais sérias do século XXI - e menosprezado nos livros didáticos - se refere às dificuldades que os animais das mais variadas espécies e habitats sofrem constantemente no mundo contemporâneo. Os animais precisam se adaptar perante as consequências das ações humanas, e este último ainda não compreende que um caso como o ocorrido com os ursos polares na Rússia é a reação dos bichos perante a crescente crise de seu habitat.\nApesar de que a humanidade tenha evoluído para com relação aos métodos industriais e ter deixado de olhar a fauna e a flora assim como os patronos imperialistas olhavam-na no século passado, ainda há o desprezo pela biodiversidade e preservação animal. O fato da comunidade russa sentir-se em um \"dilema moral\" reforça a ideia de que eles não compreendem o fato dos ursos invadirem cidades, bairros residenciais e até mesmo confrontarem a polícia é o resultado de uma contínua invasão e desapropriação destes animais de seu real habitat.\nO que ocorre é o descaso de políticas públicas em prol da preservação do ambiente Ártico e, por conseguinte, dos ursos polares e demais espécies habitantes. Não só das autoridades russas, visto que o aquecimento global provém do desinteresse de vários países em promover medidas e leis que auxiliem o equilíbrio termológico do planeta.\nPerante isso, a questão principal a ser resolvida é analisar se a Rússia de fato promove a preservação dos quase extintos ursos polares. Com relação às invasões, pode-se muito bem mobilizar profissionais para sedar os animais invasores e levá-los para instalações de preservação. Porém, acima de tudo, é dever das autoridades das grandes nações (em especial os países que mais poluem) analisarem com o auxílio de especialistas a questão da poluição em seus países, para então tomarem ações ecológicas que preservem o ecossistema do planeta, a fauna presente e o equilíbrio da vida.",
+    "humanEvaluations" : [ {
+      "graderId" : "grader_a",
+      "scores" : [ 160, 120, 120, 160, 160 ],
+      "total" : 720
+    }, {
+      "graderId" : "grader_b",
+      "scores" : [ 160, 160, 160, 160, 160 ],
+      "total" : 800
+    } ]
+  } ],
+  "exclusionSelectionFingerprint" : "f6430ef344ea4cdfd765f0b5c4e34da65b73dca1ba092bc7190022ff4a6f3af6"
+}

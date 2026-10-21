@@ -111,6 +111,43 @@
 
     <profiles>
         <profile>
+            <id>release-quality</id>
+            <properties>
+                <rag.release.benchmark>${project.basedir}/eval/frozen/public-test-v1.json</rag.release.benchmark>
+                <rag.release.baseline>${project.basedir}/eval/results/baseline-v1.json</rag.release.baseline>
+                <rag.release.candidate>${project.basedir}/eval/results/rag-v1.json</rag.release.candidate>
+                <rag.release.policy>lexical-v1</rag.release.policy>
+            </properties>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.codehaus.mojo</groupId>
+                        <artifactId>exec-maven-plugin</artifactId>
+                        <version>3.5.0</version>
+                        <executions>
+                            <execution>
+                                <id>require-real-rag-quality</id>
+                                <phase>prepare-package</phase>
+                                <goals><goal>java</goal></goals>
+                                <configuration>
+                                    <mainClass>com.redator.corretor.cli.RagQualityGateCli</mainClass>
+                                    <classpathScope>runtime</classpathScope>
+                                    <arguments>
+                                        <argument>--release</argument>
+                                        <argument>${rag.release.policy}</argument>
+                                        <argument>${rag.release.benchmark}</argument>
+                                        <argument>${rag.release.baseline}</argument>
+                                        <argument>${rag.release.candidate}</argument>
+                                        <argument>${project.build.directory}/rag-release-gate.json</argument>
+                                    </arguments>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+        <profile>
             <id>dev-local</id>
             <build>
                 <plugins>

@@ -1,0 +1,44 @@
+{
+  "datasetFingerprint" : "f6430ef344ea4cdfd765f0b5c4e34da65b73dca1ba092bc7190022ff4a6f3af6",
+  "passed" : false,
+  "baselineQwk" : 0.07239819004524756,
+  "candidateQwk" : -0.069469835466181,
+  "competences" : {
+    "C2" : {
+      "baselineMae" : 66.66666666666667,
+      "candidateMae" : 53.333333333333336,
+      "baselineQwk" : 7.569702440626065E-16,
+      "candidateQwk" : -0.24999999999999947,
+      "passed" : true
+    },
+    "C3" : {
+      "baselineMae" : 80.0,
+      "candidateMae" : 80.0,
+      "baselineQwk" : 5.947623346206192E-16,
+      "candidateQwk" : 5.947623346206192E-16,
+      "passed" : true
+    },
+    "C4" : {
+      "baselineMae" : 13.333333333333334,
+      "candidateMae" : 26.666666666666668,
+      "baselineQwk" : 0.400000000000002,
+      "candidateQwk" : -0.5000000000000125,
+      "passed" : false
+    },
+    "C5" : {
+      "baselineMae" : 80.0,
+      "candidateMae" : 66.66666666666667,
+      "baselineQwk" : 0.08695652173913046,
+      "candidateQwk" : -0.11428571428571431,
+      "passed" : true
+    },
+    "C1" : {
+      "baselineMae" : 13.333333333333334,
+      "candidateMae" : 0.0,
+      "baselineQwk" : 8.32667268468862E-15,
+      "candidateQwk" : 1.0,
+      "passed" : true
+    }
+  },
+  "failures" : [ "C4 regrediu MAE de 13.333333333333334 para 26.666666666666668", "QWK agregado regrediu de 0.07239819004524756 para -0.069469835466181" ]
+}

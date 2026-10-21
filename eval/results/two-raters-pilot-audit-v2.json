@@ -1,0 +1,74 @@
+{
+  "selectionFingerprint": "00bff50acd7944f29cbaa1f9e5a3b2b1d59b1f41f9c77dbb01019a055ae43a45",
+  "corpusFingerprint": "480b13dd5e8e0f6aaf54b1f38e35d296d6ff888682eaaefaca39ae1bb055cd57",
+  "sourceFingerprint": "b2501852f55227ed593a52c3421d6cd3896067168f45785c4dbcb0517746bd6f",
+  "compiledSnapshotFingerprint": "45648ee1bff9cd23feacdca064f5d4cae4bcefc10927cd2c9cc3aae5e0ab6785",
+  "humanAnnotationsMatchedSqlite": 6,
+  "auditsMatchedOperationalSqlite": true,
+  "publishedScoresMatchedOperationalSqlite": true,
+  "sharedRuntimeIdentity": {
+    "provider": "ollama",
+    "model": "gemma4:e2b-it-q4_K_M",
+    "modelDigest": "b37049369adfe3d2b653af0ab301a062ca5cbe96ace6aa0d3f2559ee9b563fc2",
+    "runtimeVersion": "0.40.4",
+    "promptHash": "c0c31ce9fe4c2010cfcf3dc2f2b64c9dafdc6bf6e0913186c1985cac186e782a",
+    "rubricHash": "2c1049af9ee0080fc7668575e5729125c4081fdcd8e77b8ad815c45817f14634",
+    "schemaVersionHash": "f4d935329ba0f51e9814c1b7072ff16f3f4fcdf14285b134ab8f0556aaf89a50",
+    "generationParameters": {
+      "num_ctx": 8192,
+      "num_thread": 4,
+      "num_predict": 1200,
+      "seed": 42,
+      "temperature": 0.0
+    },
+    "thinkingControl": "disabled",
+    "keepAlive": "5m"
+  },
+  "arms": {
+    "baseline": {
+      "results": 3,
+      "statuses": [
+        "READY",
+        "READY",
+        "READY"
+      ],
+      "uncachedCalls": 3,
+      "latencyMsSum": 822047,
+      "referenceCounts": [
+        0,
+        0,
+        0
+      ],
+      "omittedReferences": [
+        0,
+        0,
+        0
+      ],
+      "uniqueTrainReferences": 0,
+      "resultFileSha256": "1bfd5d2732ecca81c98a90ae395b0777df131bed496798f6485f223afe1ee153"
+    },
+    "rag": {
+      "results": 3,
+      "statuses": [
+        "READY",
+        "READY",
+        "READY"
+      ],
+      "uncachedCalls": 3,
+      "latencyMsSum": 882964,
+      "referenceCounts": [
+        2,
+        3,
+        2
+      ],
+      "omittedReferences": [
+        1,
+        0,
+        1
+      ],
+      "uniqueTrainReferences": 5,
+      "resultFileSha256": "f79f0506de758651c8a7a2a785026e7cf5a2f50fe22e83a4892c562fa4e66a06"
+    }
+  },
+  "releaseQualification": false
+}

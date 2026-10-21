@@ -1,0 +1,181 @@
+[ {
+  "essayHash" : "0c6a6d837d391b483c3efc0f90b3fe6cd28458d4e0242de6e13fde56f0841806",
+  "status" : "PREFLIGHT_OK",
+  "audit" : {
+    "provider" : "ollama",
+    "model" : "gemma4:e2b-it-q4_K_M",
+    "modelDigest" : "b37049369adfe3d2b653af0ab301a062ca5cbe96ace6aa0d3f2559ee9b563fc2",
+    "runtimeVersion" : "0.40.4",
+    "promptHash" : "c0c31ce9fe4c2010cfcf3dc2f2b64c9dafdc6bf6e0913186c1985cac186e782a",
+    "requestMessagesHash" : "f1db7fbd659e38dc67a711bed7466a1d2bcda453b5491e11fb5dd5f54f666cba",
+    "rubricHash" : "2c1049af9ee0080fc7668575e5729125c4081fdcd8e77b8ad815c45817f14634",
+    "schemaVersionHash" : "f4d935329ba0f51e9814c1b7072ff16f3f4fcdf14285b134ab8f0556aaf89a50",
+    "schemaHash" : "915afc65d83a27161cc3cac884069bdcf203816e1a4583ebbc69586bad1ad061",
+    "evidenceCandidateCount" : 15,
+    "generationParameters" : {
+      "num_ctx" : 8192,
+      "num_thread" : 4,
+      "num_predict" : 1200,
+      "seed" : 42,
+      "temperature" : 0.0
+    },
+    "thinkingControl" : "disabled",
+    "keepAlive" : "5m",
+    "essayRevision" : 1,
+    "textHash" : "265125225e214873ea0f477621d7189592b0624d7f68c54338c373fbbbe87ce4",
+    "themeHash" : "b208ef6fdb391f3cace990d5cd205ae1f24d2f2bd117ac7081d5f40d406a4b20",
+    "ragEnabled" : true,
+    "ragCorpusFingerprint" : "480b13dd5e8e0f6aaf54b1f38e35d296d6ff888682eaaefaca39ae1bb055cd57",
+    "ragPolicy" : "calibration-v2",
+    "ragOmittedExamplesForContext" : 0,
+    "ragExampleCount" : 3,
+    "ragExamples" : [ {
+      "id" : 226,
+      "hash" : "582136c35848b15aacd430fd47f12e6cdf44c98196627b82432a94e635f50a5c",
+      "source" : "kamel-usp/aes_enem_dataset",
+      "sourceId" : "JBCS2025:train:1.html",
+      "license" : "Apache-2.0",
+      "relevance" : 27.0,
+      "excerptHash" : "47626841bca8f28f3a12d513105e5c0b264fb76caf578a3523e004fb7d8fdf9b",
+      "excerptCoverage" : "beginning-and-end"
+    }, {
+      "id" : 38,
+      "hash" : "ccf60d504922cdd15ae43897b1d3d0af54ed8a9d1c4bf7829d7f803de2749b33",
+      "source" : "kamel-usp/aes_enem_dataset",
+      "sourceId" : "JBCS2025:train:12.html",
+      "license" : "Apache-2.0",
+      "relevance" : 27.0,
+      "excerptHash" : "dfbf150ec7c996261e1b84742139bd7655f083f8889b8892f7f1e7b3213772d3",
+      "excerptCoverage" : "beginning-and-end"
+    }, {
+      "id" : 9,
+      "hash" : "76c5537f4ecc8da50bbf492aa4adab63cfe33344775060a4fd7c6f9d5dcbf037",
+      "source" : "kamel-usp/aes_enem_dataset",
+      "sourceId" : "JBCS2025:train:14.html",
+      "license" : "Apache-2.0",
+      "relevance" : 26.0,
+      "excerptHash" : "2dff9801d1071bd2e10ca3ed43af43d440906728f84c0d456b2d5bf8f0aa5c49",
+      "excerptCoverage" : "beginning-and-end"
+    } ],
+    "contextGuard" : "utf8-bytes/3 estimate + output + 256 template reserve; not exact token count",
+    "estimatedInputTokens" : 6478,
+    "cacheKey" : "9e8d8e7cd47e2936f2f74d4cdc2b1a917e8c287fe1ba3fc9a942d832dd032c31"
+  }
+}, {
+  "essayHash" : "9b82bb2ba0dd6887d043ddf58a873731f9425f63e5cc4dce4f26614dcc942d00",
+  "status" : "PREFLIGHT_OK",
+  "audit" : {
+    "provider" : "ollama",
+    "model" : "gemma4:e2b-it-q4_K_M",
+    "modelDigest" : "b37049369adfe3d2b653af0ab301a062ca5cbe96ace6aa0d3f2559ee9b563fc2",
+    "runtimeVersion" : "0.40.4",
+    "promptHash" : "c0c31ce9fe4c2010cfcf3dc2f2b64c9dafdc6bf6e0913186c1985cac186e782a",
+    "requestMessagesHash" : "98d2094500e8b6d4c6d339851d1e14dc47b776843e74e17e8b5a92ebe20e7692",
+    "rubricHash" : "2c1049af9ee0080fc7668575e5729125c4081fdcd8e77b8ad815c45817f14634",
+    "schemaVersionHash" : "f4d935329ba0f51e9814c1b7072ff16f3f4fcdf14285b134ab8f0556aaf89a50",
+    "schemaHash" : "0b36e63d4b867ccd985c5d253ae98452d3eb80250e5dd228d1e290c00ef4309f",
+    "evidenceCandidateCount" : 11,
+    "generationParameters" : {
+      "num_ctx" : 8192,
+      "num_thread" : 4,
+      "num_predict" : 1200,
+      "seed" : 42,
+      "temperature" : 0.0
+    },
+    "thinkingControl" : "disabled",
+    "keepAlive" : "5m",
+    "essayRevision" : 1,
+    "textHash" : "3271fbbc8d70ffdf961d773adfb779866da2bedfb7fc0f7e86ea77d067745144",
+    "themeHash" : "6e0ae22e31ae9d116ed4ce4ce7125880741093034f04ca3c17f36ead00e3a4bc",
+    "ragEnabled" : true,
+    "ragCorpusFingerprint" : "480b13dd5e8e0f6aaf54b1f38e35d296d6ff888682eaaefaca39ae1bb055cd57",
+    "ragPolicy" : "calibration-v2",
+    "ragOmittedExamplesForContext" : 0,
+    "ragExampleCount" : 3,
+    "ragExamples" : [ {
+      "id" : 29,
+      "hash" : "2c1df01bfb205b53865569b68c27273661e52d5526c75fc22143708cdd558048",
+      "source" : "kamel-usp/aes_enem_dataset",
+      "sourceId" : "JBCS2025:train:17.html",
+      "license" : "Apache-2.0",
+      "relevance" : 23.0,
+      "excerptHash" : "aaf78ad7d3b572691b206306d425e7b8445b3b301fa1bf264757bca723006c55",
+      "excerptCoverage" : "beginning-and-end"
+    }, {
+      "id" : 233,
+      "hash" : "020efffa738a9fce9ce73e11a729c6c89467cd3c675459db3ca46ec6b3619bf7",
+      "source" : "kamel-usp/aes_enem_dataset",
+      "sourceId" : "JBCS2025:train:16.html",
+      "license" : "Apache-2.0",
+      "relevance" : 22.0,
+      "excerptHash" : "5dfdebd64c2f3e9d27d13a29195687e1de31bf039da8cbf6e9b6753bf641180f",
+      "excerptCoverage" : "beginning-and-end"
+    }, {
+      "id" : 50,
+      "hash" : "db2ba283b16b4840f5c9b14488635c700ee3afb13315ae4e40a454f2f3e097b5",
+      "source" : "kamel-usp/aes_enem_dataset",
+      "sourceId" : "JBCS2025:train:18.html",
+      "license" : "Apache-2.0",
+      "relevance" : 22.0,
+      "excerptHash" : "539d6c316359ea0c44562dd59a2365cb4f7651788bc0fc5f7f2f16937b0ff1f7",
+      "excerptCoverage" : "beginning-and-end"
+    } ],
+    "contextGuard" : "utf8-bytes/3 estimate + output + 256 template reserve; not exact token count",
+    "estimatedInputTokens" : 6592,
+    "cacheKey" : "eda986c8968882930eb6416974166793b93532e75b0a2c6a50993b47dafd6f34"
+  }
+}, {
+  "essayHash" : "ab576b022dcfd81fdcccb936870f3928a06cb6371bec6132c4308af610f11532",
+  "status" : "PREFLIGHT_OK",
+  "audit" : {
+    "provider" : "ollama",
+    "model" : "gemma4:e2b-it-q4_K_M",
+    "modelDigest" : "b37049369adfe3d2b653af0ab301a062ca5cbe96ace6aa0d3f2559ee9b563fc2",
+    "runtimeVersion" : "0.40.4",
+    "promptHash" : "c0c31ce9fe4c2010cfcf3dc2f2b64c9dafdc6bf6e0913186c1985cac186e782a",
+    "requestMessagesHash" : "e91d98fb86157cd2faae7fef7b6633f0f7c2ac86d380fa9c7ca748d573bb8910",
+    "rubricHash" : "2c1049af9ee0080fc7668575e5729125c4081fdcd8e77b8ad815c45817f14634",
+    "schemaVersionHash" : "f4d935329ba0f51e9814c1b7072ff16f3f4fcdf14285b134ab8f0556aaf89a50",
+    "schemaHash" : "3d2037da61228d815d11475e1805636d2a689d37b313f2d3f9209056bdae3296",
+    "evidenceCandidateCount" : 18,
+    "generationParameters" : {
+      "num_ctx" : 8192,
+      "num_thread" : 4,
+      "num_predict" : 1200,
+      "seed" : 42,
+      "temperature" : 0.0
+    },
+    "thinkingControl" : "disabled",
+    "keepAlive" : "5m",
+    "essayRevision" : 1,
+    "textHash" : "271156f8bddadd1386cc6685e8dd38ea2edfbef591fae00d58a206b02ad9dbdf",
+    "themeHash" : "5b2b2dd6baf83cfff5d31ae07a13fe61059982813d073f7f3d495c958a33d1d3",
+    "ragEnabled" : true,
+    "ragCorpusFingerprint" : "480b13dd5e8e0f6aaf54b1f38e35d296d6ff888682eaaefaca39ae1bb055cd57",
+    "ragPolicy" : "calibration-v2",
+    "ragOmittedExamplesForContext" : 1,
+    "ragExampleCount" : 2,
+    "ragExamples" : [ {
+      "id" : 119,
+      "hash" : "04092f17e1883de8b8028a33830957fe95b7a30fa537a0cf55d5a77a288dfcf4",
+      "source" : "kamel-usp/aes_enem_dataset",
+      "sourceId" : "JBCS2025:train:9.html",
+      "license" : "Apache-2.0",
+      "relevance" : 24.0,
+      "excerptHash" : "725551bd289d98811fbef0be58f578b88e4c6f674853ccd3f8a205bd14391dd2",
+      "excerptCoverage" : "beginning-and-end"
+    }, {
+      "id" : 163,
+      "hash" : "ff6c4c9de4642c2dd2c99481761ef5f7bd364f3e8ec924688e689022e7339e19",
+      "source" : "kamel-usp/aes_enem_dataset",
+      "sourceId" : "JBCS2025:train:6.html",
+      "license" : "Apache-2.0",
+      "relevance" : 24.0,
+      "excerptHash" : "173b4e26ecc248dc553601d5fc96e4c37b7a00e53b795c14e2cf3d47c66077f9",
+      "excerptCoverage" : "beginning-and-end"
+    } ],
+    "contextGuard" : "utf8-bytes/3 estimate + output + 256 template reserve; not exact token count",
+    "estimatedInputTokens" : 6256,
+    "cacheKey" : "3a82b0182c8254b5a06966cab8d1b34bbd0f7bf312bdd387a5784323872262b7"
+  }
+} ]

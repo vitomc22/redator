@@ -1,0 +1,82 @@
+{
+  "schemaVersion": 1,
+  "evidenceType": "real-java-live-integration",
+  "status": "READY",
+  "provider": "ollama",
+  "model": "gemma4:e2b-it-q4_K_M",
+  "runId": 1,
+  "cacheHit": 0,
+  "latencyMs": 223338,
+  "audit": {
+    "provider": "ollama",
+    "model": "gemma4:e2b-it-q4_K_M",
+    "modelDigest": "b37049369adfe3d2b653af0ab301a062ca5cbe96ace6aa0d3f2559ee9b563fc2",
+    "runtimeVersion": "0.40.4",
+    "promptHash": "c0c31ce9fe4c2010cfcf3dc2f2b64c9dafdc6bf6e0913186c1985cac186e782a",
+    "requestMessagesHash": "bbffb25ce0ab8ee0021c7a60575aa8185661228f5ce66e0738f372bb8b7509e5",
+    "rubricHash": "2c1049af9ee0080fc7668575e5729125c4081fdcd8e77b8ad815c45817f14634",
+    "schemaVersionHash": "f4d935329ba0f51e9814c1b7072ff16f3f4fcdf14285b134ab8f0556aaf89a50",
+    "schemaHash": "ac0227e2e2b1997108e5c620317f5b5c5a777fc6c7f21e034c0a6d47b6cc6f0a",
+    "evidenceCandidateCount": 5,
+    "generationParameters": {
+      "temperature": 0.0,
+      "seed": 42,
+      "num_predict": 1200,
+      "num_thread": 4,
+      "num_ctx": 8192
+    },
+    "thinkingControl": "disabled",
+    "keepAlive": "5m",
+    "essayRevision": 1,
+    "textHash": "f8d1087c528b6c6f65d1ba26e5fccd14b7d46ac0ba496062fc71aa9c590715b0",
+    "themeHash": "0a966e199d0af51949d26077f4eb41d1d9978cc6c2c193cb9aa3db014db4fc4d",
+    "ragEnabled": true,
+    "ragCorpusFingerprint": "480b13dd5e8e0f6aaf54b1f38e35d296d6ff888682eaaefaca39ae1bb055cd57",
+    "ragPolicy": "lexical-v1",
+    "ragOmittedExamplesForContext": 0,
+    "ragExampleCount": 3,
+    "ragExamples": [
+      {
+        "id": 245,
+        "hash": "f04f0f511d0fa42841c0e9640d7d8ccdf24167653208cfeec3235781fa858061",
+        "source": "kamel-usp/aes_enem_dataset",
+        "sourceId": "JBCS2025:train:2.html",
+        "license": "Apache-2.0",
+        "relevance": 32.0
+      },
+      {
+        "id": 75,
+        "hash": "81b867404f64bc8436011ead80d5d426a87aaea94541da2dd257aa2da871de2e",
+        "source": "kamel-usp/aes_enem_dataset",
+        "sourceId": "JBCS2025:train:19.html",
+        "license": "Apache-2.0",
+        "relevance": 31.0
+      },
+      {
+        "id": 244,
+        "hash": "877bcf26e26b0ac1ebb1fb5f1f2e6723661563a95d40b969cbd04301168ca7df",
+        "source": "kamel-usp/aes_enem_dataset",
+        "sourceId": "JBCS2025:train:3.html",
+        "license": "Apache-2.0",
+        "relevance": 30.0
+      }
+    ],
+    "contextGuard": "utf8-bytes/3 estimate + output + 256 template reserve; not exact token count",
+    "estimatedInputTokens": 4851,
+    "cacheKey": "3932f22df3658c26f3d707520805fb9779bf1c29f000c695d60c5fc363ad0fa2",
+    "wallMs": 223338.076913,
+    "total_duration": 223333367322,
+    "total_duration_ms": 223333.367322,
+    "load_duration": 1609194,
+    "load_duration_ms": 1.609194,
+    "prompt_eval_duration": 108541916000,
+    "prompt_eval_duration_ms": 108541.916,
+    "eval_duration": 114692543000,
+    "eval_duration_ms": 114692.543,
+    "prompt_eval_count": 2843,
+    "eval_count": 701,
+    "generationTokensPerSecond": 6.111992825898018,
+    "costUsd": 0,
+    "doneReason": "stop"
+  }
+}

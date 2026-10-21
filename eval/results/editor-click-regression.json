@@ -1,0 +1,73 @@
+{
+  "scenario": "Editor submission with a 100 ms pointer press; before correction",
+  "htmlSha256Before": "a01bf72176828a5812018b3d7a1aff4081bfdba6d9244cf941d8c65059eebb37",
+  "events": [
+    {
+      "type": "pointerdown",
+      "time": 2254.800000000745,
+      "target": "continue",
+      "x": 1049.3199462890625,
+      "y": 443.25,
+      "scrollY": 1073,
+      "handler": "function",
+      "button": {
+        "x": 873.65625,
+        "y": 416.1875,
+        "width": 351.34375,
+        "height": 54.140625
+      }
+    },
+    {
+      "type": "pointerup",
+      "time": 2368.5,
+      "target": "",
+      "x": 1049.3199462890625,
+      "y": 443.25,
+      "scrollY": 1021,
+      "handler": "function",
+      "button": {
+        "x": 873.65625,
+        "y": 467.33489990234375,
+        "width": 351.34375,
+        "height": 54.140625
+      }
+    },
+    {
+      "type": "click",
+      "time": 2368.599999997765,
+      "target": "",
+      "x": 1049,
+      "y": 443,
+      "scrollY": 1021,
+      "handler": "function",
+      "button": {
+        "x": 873.65625,
+        "y": 467.33489990234375,
+        "width": 351.34375,
+        "height": 54.140625
+      }
+    }
+  ],
+  "attemptRequests": 0,
+  "observed": "Native focus scroll moves the button between pointerdown and pointerup; the click targets its ancestor instead of submitting.",
+  "correction": {
+    "behavior": "Automatic focus scrolling uses an immediate adjustment instead of a global smooth animation. Explicit scrollIntoView behavior remains available.",
+    "htmlSha256After": "65c408539271e959b06a8ad3a0fadc6daacfd486da7de632fb355db9067b5fa8",
+    "unchangedPointerPressMs": 100,
+    "before": {
+      "submissionFailures": 3,
+      "validationPasses": 3
+    },
+    "after": {
+      "submissionPasses": 3,
+      "validationPasses": 3
+    },
+    "unitTestsPassed": 94,
+    "integrationTestsPassed": 32,
+    "liveIntegrationTestsSkipped": 1,
+    "fullPlaywrightSuite": {
+      "passed": 20,
+      "durationSeconds": 56.0
+    }
+  }
+}

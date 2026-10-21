@@ -51,6 +51,23 @@ java -cp "target/classes:$(cat target/classpath.txt)" \
   --query "desinformação educação midiática" --limit 3
 ```
 
-A busca ainda é lexical e determinística. Ela prepara a etapa 6, mas não altera
-o prompt do Gemma nem habilita RAG em produção. A promoção exige comparação
-cega entre baseline sem RAG e variante com RAG.
+A busca lexical e determinística alimenta o prompt do Gemma somente com exemplos
+de `train`. A política padrão é `lexical-v1`; `calibration-v2` é opt-in e preserva
+início/conclusão das referências, informa o escopo das médias humanas e adapta
+a quantidade de exemplos ao orçamento de contexto sem cortar a redação atual.
+
+A qualificação exige comparação contra a mesma população humana congelada.
+O [benchmark test-v1](../eval/reports/rag-public-test-v1.md) reprovou o RAG e permanece
+preservado. O filtro legado por médias na escala oficial selecionava apenas três
+das 66 redações de `validation`; esse [diagnóstico](../eval/reports/rag-validation-v2.md)
+não substitui o teste de release.
+
+O [protocolo com dois avaliadores](../eval/reports/two-raters-v2.md) preserva as
+132 anotações individuais das 66 redações de validação. Cada nota individual segue
+os seis níveis oficiais, inclusive quando a média entre os dois humanos não segue.
+As métricas são calculadas por avaliador e depois promediadas; os rótulos não são
+arredondados. A seleção de teste adicional tem 58 redações/116 anotações, excluindo
+as 11 redações já presentes no `test-v1`. Ela permanece reservada.
+
+O perfil Maven `release-quality` aceita ambos os protocolos e verifica os
+artefatos e sua auditoria antes do empacotamento destinado à distribuição.

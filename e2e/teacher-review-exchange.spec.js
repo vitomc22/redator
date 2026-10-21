@@ -1,4 +1,5 @@
 const { test, expect } = require('@playwright/test');
+const { writeFile } = require('node:fs/promises');
 
 test('estudante e professor trocam correção cifrada de ponta a ponta', async ({ page }) => {
   const suffix = `${Date.now()}-${test.info().workerIndex}`;
@@ -56,6 +57,24 @@ test('estudante e professor trocam correção cifrada de ponta a ponta', async (
   expect(persisted.status).toBe('COMPLETED');
   expect(persisted.evaluation.total).toBe(880);
   expect(persisted.evaluation.reviewerId).toBe('Professora E2E');
+  await expect(page.getByRole('heading', { name: 'Correção humana publicada' })).toBeVisible();
+  await expect(page.getByRole('table', { name: 'Notas da correção humana' })).toContainText('Aprofunde a relação de causa e consequência.');
+  await expect(page.getByText('Integre o repertório diretamente à tese.')).toBeVisible();
+  await page.reload();
+  await expect(page.getByRole('heading', { name: 'Correção humana publicada' })).toBeVisible();
+  await page.getByRole('button', { name: 'Diagnóstico e progresso' }).click();
+  await expect(page.locator('.chart-bar.human')).toHaveAttribute('title', 'Humano 880');
+  await expect(page.locator('.chart-bar:not(.human)')).toHaveCount(0);
+  await page.getByLabel('Filtrar competência').selectOption('C3');
+  await expect(page.locator('.chart-bar.human')).toHaveAttribute('title', 'Humano 160');
+  await page.reload();
+  await expect(page.locator('.chart-bar.human')).toHaveAttribute('title', 'Humano 880');
+  const progress = await page.evaluate(() => fetch('/api/me/progress').then(response => response.json()));
+  expect(progress.points).toHaveLength(1);
+  expect(progress.points[0]).toMatchObject({ essayId, total: null, runId: null, provider: null });
+  const evidence = test.info().outputPath('human-only-progress.json');
+  await writeFile(evidence, JSON.stringify({ essayId, human: persisted, progress }, null, 2));
+  await test.info().attach('human-only-progress', { path: evidence, contentType: 'application/json' });
 });
 
 test('professor não consegue gerar resposta incompleta', async ({ page }) => {
