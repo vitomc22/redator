@@ -1,7 +1,6 @@
 /target/
 .env
-data/private/
-data/runtime/
+/data/
 dataset/private/
 dataset/*.db
 dataset/*.db-shm

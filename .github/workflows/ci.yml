@@ -24,5 +24,42 @@ jobs:
           java-version: '21'
           cache: maven
 
-      - name: Run Maven tests
-        run: mvn -B test
+      - name: Run unit tests
+        run: mvn -B -Dtest='*Test,!*IntegrationTest' test
+
+      - name: Run integration tests with real SQLite
+        run: mvn -B -Dtest='*IntegrationTest' test
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+
+      - name: Install browser test dependencies
+        run: npm ci
+
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: Check browser configuration and HTTP client
+        run: npm run test:config && npm run test:frontend
+
+      - name: Run browser regressions with real backend and SQLite
+        run: npm run e2e
+
+      - name: Check actual inference transport failure
+        run: npm run e2e:failure
+
+      - name: Build and inspect the development package
+        run: mvn -B -DskipTests package && npm run test:package
+
+      - name: Save browser failure evidence
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: browser-failure-evidence
+          path: |
+            playwright-report/
+            test-results/
+          retention-days: 7

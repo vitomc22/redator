@@ -20,12 +20,21 @@ default_data_directory() {
   esac
 }
 
-readonly DATA_DIR="${REDATOR_DATA_DIR:-$(default_data_directory)}"
+configured_data="${REDATOR_DATA_DIR:-$(default_data_directory)}"
+[[ "$configured_data" == /* ]] || configured_data="$PWD/$configured_data"
+readonly DATA_DIR="$configured_data"
 readonly RUNTIME_DIR="${DATA_DIR}/runtime"
 readonly LOG_DIR="${DATA_DIR}/logs"
 readonly PID_FILE="${RUNTIME_DIR}/redator.pid"
 readonly PORT_FILE="${RUNTIME_DIR}/redator.port"
-readonly JAVA_BIN="${REDATOR_JAVA_BIN:-java}"
+readonly JAR_FILE="${RUNTIME_DIR}/redator.jar-path"
+if [[ -n "${REDATOR_JAVA_BIN:-}" ]]; then
+  readonly JAVA_BIN="$REDATOR_JAVA_BIN"
+elif [[ -x "$PROJECT_DIR/runtime/bin/java" ]]; then
+  readonly JAVA_BIN="$PROJECT_DIR/runtime/bin/java"
+else
+  readonly JAVA_BIN=java
+fi
 
 prepare_layout() {
   umask 077
@@ -74,23 +83,34 @@ select_port() {
 
 managed_process() {
   [[ -f "$PID_FILE" ]] || return 1
-  local pid command_line
+  local pid command_line jar
   pid="$(tr -dc '0-9' < "$PID_FILE")"
   [[ -n "$pid" ]] && kill -0 "$pid" 2>/dev/null || return 1
   command_line="$(ps -p "$pid" -o command= 2>/dev/null || true)"
+  if [[ -f "$JAR_FILE" ]]; then
+    IFS= read -r jar < "$JAR_FILE" || [[ -n "$jar" ]]
+    [[ -n "$jar" && "$command_line" == *" -jar $jar" ]]
+    return
+  fi
   [[ "$command_line" == *"corretor-enem"* || "$command_line" == *"com.redator.corretor"* ]]
 }
 
 resolve_jar() {
   local jar
-  jar="$(find "$PROJECT_DIR/target" -maxdepth 1 -type f -name 'corretor-enem-*.jar' ! -name '*.original' 2>/dev/null | sort | tail -1)"
-  if [[ -z "$jar" ]]; then
-    command -v mvn >/dev/null 2>&1 || { echo "Maven não encontrado e pacote da aplicação ausente." >&2; exit 69; }
-    (cd "$PROJECT_DIR" && mvn -q -DskipTests package)
-    jar="$(find "$PROJECT_DIR/target" -maxdepth 1 -type f -name 'corretor-enem-*.jar' ! -name '*.original' | sort | tail -1)"
+  if [[ -n "${REDATOR_APP_JAR:-}" ]]; then
+    jar="$REDATOR_APP_JAR"
+    [[ -f "$jar" ]] || { echo "Pacote configurado não encontrado: $jar" >&2; exit 69; }
+  elif [[ -f "$PROJECT_DIR/app/redator.jar" ]]; then
+    jar="$PROJECT_DIR/app/redator.jar"
+  else
+    jar="$PROJECT_DIR/target/corretor-enem-0.1.0-SNAPSHOT.jar"
   fi
-  [[ -n "$jar" ]] || { echo "Pacote executável não foi gerado." >&2; exit 70; }
-  printf '%s\n' "$jar"
+  if [[ ! -f "$jar" ]]; then
+    command -v mvn >/dev/null 2>&1 || { echo "Maven não encontrado e pacote da aplicação ausente." >&2; exit 69; }
+    (cd "$PROJECT_DIR" && mvn -q -DskipTests package) >&2
+  fi
+  [[ -f "$jar" ]] || { echo "Pacote executável não foi gerado." >&2; exit 70; }
+  printf '%s/%s\n' "$(cd "$(dirname "$jar")" && pwd)" "$(basename "$jar")"
 }
 
 verify_runtime() {
@@ -100,7 +120,9 @@ verify_runtime() {
 
 application_command() {
   local jar="$1" port="$2"
+  cd "$PROJECT_DIR"
   REDATOR_DATA_DIR="$DATA_DIR" SERVER_PORT="$port" SERVER_ADDRESS="127.0.0.1" \
+    RAG_DATABASE="${RAG_DATABASE:-$PROJECT_DIR/dataset/public-corpus.db}" \
     LLM_PROVIDER="$([[ "$FAKE" == true ]] && printf fake || printf ollama)" \
     exec "$JAVA_BIN" -jar "$jar"
 }
@@ -119,14 +141,14 @@ case "$COMMAND" in
     if managed_process; then
       printf 'status=running\npid=%s\nport=%s\n' "$(cat "$PID_FILE")" "$(cat "$PORT_FILE" 2>/dev/null || printf unknown)"
     else
-      rm -f "$PID_FILE" "$PORT_FILE"
+      rm -f "$PID_FILE" "$PORT_FILE" "$JAR_FILE"
       printf 'status=stopped\n'
     fi
     ;;
   stop)
     prepare_layout
     if ! managed_process; then
-      rm -f "$PID_FILE" "$PORT_FILE"
+      rm -f "$PID_FILE" "$PORT_FILE" "$JAR_FILE"
       printf 'status=stopped\nreason=stale-pid\n'
       exit 0
     fi
@@ -140,7 +162,7 @@ case "$COMMAND" in
       echo "O backend não encerrou no prazo; nenhum SIGKILL foi enviado." >&2
       exit 70
     fi
-    rm -f "$PID_FILE" "$PORT_FILE"
+    rm -f "$PID_FILE" "$PORT_FILE" "$JAR_FILE"
     printf 'status=stopped\n'
     ;;
   run|start)
@@ -151,13 +173,14 @@ case "$COMMAND" in
       echo "O Redator já está em execução (PID $(cat "$PID_FILE"))." >&2
       exit 69
     fi
-    rm -f "$PID_FILE" "$PORT_FILE"
+    rm -f "$PID_FILE" "$PORT_FILE" "$JAR_FILE"
     port="$(select_port)"
     verify_runtime
     jar="$(resolve_jar)"
+    printf '%s\n' "$jar" > "$JAR_FILE"
     if [[ "$COMMAND" == run ]]; then
       printf '%s\n' "$port" > "$PORT_FILE"
-      trap 'rm -f "$PID_FILE" "$PORT_FILE"' EXIT INT TERM
+      trap 'rm -f "$PID_FILE" "$PORT_FILE" "$JAR_FILE"' EXIT INT TERM
       printf '%s\n' "$$" > "$PID_FILE"
       echo "Redator disponível em http://127.0.0.1:${port}/"
       application_command "$jar" "$port"
@@ -175,7 +198,7 @@ case "$COMMAND" in
       sleep 0.25
     done
     if [[ "$ready" != true ]]; then
-      rm -f "$PID_FILE" "$PORT_FILE"
+      rm -f "$PID_FILE" "$PORT_FILE" "$JAR_FILE"
       kill -TERM "$pid" 2>/dev/null || true
       echo "O backend não ficou pronto; consulte $LOG_DIR/redator.log" >&2
       exit 70

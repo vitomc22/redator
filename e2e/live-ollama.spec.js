@@ -28,7 +28,12 @@ test('fluxo completo dispara uma correção real no Ollama @live', async ({ page
   await page.getByLabel('Texto da redação').fill(fixture.essay);
   await page.getByRole('button', { name: 'Continuar para inspeção' }).click();
   await expect(page.getByRole('button', { name: 'Avaliar com IA' })).toBeVisible();
+  const evaluationPromise = page.waitForResponse(response =>
+    /\/api\/essays\/\d+\/evaluate(?:\?|$)/.test(response.url()) && response.request().method() === 'POST',
+    { timeout: 620_000 });
   await page.getByRole('button', { name: 'Avaliar com IA' }).click();
+  const evaluationResponse = await evaluationPromise;
+  expect(evaluationResponse.ok(), await evaluationResponse.text()).toBe(true);
 
   await expect(page).toHaveURL(/#result\/\d+$/, { timeout: 620_000 });
   await expect(page.locator('.competence')).toHaveCount(5);

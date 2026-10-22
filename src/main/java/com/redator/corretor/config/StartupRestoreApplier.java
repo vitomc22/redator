@@ -22,11 +22,17 @@ public class StartupRestoreApplier implements EnvironmentPostProcessor {
     }
 
     public static boolean apply(Path configuredRoot) {
+        return apply(configuredRoot, "redator.db");
+    }
+
+    public static boolean apply(Path configuredRoot, String databaseFile) {
+        if (!java.util.Set.of("redator.db", "redator.sqlite").contains(databaseFile))
+            throw new IllegalArgumentException("Nome da coleção inválido");
         Path root = configuredRoot.toAbsolutePath().normalize();
         Path staged = root.resolve("runtime/restore-next-start.sqlite");
         if (!Files.isRegularFile(staged)) return false;
         LocalBackupService.verifyCollection(staged);
-        Path live = root.resolve("redator.db");
+        Path live = root.resolve(databaseFile);
         Path backups = root.resolve("backups");
         try {
             Files.createDirectories(backups);

@@ -1,0 +1,15 @@
+{
+  "sourceSchemaVersion": 5,
+  "sourceUnchangedFromCheckout": true,
+  "sourceSha256": "3ea6df17be6c2d757a6e2be14f6dbae0163d84476bd523bd1666a8477dd9d788",
+  "sourceRowsMatchRawSnapshot": true,
+  "checkedTables": 10,
+  "essayCount": 721,
+  "profileCount": 2,
+  "exportedEssayCount": 721,
+  "upgradedOnlyCopy": true,
+  "packagedJava21Startup": true,
+  "activatedEssayCount": 721,
+  "legacyCopyUnchangedAfterStartup": true,
+  "artifactSha256": "049d31c5b769af2fa371df644829f513c4dc4f76c767013952bb13ae23faafa8"
+}

@@ -137,14 +137,32 @@ termos do texto. Eles entram no prompt somente como calibração da rubrica; o m
 instruído a não copiar nota, frase ou justificativa. Splits de validação/teste e o hash
 da própria redação não podem ser recuperados. Corpus ausente ou sem amostras elegíveis
 interrompe a inicialização, em vez de executar silenciosamente sem RAG.
+As duas políticas reduzem as referências de menor relevância quando necessário para
+reservar o contexto da saída, preservando a redação integral e pelo menos um exemplo.
+A quantidade omitida fica na auditoria. Se o conteúdo obrigatório ainda não couber,
+o aplicativo retorna `CONTEXT_LIMIT` sem chamar o modelo.
 
 O código deste repositório é distribuído sob a licença [MIT](LICENSE). Cada
 dataset mantém sua própria licença e proveniência; a licença do software não
 substitui a licença do corpus.
 
-## Preparar coleções por perfil
+## Coleções privadas por perfil
 
-A [ferramenta offline](eval/reports/profile-collections-v1.md) prepara um snapshot completo e bancos SQLite separados a partir de uma coleção legada. Preserva a origem e gera um manifesto verificável; a ativação automática e o backup/restauração por perfil ainda estão em desenvolvimento.
+O modo padrão grava cada coleção em `profiles/<perfil>/redator.sqlite`, dentro do
+diretório de dados. Redações, correções, cache e treino ficam no banco do perfil
+ativo. A exportação em **Dados locais** contém somente essa coleção; a restauração
+recusa outro proprietário, schemas desconhecidos e relações inválidas, e é aplicada
+após reiniciar, com snapshot de segurança da coleção anterior.
+
+Quando existe `redator.db` legado, a primeira inicialização prepara e ativa a
+separação automaticamente. A origem e um snapshot completo são preservados, com
+manifesto e hashes em `runtime/profile-migration-prepared`. Uma colisão ou alteração
+do legado interrompe a ativação sem sobrescrever coleções privadas existentes.
+O modo de compatibilidade pode ser selecionado com `REDATOR_PROFILE_DATABASES=false`;
+ele usa apenas o legado e deve ser usado sem alternar gravações entre os dois modos.
+A [ferramenta offline](eval/reports/profile-collections-v1.md) continua disponível
+para inspecionar a separação antes da ativação. Veja também a
+[validação do modo ativo](eval/reports/profile-databases-v1.md).
 
 ## Testes E2E com Playwright
 
@@ -298,6 +316,12 @@ com o contrato legado. O modo estável exige evidência própria; seu hash é
 rejeitado pelo gate de release do contrato legado.
 Veja a [verificação da ordenação estável](eval/reports/stable-json-v1.md).
 
+O contrato `APP_LLM_CONTRACT=grounded-v2` é outra opção experimental: distribui
+evidências pela redação inteira e explicita distinções de C2/C5. No
+[piloto com três redações novas](eval/reports/grounded-v3.md), o QWK agregado
+melhorou, mas o RAG ainda regrediu em C5. Essa variante permanece opt-in e não
+qualifica release.
+
 Para empacotar artefatos destinados à distribuição, execute:
 
 ```bash
@@ -340,6 +364,11 @@ humana autorizada da fixture. `npm run e2e:quality` preserva a checagem históri
 de qualidade, com tolerância de 80 pontos; pode reprovar mesmo quando publicação
 e persistência funcionam. O [diagnóstico observado](eval/results/browser-reference-v2.json)
 registrou 1000 contra referência 800, erro de 200 pontos.
+
+Após gerar o pacote de desenvolvimento com `mvn -q -DskipTests package`, execute
+`npm run test:package` para conferir o SBOM CycloneDX e as classes/configurações
+incluídas no JAR. Essa inspeção também é executada no CI; a qualificação das notas
+continua sendo responsabilidade do gate `release-quality`.
 
 Para inspecionar uma correção humana já preparada em um servidor local, use
 `PLAYWRIGHT_EXTERNAL_SERVER=1`, `PLAYWRIGHT_BASE_URL` e `E2E_LIVE_ESSAY_ID` com

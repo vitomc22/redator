@@ -1,0 +1,123 @@
+{
+  "schemaVersion" : 1,
+  "arm" : "baseline",
+  "selectionFingerprint" : "4457c42e3a57cd0513435dfff6ffd3cc5de6e5c16584340b51258a9ec3a9e60d",
+  "runtime" : {
+    "provider" : "ollama",
+    "experimental" : true,
+    "synchronous" : true,
+    "profilesAliases" : true,
+    "model" : "gemma4:e2b-it-q4_K_M",
+    "options" : {
+      "num_ctx" : 8192,
+      "num_thread" : 4,
+      "num_predict" : 1200,
+      "seed" : 42,
+      "temperature" : 0.0
+    },
+    "keep_alive" : "5m",
+    "timeoutSeconds" : 600,
+    "runtimeQuarantined" : false,
+    "rag" : {
+      "enabled" : false,
+      "database" : "/home/victor/Documentos/git/redator/dataset/public-corpus.db",
+      "available" : true,
+      "maxExamples" : 1,
+      "policy" : "calibration-v2",
+      "excerptChars" : 1200
+    }
+  },
+  "rag" : {
+    "enabled" : false,
+    "database" : "/home/victor/Documentos/git/redator/dataset/public-corpus.db",
+    "available" : true,
+    "maxExamples" : 1,
+    "policy" : "calibration-v2",
+    "excerptChars" : 1200
+  },
+  "configFingerprint" : "176b7c79f1142e7fd66061a9015d9ec2aa4a2e862775f8349777ed510ddafbcb",
+  "results" : [ {
+    "essayHash" : "0a11c501918245ea075151e9a1ef3d73d8bf2aea14513dd87a1e1ddd527513be",
+    "status" : "READY",
+    "runId" : 1,
+    "provider" : "ollama",
+    "model" : "gemma4:e2b-it-q4_K_M",
+    "scores" : {
+      "C1" : 120,
+      "C2" : 120,
+      "C3" : 160,
+      "C4" : 120,
+      "C5" : 120
+    },
+    "needsReview" : false,
+    "reviewReasons" : [ ],
+    "llmCalls" : [ {
+      "provider" : "ollama",
+      "model" : "gemma4:e2b-it-q4_K_M",
+      "promptHash" : "453aa5b23175b701b3cec8937cfce1651b2fdcf407204c9570b91a651d73d00a",
+      "schemaHash" : "a803276d95f3b4b6a870156951024df5b5ea617da0038a42020d715c1fb9cd50",
+      "costUsd" : 0.0,
+      "latencyMs" : 237683,
+      "status" : "ok",
+      "createdAt" : "2026-10-21T08:02:27.189644983-03:00",
+      "cacheHit" : 0,
+      "auditJson" : "{\"provider\":\"ollama\",\"model\":\"gemma4:e2b-it-q4_K_M\",\"modelDigest\":\"b37049369adfe3d2b653af0ab301a062ca5cbe96ace6aa0d3f2559ee9b563fc2\",\"runtimeVersion\":\"0.40.4\",\"promptHash\":\"453aa5b23175b701b3cec8937cfce1651b2fdcf407204c9570b91a651d73d00a\",\"requestMessagesHash\":\"c3f7687c0266c182049f27258a4f0b60262dca06dcaa4762880ad53ce156d7ac\",\"rubricHash\":\"2c1049af9ee0080fc7668575e5729125c4081fdcd8e77b8ad815c45817f14634\",\"schemaVersionHash\":\"f4d935329ba0f51e9814c1b7072ff16f3f4fcdf14285b134ab8f0556aaf89a50\",\"schemaHash\":\"a803276d95f3b4b6a870156951024df5b5ea617da0038a42020d715c1fb9cd50\",\"evidenceCandidateCount\":14,\"generationParameters\":{\"num_ctx\":8192,\"num_thread\":4,\"num_predict\":1200,\"seed\":42,\"temperature\":0.0},\"thinkingControl\":\"disabled\",\"keepAlive\":\"5m\",\"essayRevision\":1,\"textHash\":\"111638bfef0f18549cfc4d15c8dd9aefe9c891fb0092a53d431ffad59ee56293\",\"themeHash\":\"226a355abe7fbe58f6905fe5924a84f6764fab5669a35f3fbf6f147c4f00c280\",\"ragEnabled\":false,\"ragCorpusFingerprint\":\"disabled\",\"ragPolicy\":\"disabled\",\"ragOmittedExamplesForContext\":0,\"ragExampleCount\":0,\"ragExamples\":[],\"contextGuard\":\"utf8-bytes/3 estimate + output + 256 template reserve; not exact token count\",\"estimatedInputTokens\":4243,\"cacheKey\":\"281c8dce0cf88be0b1d4a8153d7ebb66dc7270bba46b58bdf0198fdb4b9193ab\",\"wallMs\":237682.519062,\"total_duration\":237674137820,\"total_duration_ms\":237674.13782,\"load_duration\":13821194254,\"load_duration_ms\":13821.194254,\"prompt_eval_duration\":108852945000,\"prompt_eval_duration_ms\":108852.945,\"eval_duration\":114922588000,\"eval_duration_ms\":114922.588,\"prompt_eval_count\":2379,\"eval_count\":512,\"generationTokensPerSecond\":4.4551729029979725,\"costUsd\":0,\"doneReason\":\"stop\"}"
+    } ]
+  }, {
+    "essayHash" : "0e0289c6e61d1f3cbed03ed30e1912cfe65161afde7088139a45fbd5fb41e3cc",
+    "status" : "READY",
+    "runId" : 2,
+    "provider" : "ollama",
+    "model" : "gemma4:e2b-it-q4_K_M",
+    "scores" : {
+      "C1" : 120,
+      "C2" : 120,
+      "C3" : 160,
+      "C4" : 160,
+      "C5" : 160
+    },
+    "needsReview" : false,
+    "reviewReasons" : [ ],
+    "llmCalls" : [ {
+      "provider" : "ollama",
+      "model" : "gemma4:e2b-it-q4_K_M",
+      "promptHash" : "453aa5b23175b701b3cec8937cfce1651b2fdcf407204c9570b91a651d73d00a",
+      "schemaHash" : "909785d361ffef157bf7f981cb435d3dc3c64daadc2ca609dd89389131f0bb07",
+      "costUsd" : 0.0,
+      "latencyMs" : 286258,
+      "status" : "ok",
+      "createdAt" : "2026-10-21T08:06:25.189137486-03:00",
+      "cacheHit" : 0,
+      "auditJson" : "{\"provider\":\"ollama\",\"model\":\"gemma4:e2b-it-q4_K_M\",\"modelDigest\":\"b37049369adfe3d2b653af0ab301a062ca5cbe96ace6aa0d3f2559ee9b563fc2\",\"runtimeVersion\":\"0.40.4\",\"promptHash\":\"453aa5b23175b701b3cec8937cfce1651b2fdcf407204c9570b91a651d73d00a\",\"requestMessagesHash\":\"27db3e22c99173a7cd1ef2d66086d5b27c2874e62ce9a7f7f1f67e9d0a806486\",\"rubricHash\":\"2c1049af9ee0080fc7668575e5729125c4081fdcd8e77b8ad815c45817f14634\",\"schemaVersionHash\":\"f4d935329ba0f51e9814c1b7072ff16f3f4fcdf14285b134ab8f0556aaf89a50\",\"schemaHash\":\"909785d361ffef157bf7f981cb435d3dc3c64daadc2ca609dd89389131f0bb07\",\"evidenceCandidateCount\":13,\"generationParameters\":{\"num_ctx\":8192,\"num_thread\":4,\"num_predict\":1200,\"seed\":42,\"temperature\":0.0},\"thinkingControl\":\"disabled\",\"keepAlive\":\"5m\",\"essayRevision\":2,\"textHash\":\"60c0a7d02f6e6ce88b74a4ccfa6afa2c4ff2f26c9d644b9e3d92852267beafd4\",\"themeHash\":\"2f6bd69fee146b8a4b3ffedddaaf27fdebbf690b0a79e630e5704287ef916a9d\",\"ragEnabled\":false,\"ragCorpusFingerprint\":\"disabled\",\"ragPolicy\":\"disabled\",\"ragOmittedExamplesForContext\":0,\"ragExampleCount\":0,\"ragExamples\":[],\"contextGuard\":\"utf8-bytes/3 estimate + output + 256 template reserve; not exact token count\",\"estimatedInputTokens\":4228,\"cacheKey\":\"2b720071f11f5a63f71499fb4565260b1cc2ab5d6f64b8660c2fcecdbc34030a\",\"wallMs\":286258.131097,\"total_duration\":286251813726,\"total_duration_ms\":286251.813726,\"load_duration\":3552736,\"load_duration_ms\":3.552736,\"prompt_eval_duration\":132698391000,\"prompt_eval_duration_ms\":132698.391,\"eval_duration\":153485295000,\"eval_duration_ms\":153485.295,\"prompt_eval_count\":2373,\"eval_count\":687,\"generationTokensPerSecond\":4.475998824512797,\"costUsd\":0,\"doneReason\":\"stop\"}"
+    } ]
+  }, {
+    "essayHash" : "0ec453b7751f83dea60e2be9f4223e6339cd524a7063fda8b49d42e9063094bc",
+    "status" : "READY",
+    "runId" : 3,
+    "provider" : "ollama",
+    "model" : "gemma4:e2b-it-q4_K_M",
+    "scores" : {
+      "C1" : 120,
+      "C2" : 120,
+      "C3" : 120,
+      "C4" : 120,
+      "C5" : 120
+    },
+    "needsReview" : false,
+    "reviewReasons" : [ ],
+    "llmCalls" : [ {
+      "provider" : "ollama",
+      "model" : "gemma4:e2b-it-q4_K_M",
+      "promptHash" : "453aa5b23175b701b3cec8937cfce1651b2fdcf407204c9570b91a651d73d00a",
+      "schemaHash" : "888c0f040cc2ad686a96233ed89fac7beb17d567c3a1a51cea228f064545e6a5",
+      "costUsd" : 0.0,
+      "latencyMs" : 288514,
+      "status" : "ok",
+      "createdAt" : "2026-10-21T08:11:11.691073239-03:00",
+      "cacheHit" : 0,
+      "auditJson" : "{\"provider\":\"ollama\",\"model\":\"gemma4:e2b-it-q4_K_M\",\"modelDigest\":\"b37049369adfe3d2b653af0ab301a062ca5cbe96ace6aa0d3f2559ee9b563fc2\",\"runtimeVersion\":\"0.40.4\",\"promptHash\":\"453aa5b23175b701b3cec8937cfce1651b2fdcf407204c9570b91a651d73d00a\",\"requestMessagesHash\":\"018017b13ce20fc15c70d902cceb9e4f0ee4b21a7805ada41354960919bba091\",\"rubricHash\":\"2c1049af9ee0080fc7668575e5729125c4081fdcd8e77b8ad815c45817f14634\",\"schemaVersionHash\":\"f4d935329ba0f51e9814c1b7072ff16f3f4fcdf14285b134ab8f0556aaf89a50\",\"schemaHash\":\"888c0f040cc2ad686a96233ed89fac7beb17d567c3a1a51cea228f064545e6a5\",\"evidenceCandidateCount\":13,\"generationParameters\":{\"num_ctx\":8192,\"num_thread\":4,\"num_predict\":1200,\"seed\":42,\"temperature\":0.0},\"thinkingControl\":\"disabled\",\"keepAlive\":\"5m\",\"essayRevision\":3,\"textHash\":\"786018451c46b8f3782f90911957d7baa16063395659e21d0faded13631a6158\",\"themeHash\":\"8c2315743c8a21b1317c33bb39984ff805bd4d8ec858c6dfd22a589cea1c6763\",\"ragEnabled\":false,\"ragCorpusFingerprint\":\"disabled\",\"ragPolicy\":\"disabled\",\"ragOmittedExamplesForContext\":0,\"ragExampleCount\":0,\"ragExamples\":[],\"contextGuard\":\"utf8-bytes/3 estimate + output + 256 template reserve; not exact token count\",\"estimatedInputTokens\":4320,\"cacheKey\":\"e21109865d1dc346fb279fa3b7d8d027892088e6c099531636c2bf7a9f77a591\",\"wallMs\":288514.162164,\"total_duration\":288508774509,\"total_duration_ms\":288508.774509,\"load_duration\":2435135,\"load_duration_ms\":2.435135,\"prompt_eval_duration\":156497514000,\"prompt_eval_duration_ms\":156497.514,\"eval_duration\":131923036000,\"eval_duration_ms\":131923.036,\"prompt_eval_count\":2385,\"eval_count\":698,\"generationTokensPerSecond\":5.290963740403913,\"costUsd\":0,\"doneReason\":\"stop\"}"
+    } ]
+  } ],
+  "completedCount" : 3,
+  "complete" : true
+}

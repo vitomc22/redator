@@ -30,8 +30,9 @@ function configuration(live, external = false, runtimeFailure = false, baseUrl =
 test('offline browser tests keep their controlled fake backend', () => {
   const config = configuration(false);
   assert.equal(config.provider, 'fake');
-  assert.match(config.database, /^jdbc:sqlite:\.\/target\/playwright-offline-[a-f0-9-]+\.db$/);
-  assert.notEqual(config.database, configuration(false).database);
+  assert.match(config.data, /^\.\/target\/playwright-offline-[a-f0-9-]+$/);
+  assert.notEqual(config.data, configuration(false).data);
+  assert.equal(config.database, undefined);
   assert.equal(config.reuseExistingServer, false);
   assert.equal(config.baseURL, 'http://127.0.0.1:18080');
   assert.equal(config.port, '18080');
@@ -54,7 +55,7 @@ test('live browser tests start Ollama with a separate real SQLite collection', (
   const live = configuration(true);
   assert.equal(live.provider, 'ollama');
   assert.notEqual(live.data, offline.data);
-  assert.notEqual(live.database, offline.database);
+  assert.equal(live.database, undefined);
   assert.equal(live.reuseExistingServer, false);
 });
 
@@ -68,8 +69,8 @@ test('transport failure tests use actual Ollama code, an unreachable local endpo
   assert.equal(first.verifyRuntime, 'false');
   assert.equal(first.autoPull, 'false');
   assert.equal(first.reuseExistingServer, false);
-  assert.notEqual(first.database, second.database);
-  assert.notEqual(first.database, configuration(false).database);
+  assert.notEqual(first.data, second.data);
+  assert.notEqual(first.data, configuration(false).data);
 });
 
 test('real inference and deliberate transport failure cannot be enabled together', () => {

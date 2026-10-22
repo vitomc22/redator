@@ -32,8 +32,7 @@ module.exports = defineConfig({
         REDATOR_VERIFY_RUNTIME: 'false', OLLAMA_AUTO_PULL: 'false'
       } : {}),
       REDATOR_LOCAL_API_TOKEN: 'true',
-      REDATOR_DATA_DIR: isolatedCollection,
-      SPRING_DATASOURCE_URL: `jdbc:sqlite:${isolatedCollection}.db`
+      REDATOR_DATA_DIR: isolatedCollection
     }
   },
   use: {

@@ -59,7 +59,7 @@ public class OllamaLlmProvider {
                     .getBytes(java.nio.charset.StandardCharsets.UTF_8).length;
             estimatedInputTokens = (inputBytes + 2L) / 3;
             if (estimatedInputTokens + config.getNumPredict() + 256 <= config.getNumCtx()) break;
-            if (!RagService.CALIBRATION_POLICY.equals(ragContext.policy()) || ragContext.references().size() <= 1)
+            if (ragContext.references().size() <= 1)
                 throw failure(HttpStatus.UNPROCESSABLE_ENTITY, "CONTEXT_LIMIT", "Texto, proposta e rubrica excedem o guard conservador de contexto; nada foi cortado.");
             ragContext = new RagService.Context(true, ragContext.corpusFingerprint(),
                     List.copyOf(ragContext.references().subList(0, ragContext.references().size() - 1)), ragContext.policy());

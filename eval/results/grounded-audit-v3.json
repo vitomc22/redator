@@ -1,0 +1,80 @@
+{
+  "verifiedAt": "2026-10-22T00:13:24.109021+00:00",
+  "selectionFingerprint": "4457c42e3a57cd0513435dfff6ffd3cc5de6e5c16584340b51258a9ec3a9e60d",
+  "calls": [
+    {
+      "arm": "baseline",
+      "essayHash": "0a11c501918245ea075151e9a1ef3d73d8bf2aea14513dd87a1e1ddd527513be",
+      "runId": 1,
+      "scoresMatchSqlite": true,
+      "requestMatchesCurrentPreflight": true,
+      "references": [],
+      "seconds": 237.683
+    },
+    {
+      "arm": "baseline",
+      "essayHash": "0e0289c6e61d1f3cbed03ed30e1912cfe65161afde7088139a45fbd5fb41e3cc",
+      "runId": 2,
+      "scoresMatchSqlite": true,
+      "requestMatchesCurrentPreflight": true,
+      "references": [],
+      "seconds": 286.258
+    },
+    {
+      "arm": "baseline",
+      "essayHash": "0ec453b7751f83dea60e2be9f4223e6339cd524a7063fda8b49d42e9063094bc",
+      "runId": 3,
+      "scoresMatchSqlite": true,
+      "requestMatchesCurrentPreflight": true,
+      "references": [],
+      "seconds": 288.514
+    },
+    {
+      "arm": "rag",
+      "essayHash": "0a11c501918245ea075151e9a1ef3d73d8bf2aea14513dd87a1e1ddd527513be",
+      "runId": 1,
+      "scoresMatchSqlite": true,
+      "requestMatchesCurrentPreflight": true,
+      "references": [
+        {
+          "id": 119,
+          "hash": "04092f17e1883de8b8028a33830957fe95b7a30fa537a0cf55d5a77a288dfcf4",
+          "split": "train"
+        }
+      ],
+      "seconds": 331.205
+    },
+    {
+      "arm": "rag",
+      "essayHash": "0e0289c6e61d1f3cbed03ed30e1912cfe65161afde7088139a45fbd5fb41e3cc",
+      "runId": 2,
+      "scoresMatchSqlite": true,
+      "requestMatchesCurrentPreflight": true,
+      "references": [
+        {
+          "id": 119,
+          "hash": "04092f17e1883de8b8028a33830957fe95b7a30fa537a0cf55d5a77a288dfcf4",
+          "split": "train"
+        }
+      ],
+      "seconds": 373.125
+    },
+    {
+      "arm": "rag",
+      "essayHash": "0ec453b7751f83dea60e2be9f4223e6339cd524a7063fda8b49d42e9063094bc",
+      "runId": 3,
+      "scoresMatchSqlite": true,
+      "requestMatchesCurrentPreflight": true,
+      "references": [
+        {
+          "id": 29,
+          "hash": "2c1df01bfb205b53865569b68c27273661e52d5526c75fc22143708cdd558048",
+          "split": "train"
+        }
+      ],
+      "seconds": 299.734
+    }
+  ],
+  "defaultChanged": false,
+  "releaseQualified": false
+}

@@ -1,0 +1,143 @@
+{
+  "schemaVersion" : 1,
+  "arm" : "rag",
+  "selectionFingerprint" : "4457c42e3a57cd0513435dfff6ffd3cc5de6e5c16584340b51258a9ec3a9e60d",
+  "runtime" : {
+    "provider" : "ollama",
+    "experimental" : true,
+    "synchronous" : true,
+    "profilesAliases" : true,
+    "model" : "gemma4:e2b-it-q4_K_M",
+    "options" : {
+      "num_thread" : 4,
+      "num_ctx" : 8192,
+      "temperature" : 0.0,
+      "seed" : 42,
+      "num_predict" : 1200
+    },
+    "keep_alive" : "5m",
+    "timeoutSeconds" : 600,
+    "runtimeQuarantined" : false,
+    "rag" : {
+      "enabled" : true,
+      "database" : "/home/victor/Documentos/git/redator/dataset/public-corpus.db",
+      "available" : true,
+      "maxExamples" : 1,
+      "policy" : "calibration-v2",
+      "excerptChars" : 1200,
+      "essays" : 385,
+      "humanEvaluations" : 770,
+      "ragEligible" : 250,
+      "benchmarkEligible" : 135,
+      "splits" : {
+        "test" : 69,
+        "train" : 250,
+        "validation" : 66
+      },
+      "fingerprint" : "480b13dd5e8e0f6aaf54b1f38e35d296d6ff888682eaaefaca39ae1bb055cd57"
+    }
+  },
+  "rag" : {
+    "enabled" : true,
+    "database" : "/home/victor/Documentos/git/redator/dataset/public-corpus.db",
+    "available" : true,
+    "maxExamples" : 1,
+    "policy" : "calibration-v2",
+    "excerptChars" : 1200,
+    "essays" : 385,
+    "humanEvaluations" : 770,
+    "ragEligible" : 250,
+    "benchmarkEligible" : 135,
+    "splits" : {
+      "test" : 69,
+      "train" : 250,
+      "validation" : 66
+    },
+    "fingerprint" : "480b13dd5e8e0f6aaf54b1f38e35d296d6ff888682eaaefaca39ae1bb055cd57"
+  },
+  "configFingerprint" : "77a1f6a7874974bad26475c4210804fed929560789d01824799b085f0ca92370",
+  "results" : [ {
+    "essayHash" : "0a11c501918245ea075151e9a1ef3d73d8bf2aea14513dd87a1e1ddd527513be",
+    "status" : "READY",
+    "runId" : 1,
+    "provider" : "ollama",
+    "model" : "gemma4:e2b-it-q4_K_M",
+    "scores" : {
+      "C1" : 160,
+      "C2" : 120,
+      "C3" : 160,
+      "C4" : 160,
+      "C5" : 160
+    },
+    "needsReview" : false,
+    "reviewReasons" : [ ],
+    "llmCalls" : [ {
+      "provider" : "ollama",
+      "model" : "gemma4:e2b-it-q4_K_M",
+      "promptHash" : "453aa5b23175b701b3cec8937cfce1651b2fdcf407204c9570b91a651d73d00a",
+      "schemaHash" : "a803276d95f3b4b6a870156951024df5b5ea617da0038a42020d715c1fb9cd50",
+      "costUsd" : 0.0,
+      "latencyMs" : 331205,
+      "status" : "ok",
+      "createdAt" : "2026-10-21T20:55:34.143712882-03:00",
+      "cacheHit" : 0,
+      "auditJson" : "{\"provider\":\"ollama\",\"model\":\"gemma4:e2b-it-q4_K_M\",\"modelDigest\":\"b37049369adfe3d2b653af0ab301a062ca5cbe96ace6aa0d3f2559ee9b563fc2\",\"runtimeVersion\":\"0.40.4\",\"promptHash\":\"453aa5b23175b701b3cec8937cfce1651b2fdcf407204c9570b91a651d73d00a\",\"requestMessagesHash\":\"979a6065f7ac24d5b62cc0b7883a17b84a0294fb527a2af214ddbe18e7b1b107\",\"rubricHash\":\"2c1049af9ee0080fc7668575e5729125c4081fdcd8e77b8ad815c45817f14634\",\"schemaVersionHash\":\"f4d935329ba0f51e9814c1b7072ff16f3f4fcdf14285b134ab8f0556aaf89a50\",\"schemaHash\":\"a803276d95f3b4b6a870156951024df5b5ea617da0038a42020d715c1fb9cd50\",\"evidenceCandidateCount\":14,\"generationParameters\":{\"num_thread\":4,\"num_ctx\":8192,\"temperature\":0.0,\"seed\":42,\"num_predict\":1200},\"thinkingControl\":\"disabled\",\"keepAlive\":\"5m\",\"essayRevision\":1,\"textHash\":\"111638bfef0f18549cfc4d15c8dd9aefe9c891fb0092a53d431ffad59ee56293\",\"themeHash\":\"226a355abe7fbe58f6905fe5924a84f6764fab5669a35f3fbf6f147c4f00c280\",\"ragEnabled\":true,\"ragCorpusFingerprint\":\"480b13dd5e8e0f6aaf54b1f38e35d296d6ff888682eaaefaca39ae1bb055cd57\",\"ragPolicy\":\"calibration-v2\",\"ragOmittedExamplesForContext\":0,\"ragExampleCount\":1,\"ragExamples\":[{\"id\":119,\"hash\":\"04092f17e1883de8b8028a33830957fe95b7a30fa537a0cf55d5a77a288dfcf4\",\"source\":\"kamel-usp/aes_enem_dataset\",\"sourceId\":\"JBCS2025:train:9.html\",\"license\":\"Apache-2.0\",\"relevance\":24.0,\"excerptHash\":\"725551bd289d98811fbef0be58f578b88e4c6f674853ccd3f8a205bd14391dd2\",\"excerptCoverage\":\"beginning-and-end\"}],\"contextGuard\":\"utf8-bytes/3 estimate + output + 256 template reserve; not exact token count\",\"estimatedInputTokens\":5303,\"cacheKey\":\"d6f975a1797fa6e4f6afe1cdc327e1fb5e54003830e5eb54ba8b7ca45b58064d\",\"wallMs\":331204.714824,\"total_duration\":331191666196,\"total_duration_ms\":331191.666196,\"load_duration\":20707422698,\"load_duration_ms\":20707.422698,\"prompt_eval_duration\":160893254000,\"prompt_eval_duration_ms\":160893.254,\"eval_duration\":149509463000,\"eval_duration_ms\":149509.463,\"prompt_eval_count\":3044,\"eval_count\":683,\"generationTokensPerSecond\":4.568272711941986,\"costUsd\":0,\"doneReason\":\"stop\"}"
+    } ]
+  }, {
+    "essayHash" : "0e0289c6e61d1f3cbed03ed30e1912cfe65161afde7088139a45fbd5fb41e3cc",
+    "status" : "READY",
+    "runId" : 2,
+    "provider" : "ollama",
+    "model" : "gemma4:e2b-it-q4_K_M",
+    "scores" : {
+      "C1" : 160,
+      "C2" : 120,
+      "C3" : 160,
+      "C4" : 160,
+      "C5" : 160
+    },
+    "needsReview" : false,
+    "reviewReasons" : [ ],
+    "llmCalls" : [ {
+      "provider" : "ollama",
+      "model" : "gemma4:e2b-it-q4_K_M",
+      "promptHash" : "453aa5b23175b701b3cec8937cfce1651b2fdcf407204c9570b91a651d73d00a",
+      "schemaHash" : "909785d361ffef157bf7f981cb435d3dc3c64daadc2ca609dd89389131f0bb07",
+      "costUsd" : 0.0,
+      "latencyMs" : 373125,
+      "status" : "ok",
+      "createdAt" : "2026-10-21T21:01:05.985821814-03:00",
+      "cacheHit" : 0,
+      "auditJson" : "{\"provider\":\"ollama\",\"model\":\"gemma4:e2b-it-q4_K_M\",\"modelDigest\":\"b37049369adfe3d2b653af0ab301a062ca5cbe96ace6aa0d3f2559ee9b563fc2\",\"runtimeVersion\":\"0.40.4\",\"promptHash\":\"453aa5b23175b701b3cec8937cfce1651b2fdcf407204c9570b91a651d73d00a\",\"requestMessagesHash\":\"18d61b33862217124e8cdc7a3afebf0584930e709a099c90aa39f33ac12eeeea\",\"rubricHash\":\"2c1049af9ee0080fc7668575e5729125c4081fdcd8e77b8ad815c45817f14634\",\"schemaVersionHash\":\"f4d935329ba0f51e9814c1b7072ff16f3f4fcdf14285b134ab8f0556aaf89a50\",\"schemaHash\":\"909785d361ffef157bf7f981cb435d3dc3c64daadc2ca609dd89389131f0bb07\",\"evidenceCandidateCount\":13,\"generationParameters\":{\"num_thread\":4,\"num_ctx\":8192,\"temperature\":0.0,\"seed\":42,\"num_predict\":1200},\"thinkingControl\":\"disabled\",\"keepAlive\":\"5m\",\"essayRevision\":2,\"textHash\":\"60c0a7d02f6e6ce88b74a4ccfa6afa2c4ff2f26c9d644b9e3d92852267beafd4\",\"themeHash\":\"2f6bd69fee146b8a4b3ffedddaaf27fdebbf690b0a79e630e5704287ef916a9d\",\"ragEnabled\":true,\"ragCorpusFingerprint\":\"480b13dd5e8e0f6aaf54b1f38e35d296d6ff888682eaaefaca39ae1bb055cd57\",\"ragPolicy\":\"calibration-v2\",\"ragOmittedExamplesForContext\":0,\"ragExampleCount\":1,\"ragExamples\":[{\"id\":119,\"hash\":\"04092f17e1883de8b8028a33830957fe95b7a30fa537a0cf55d5a77a288dfcf4\",\"source\":\"kamel-usp/aes_enem_dataset\",\"sourceId\":\"JBCS2025:train:9.html\",\"license\":\"Apache-2.0\",\"relevance\":24.0,\"excerptHash\":\"725551bd289d98811fbef0be58f578b88e4c6f674853ccd3f8a205bd14391dd2\",\"excerptCoverage\":\"beginning-and-end\"}],\"contextGuard\":\"utf8-bytes/3 estimate + output + 256 template reserve; not exact token count\",\"estimatedInputTokens\":5288,\"cacheKey\":\"8e8cafb3b0e3b59310b7260f835e3b09dc91660da8d3793c292563a318d24228\",\"wallMs\":373125.352867,\"total_duration\":373114017227,\"total_duration_ms\":373114.017227,\"load_duration\":2216468,\"load_duration_ms\":2.216468,\"prompt_eval_duration\":192632574000,\"prompt_eval_duration_ms\":192632.574,\"eval_duration\":180370274000,\"eval_duration_ms\":180370.274,\"prompt_eval_count\":3038,\"eval_count\":835,\"generationTokensPerSecond\":4.62936592312323,\"costUsd\":0,\"doneReason\":\"stop\"}"
+    } ]
+  }, {
+    "essayHash" : "0ec453b7751f83dea60e2be9f4223e6339cd524a7063fda8b49d42e9063094bc",
+    "status" : "READY",
+    "runId" : 3,
+    "provider" : "ollama",
+    "model" : "gemma4:e2b-it-q4_K_M",
+    "scores" : {
+      "C1" : 160,
+      "C2" : 120,
+      "C3" : 120,
+      "C4" : 120,
+      "C5" : 120
+    },
+    "needsReview" : false,
+    "reviewReasons" : [ ],
+    "llmCalls" : [ {
+      "provider" : "ollama",
+      "model" : "gemma4:e2b-it-q4_K_M",
+      "promptHash" : "453aa5b23175b701b3cec8937cfce1651b2fdcf407204c9570b91a651d73d00a",
+      "schemaHash" : "888c0f040cc2ad686a96233ed89fac7beb17d567c3a1a51cea228f064545e6a5",
+      "costUsd" : 0.0,
+      "latencyMs" : 299734,
+      "status" : "ok",
+      "createdAt" : "2026-10-21T21:07:19.502966696-03:00",
+      "cacheHit" : 0,
+      "auditJson" : "{\"provider\":\"ollama\",\"model\":\"gemma4:e2b-it-q4_K_M\",\"modelDigest\":\"b37049369adfe3d2b653af0ab301a062ca5cbe96ace6aa0d3f2559ee9b563fc2\",\"runtimeVersion\":\"0.40.4\",\"promptHash\":\"453aa5b23175b701b3cec8937cfce1651b2fdcf407204c9570b91a651d73d00a\",\"requestMessagesHash\":\"f2a2d281d51c626b7574195b0178a582844d3a684f24e37faf5597759df7a7cb\",\"rubricHash\":\"2c1049af9ee0080fc7668575e5729125c4081fdcd8e77b8ad815c45817f14634\",\"schemaVersionHash\":\"f4d935329ba0f51e9814c1b7072ff16f3f4fcdf14285b134ab8f0556aaf89a50\",\"schemaHash\":\"888c0f040cc2ad686a96233ed89fac7beb17d567c3a1a51cea228f064545e6a5\",\"evidenceCandidateCount\":13,\"generationParameters\":{\"num_thread\":4,\"num_ctx\":8192,\"temperature\":0.0,\"seed\":42,\"num_predict\":1200},\"thinkingControl\":\"disabled\",\"keepAlive\":\"5m\",\"essayRevision\":3,\"textHash\":\"786018451c46b8f3782f90911957d7baa16063395659e21d0faded13631a6158\",\"themeHash\":\"8c2315743c8a21b1317c33bb39984ff805bd4d8ec858c6dfd22a589cea1c6763\",\"ragEnabled\":true,\"ragCorpusFingerprint\":\"480b13dd5e8e0f6aaf54b1f38e35d296d6ff888682eaaefaca39ae1bb055cd57\",\"ragPolicy\":\"calibration-v2\",\"ragOmittedExamplesForContext\":0,\"ragExampleCount\":1,\"ragExamples\":[{\"id\":29,\"hash\":\"2c1df01bfb205b53865569b68c27273661e52d5526c75fc22143708cdd558048\",\"source\":\"kamel-usp/aes_enem_dataset\",\"sourceId\":\"JBCS2025:train:17.html\",\"license\":\"Apache-2.0\",\"relevance\":23.0,\"excerptHash\":\"aaf78ad7d3b572691b206306d425e7b8445b3b301fa1bf264757bca723006c55\",\"excerptCoverage\":\"beginning-and-end\"}],\"contextGuard\":\"utf8-bytes/3 estimate + output + 256 template reserve; not exact token count\",\"estimatedInputTokens\":5358,\"cacheKey\":\"140bd5acb9b62e4c14244bbe4d1703bce5cba0517efd3144fc56b9a0b57802d2\",\"wallMs\":299733.682399,\"total_duration\":299728155362,\"total_duration_ms\":299728.155362,\"load_duration\":3999847,\"load_duration_ms\":3.999847,\"prompt_eval_duration\":159007745000,\"prompt_eval_duration_ms\":159007.745,\"eval_duration\":140591802000,\"eval_duration_ms\":140591.802,\"prompt_eval_count\":3077,\"eval_count\":822,\"generationTokensPerSecond\":5.846713594296202,\"costUsd\":0,\"doneReason\":\"stop\"}"
+    } ]
+  } ],
+  "completedCount" : 3,
+  "complete" : true
+}

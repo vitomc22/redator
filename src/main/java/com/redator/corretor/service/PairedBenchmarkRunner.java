@@ -80,11 +80,17 @@ public class PairedBenchmarkRunner {
 
     private long insertTheme(String rawTheme, String hash) {
         String theme = rawTheme == null || rawTheme.isBlank() ? "Tema não informado" : rawTheme.strip();
-        jdbc.update("INSERT INTO tema (titulo, recorte, motivadores) VALUES (?, ?, ?)",
-                theme, theme, "Tema proveniente do benchmark humano congelado " + hash);
-        Long id = jdbc.queryForObject("SELECT last_insert_rowid()", Long.class);
-        if (id == null) throw new IllegalStateException("tema do benchmark não foi criado");
-        return id;
+        var key = new org.springframework.jdbc.support.GeneratedKeyHolder();
+        jdbc.update(connection -> {
+            var statement = connection.prepareStatement("INSERT INTO tema (titulo, recorte, motivadores) VALUES (?, ?, ?)",
+                    java.sql.Statement.RETURN_GENERATED_KEYS);
+            statement.setString(1, theme);
+            statement.setString(2, theme);
+            statement.setString(3, "Tema proveniente do benchmark humano congelado " + hash);
+            return statement;
+        }, key);
+        if (key.getKey() == null) throw new IllegalStateException("tema do benchmark não foi criado");
+        return key.getKey().longValue();
     }
 
     private static Map<String, Integer> scoreMap(Map<String, CompetenceResult> competences) {

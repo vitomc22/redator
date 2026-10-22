@@ -1,0 +1,40 @@
+{
+  "verifiedAt": "2026-10-22T00:29:57.696466+00:00",
+  "artifact": "target/corretor-enem-0.1.0-SNAPSHOT.jar",
+  "sha256": "b801749720b98178c7e45fcd52b5f8ae5aae9e80f328bfd8d4babaf706ac6693",
+  "bytes": 44797791,
+  "sbom": "target/corretor-enem-0.1.0-SNAPSHOT.sbom.json",
+  "sbomSpecVersion": "1.6",
+  "runtimeComponents": 54,
+  "verifiedClassesAndResources": true,
+  "unitPassed": 108,
+  "offlineIntegrationPassed": 54,
+  "javaLiveSkipped": 1,
+  "nodeConfigPassed": 6,
+  "nodeClientPassed": 4,
+  "nodePackagePassed": 1,
+  "browserPassed": 23,
+  "browserTransportFailurePassed": 1,
+  "actualRestartSmoke": "eval/results/profile-launcher-smoke-v1.json",
+  "releaseQualified": false,
+  "releaseBlockers": [
+    "C2 MAE regression",
+    "C5 MAE regression",
+    "aggregate QWK regression"
+  ],
+  "liveBrowser": "passed",
+  "legacyV5Migration": "eval/results/legacy-v5-migration-v1.json",
+  "liveBrowserPassed": 1,
+  "liveBrowserSkipped": 1,
+  "liveEvidence": "eval/results/profile-packaged-live-v1.json",
+  "contextRegression": "eval/results/default-context-regression-v1.json",
+  "applicationStarted": {
+    "url": "http://127.0.0.1:8080",
+    "dataDirectory": "/home/victor/Documentos/git/redator/data",
+    "provider": "ollama",
+    "model": "gemma4:e2b-it-q4_K_M",
+    "migratedEssayCount": 721,
+    "originalLegacyUnchanged": true,
+    "verifiedAt": "2026-10-22T00:30:41.450853+00:00"
+  }
+}

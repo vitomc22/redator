@@ -51,8 +51,9 @@ class OllamaLlmProviderTest {
                         failure -> assertThat(failure.code()).isEqualTo("CONTEXT_LIMIT"));
     }
 
-    @Test
-    void calibrationFitsReferencesWithoutTruncatingStudentEssay(@TempDir Path temp) throws Exception {
+    @ParameterizedTest
+    @ValueSource(strings = {"lexical-v1", "calibration-v2"})
+    void fitsReferencesWithoutTruncatingStudentEssay(String policy, @TempDir Path temp) throws Exception {
         server = HttpServer.create(new InetSocketAddress("127.0.0.1", 0), 0);
         server.createContext("/api/version", exchange -> respond(exchange, "{\"version\":\"0.40.4\"}"));
         server.createContext("/api/tags", exchange -> respond(exchange,
@@ -70,7 +71,7 @@ class OllamaLlmProviderTest {
                         new PublicHumanCorpus.HumanScore("human", 160, 160, 160, 160, 160, 800))), "budget-v1");
             }
         }
-        var rag = new RagService(database, true, 3, 1200, "calibration-v2");
+        var rag = new RagService(database, true, 3, 1200, policy);
         var contract = new LocalEvaluationContract();
         String text = "A educação pública reduz desigualdades e deve ser garantida a todos os cidadãos. ".repeat(12);
         var theme = new Tema(1L, "Educação", "Direito à educação", "");

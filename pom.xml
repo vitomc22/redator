@@ -81,6 +81,8 @@
                 <configuration>
                     <systemPropertyVariables>
                         <app.data-directory>${project.build.directory}/test-data</app.data-directory>
+                        <!-- Legacy compatibility suite; profile integration and browser tests cover the default routing. -->
+                        <app.profile-databases>false</app.profile-databases>
                     </systemPropertyVariables>
                 </configuration>
             </plugin>
@@ -94,7 +96,7 @@
                 <version>2.9.1</version>
                 <executions>
                     <execution>
-                        <phase>package</phase>
+                        <phase>generate-resources</phase>
                         <goals><goal>makeAggregateBom</goal></goals>
                     </execution>
                 </executions>

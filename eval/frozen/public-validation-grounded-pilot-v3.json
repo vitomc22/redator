@@ -1,0 +1,63 @@
+{
+  "schemaVersion" : 2,
+  "humanLabelPolicy" : "individual-raters-macro-average-v1",
+  "corpusFingerprint" : "480b13dd5e8e0f6aaf54b1f38e35d296d6ff888682eaaefaca39ae1bb055cd57",
+  "selectionFingerprint" : "4457c42e3a57cd0513435dfff6ffd3cc5de6e5c16584340b51258a9ec3a9e60d",
+  "split" : "validation",
+  "sampleCount" : 3,
+  "annotationCount" : 6,
+  "raterIds" : [ "grader_a", "grader_b" ],
+  "excludedEssayHashes" : [ "05679c5cc0243c375acb2dff9cccd8b29cc32895b70cddcf4e56ec34b8708d4e", "05ebf17c91cb661eb1c275c891c214311c660a8ef90a7e57a5f8aa212267f727", "09d9f3e11688dc3569a965e40480a7c4e63a1a61327f1a32a69f4f6c7c956c1b", "0c6a6d837d391b483c3efc0f90b3fe6cd28458d4e0242de6e13fde56f0841806", "9b82bb2ba0dd6887d043ddf58a873731f9425f63e5cc4dce4f26614dcc942d00", "ab576b022dcfd81fdcccb936870f3928a06cb6371bec6132c4308af610f11532" ],
+  "source" : "kamel-usp/aes_enem_dataset",
+  "subset" : "JBCS2025",
+  "samples" : [ {
+    "essayHash" : "0a11c501918245ea075151e9a1ef3d73d8bf2aea14513dd87a1e1ddd527513be",
+    "source" : "kamel-usp/aes_enem_dataset",
+    "sourceId" : "JBCS2025:validation:12.html",
+    "license" : "Apache-2.0",
+    "theme" : "As mudanças que afetam o clima de nosso planeta têm causado problemas preocupantes. No começo de 2019, um dos efeitos do aquecimento global provocou um grande e surpreendente transtorno para a população de um arquipélago remoto da Rússia, na região do Ártico. Com a redução das geleiras, o habitat natural e as áreas de caça dos ursos polares diminuíram. Resultado: eles têm invadido as cidades e aldeias locais, em busca de comida. Pior, também têm atacado seres humanos, particularmente crianças. No entanto, como a espécie está ameaçada de extinção, a legislação russa não permite matá-los. Isso cria um grande dilema ecológico para os habitantes do arquipélago. Como lidar com os ursos, sem colaborar com sua extinção? Leia a reportagem que segue, bem como os outros textos que a acompanham e responda, num texto dissertativo-argumentativo, como, na sua opinião, dilemas como esse podem ser resolvidos? Por quê? Veja, na coletânea, que há um caso semelhante no Brasil. O que isso significa?",
+    "text" : "O aquecimento global vem afetando o mundo nos últimos anos, esse fator e algo natural porem está aumentando drasticamente pela quantidade de combustíveis quem são queimados diariamente, assim afetando o ambiente onde vivemos, ocasionando uma elevação na temperatura ambiente.\nA partir disso surgem vários problemas que afetam o habitat natural de vários animais, e um deles e o derretimento das geleiras que obrigam os animais como o urso polar a mudar seus hábitos de caça.\nMuitos ursos para se alimentarem começaram a invadir cidades, a relatos de que os ursos atacam pessoas para se alimentar. Muitos estão pensando na hipótese de caça aos ursos porem esse método e proibido em lei, além disso, a agência do Meio Ambiente russa negou a licença para abater essa espécie pois a mesma se encontra em extinção.\nPortanto, medidas são necessárias para resolver esse impasse podendo ter algum órgão governamental responsável pelo meio ambiente para se responsabilizar de resgatar e alimentar esses animais para evitar futuros ataques contra pessoas. A Rússia e o quinto pais do ranking de emissores de queima de combustíveis para que ela possa reduzir a queima de combustíveis deve investir em um combustível mais \"limpo\" para o ambiente por exemplo o etanol além de estimular o uso do mesmo.",
+    "humanEvaluations" : [ {
+      "graderId" : "grader_a",
+      "scores" : [ 160, 120, 120, 160, 120 ],
+      "total" : 680
+    }, {
+      "graderId" : "grader_b",
+      "scores" : [ 80, 120, 80, 120, 120 ],
+      "total" : 520
+    } ]
+  }, {
+    "essayHash" : "0e0289c6e61d1f3cbed03ed30e1912cfe65161afde7088139a45fbd5fb41e3cc",
+    "source" : "kamel-usp/aes_enem_dataset",
+    "sourceId" : "JBCS2025:validation:18.html",
+    "license" : "Apache-2.0",
+    "theme" : "As mudanças que afetam o clima de nosso planeta têm causado problemas preocupantes. No começo de 2019, um dos efeitos do aquecimento global provocou um grande e surpreendente transtorno para a população de um arquipélago remoto da Rússia, na região do Ártico. Com a redução das geleiras, o habitat natural e as áreas de caça dos ursos polares diminuíram. Resultado: eles têm invadido as cidades e aldeias locais, em busca de comida. Pior, também têm atacado seres humanos, particularmente crianças. No entanto, como a espécie está ameaçada de extinção, a legislação russa não permite matá-los. Isso cria um grande dilema ecológico para os habitantes do arquipélago. Como lidar com os ursos, sem colaborar com sua extinção? Leia a reportagem que segue, bem como os outros textos que a acompanham e responda, num texto dissertativo-argumentativo, como, na sua opinião, dilemas como esse podem ser resolvidos? Por quê? Veja, na coletânea, que há um caso semelhante no Brasil. O que isso significa?",
+    "text" : "Atualmente com o aquecimento global aumentado, o ambiente mudou, assim como os animais também, isto não só afeta os animais, natureza, como também nos afeta de uma forma significativa.\nQuando usufruirmos da natureza, estamos tirando algo que tem que se repor, normalmente este material como madeira, por exemplo, vai ser reposto, a árvore cresce, mas não está sendo assim, não desfrutamos, mas abusamos, sem repor e até mesmo algumas empresas sem fiscalização fazem isso de forma totalmente ilegal.\nA educação básica sobre reciclagem, sustentabilidade e afins é necessária, a culpa não é só de quem abusa ilegalmente da estrutura das florestas, entre outros locais. Cidadãos são responsáveis pela saúde do planeta, jogar lixo onde tem que ser jogado deveria ser uma atividade universal. Muitos estão inconscientes sobre o estado atual do planeta e a alienação muda o comportamento de moradores fazendo agravar a situação com ações não saudáveis para à Terra.\nTendo em vista os aspectos observados, deveríamos ter mais fiscais ambientais, fiscalização em empresas que liberam em grandes quantidades de CO2, campanhas para educação de jovens em relação a sustentabilidade e reciclagem. Pois só quando todo mundo se der conta do que podem perder, talvez seja tarde demais.",
+    "humanEvaluations" : [ {
+      "graderId" : "grader_a",
+      "scores" : [ 160, 40, 40, 120, 40 ],
+      "total" : 400
+    }, {
+      "graderId" : "grader_b",
+      "scores" : [ 120, 40, 40, 120, 40 ],
+      "total" : 360
+    } ]
+  }, {
+    "essayHash" : "0ec453b7751f83dea60e2be9f4223e6339cd524a7063fda8b49d42e9063094bc",
+    "source" : "kamel-usp/aes_enem_dataset",
+    "sourceId" : "JBCS2025:validation:0.html",
+    "license" : "Apache-2.0",
+    "theme" : "Ao longo dos últimos dez anos, o papel do STF (Supremo Tribunal Federal) ganhou destaque no noticiário nacional. Raramente, na história dos três poderes que constituem o Estado brasileiro, o Judiciário se tornou um foco predominante de atenção da opinião pública, concorrendo nesse aspecto com o Legislativo e o Executivo, que em geral são o centro dos debates envolvendo a política nacional e a sociedade brasileira. Contudo, isso não só aconteceu, como também o Datafolha pôde aferir, em pesquisa recente, a avaliação que os brasileiros fazem da atuação do órgão máximo de nosso poder Judiciário, isto é, do STF. O trabalho da instituição é reprovado por 39% da população e considerado regular por 38%. Apenas 19% o julgam bom ou excelente. Levando isso tudo em consideração e a partir de seus conhecimentos da atualidade brasileira, desenvolva uma redação de cunho dissertativo-argumentativo sobre o tema Supremo Tribunal Federal e opinião pública, explicando por que, de acordo com o seu ponto de vista, o STF ganhou tanto destaque nos últimos anos e por que sua atuação não agrada à maioria da população brasileira. Os textos da coletânea vão ajudá-lo a refletir sobre o assunto.",
+    "text" : "O supremo tribunal federal é definido como um órgão de alta instância do poder judiciário, capaz de defender as normas da Constituição federal. Vários problemas estão em acontecimentos, e o STF ganha destaque sobre a população brasileira, devido ao impacto sobre a opinião pública, onde a sua atuação acaba agradando o brasileiro.\nDevido a vários impasses acontecidos no governo, o supremo tribunal federal rege com o seu papel em defender tanto as normas brasileiras, quanto a opinião pública, colocando em pauta sobre alguns acontecimentos como criminalização sobre o livro do beijo gay, mudanças na reforma da previdência e também o impacto ambiental, no que ocasionou também um dos assuntos discutidos pela opinião brasileira.\nCom a pesquisa do ponto de vista brasileiro sobre os impactos acontecidos e políticos, o STF acaba tendo um destaque sobre a população por exercer o seu papel de mostrar a avaliação que movimenta o órgão máximo do poder judiciário.\nContudo, com a convicção entre o órgão público e a opinião pública, as pesquisas podem agradar ou não os brasileiros. Sendo assim, com essa união é possível abrandar aos problemas acontecidos, construindo com educação um Brasil mais abrangente e desenvolvido.",
+    "humanEvaluations" : [ {
+      "graderId" : "grader_a",
+      "scores" : [ 160, 120, 120, 120, 0 ],
+      "total" : 520
+    }, {
+      "graderId" : "grader_b",
+      "scores" : [ 120, 120, 120, 120, 0 ],
+      "total" : 480
+    } ]
+  } ],
+  "exclusionSelectionFingerprint" : "8f9e4877c2bb75863676e78310995082f72f1d7ae7c437c6213368365cb56f15"
+}

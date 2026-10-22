@@ -4,6 +4,7 @@
   "scripts": {
     "test:config": "node --test tests/playwright-config.test.cjs",
     "test:frontend": "node --test tests/frontend-api.test.cjs",
+    "test:package": "node --test tests/package-contract.test.cjs",
     "e2e": "playwright test --grep-invert \"@live|@runtime-failure\"",
     "e2e:failure": "E2E_RUNTIME_FAILURE=1 playwright test --grep @runtime-failure",
     "e2e:live": "E2E_LIVE_OLLAMA=1 playwright test --grep @live",

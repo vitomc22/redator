@@ -1,0 +1,27 @@
+{
+  "policy": "lexical-v1",
+  "before": {
+    "status": "FAILED",
+    "failureCode": "CONTEXT_LIMIT",
+    "llmCalls": 0,
+    "competenceRows": 0
+  },
+  "preflightAfter": {
+    "ragExampleCount": 2,
+    "ragOmittedExamplesForContext": 1,
+    "estimatedInputTokens": 6092
+  },
+  "studentTextPreserved": true,
+  "runtimeContext": 8192,
+  "reservedOutput": 1200,
+  "templateReserve": 256,
+  "realGeneration": "passed",
+  "after": {
+    "status": "READY",
+    "llmCalls": 1,
+    "cacheHit": false,
+    "ragExampleCount": 2,
+    "ragOmittedExamplesForContext": 1,
+    "studentTextHashVerified": true
+  }
+}

@@ -20,11 +20,13 @@ import org.springframework.test.context.DynamicPropertySource;
         "app.local-api-token.enabled=false"
 })
 class OllamaLiveIntegrationTest {
-    private static final String DATABASE = "jdbc:sqlite:./target/ollama-live-" + java.util.UUID.randomUUID() + ".db";
+    private static final String COLLECTION = "./target/ollama-live-" + java.util.UUID.randomUUID();
 
     @DynamicPropertySource
     static void isolatedCollection(DynamicPropertyRegistry registry) {
-        registry.add("spring.datasource.url", () -> DATABASE);
+        registry.add("spring.datasource.url", () -> "jdbc:sqlite:" + COLLECTION + ".db");
+        registry.add("app.data-directory", () -> COLLECTION);
+        registry.add("app.profile-databases", () -> "true");
     }
 
     @Autowired

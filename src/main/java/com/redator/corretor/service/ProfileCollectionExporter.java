@@ -48,6 +48,11 @@ public final class ProfileCollectionExporter {
                 // SQLite includes committed WAL pages and takes a consistent read snapshot.
                 statement.execute("VACUUM INTO '" + sqlPath(snapshot) + "'");
             }
+            Path sourceSnapshot = staging.resolve("legacy-source.sqlite");
+            Files.copy(snapshot, sourceSnapshot);
+            String sourceLogicalFingerprint = SQLiteCollectionFingerprint.of(sourceSnapshot);
+            // Upgrade only the disposable copy; the original and its raw snapshot stay untouched.
+            org.flywaydb.core.Flyway.configure().dataSource("jdbc:sqlite:" + snapshot, null, null).load().migrate();
             List<String> profiles;
             Map<String, Object> unassigned;
             try (Connection db = readOnly(snapshot)) {
@@ -78,6 +83,8 @@ public final class ProfileCollectionExporter {
             manifest.put("schemaVersion", 1);
             manifest.put("status", "PREPARED_NOT_ACTIVATED");
             manifest.put("source", original.toString());
+            manifest.put("sourceLogicalFingerprint", sourceLogicalFingerprint);
+            manifest.put("legacySourceSnapshot", Map.of("file", "legacy-source.sqlite", "sha256", hash(sourceSnapshot)));
             manifest.put("sourceSchemaSha256", SOURCE_SCHEMA_HASH);
             manifest.put("legacySnapshot", Map.of("file", "legacy-snapshot.sqlite", "sha256", hash(snapshot)));
             manifest.put("profiles", entries);
@@ -130,6 +137,10 @@ public final class ProfileCollectionExporter {
             validate(db);
             if (!profiles(db).equals(List.of(profile))) throw new IllegalArgumentException("Coleção isolada com proprietário inconsistente");
         }
+    }
+
+    static void verifyCollection(Path database) throws Exception {
+        try (var db = readOnly(database.toAbsolutePath().normalize())) { validate(db); }
     }
 
     private static void validate(Connection db) throws SQLException {

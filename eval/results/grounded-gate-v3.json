@@ -1,0 +1,196 @@
+{
+  "humanLabelPolicy" : "individual-raters-macro-average-v1",
+  "essayCount" : 3,
+  "annotationCount" : 6,
+  "byRater" : {
+    "grader_a" : {
+      "datasetFingerprint" : "4457c42e3a57cd0513435dfff6ffd3cc5de6e5c16584340b51258a9ec3a9e60d",
+      "passed" : false,
+      "baselineQwk" : -0.16842105263157772,
+      "candidateQwk" : 0.14999999999999922,
+      "competences" : {
+        "C1" : {
+          "baselineMae" : 40.0,
+          "candidateMae" : 0.0,
+          "baselineQwk" : 0.0,
+          "candidateQwk" : "NaN",
+          "passed" : true
+        },
+        "C2" : {
+          "baselineMae" : 26.666666666666668,
+          "candidateMae" : 26.666666666666668,
+          "baselineQwk" : 2.0816681711721638E-15,
+          "candidateQwk" : 2.0816681711721638E-15,
+          "passed" : true
+        },
+        "C3" : {
+          "baselineMae" : 53.333333333333336,
+          "candidateMae" : 53.333333333333336,
+          "baselineQwk" : -0.1538461538461528,
+          "candidateQwk" : -0.1538461538461528,
+          "passed" : true
+        },
+        "C4" : {
+          "baselineMae" : 26.666666666666668,
+          "candidateMae" : 13.333333333333334,
+          "baselineQwk" : -0.5000000000000125,
+          "candidateQwk" : 0.400000000000002,
+          "passed" : true
+        },
+        "C5" : {
+          "baselineMae" : 80.0,
+          "candidateMae" : 93.33333333333333,
+          "baselineQwk" : -0.03846153846153774,
+          "candidateQwk" : 0.12307692307692344,
+          "passed" : false
+        }
+      },
+      "failures" : [ "C5 regrediu MAE de 80.0 para 93.33333333333333" ]
+    },
+    "grader_b" : {
+      "datasetFingerprint" : "4457c42e3a57cd0513435dfff6ffd3cc5de6e5c16584340b51258a9ec3a9e60d",
+      "passed" : false,
+      "baselineQwk" : -0.1257606490872188,
+      "candidateQwk" : 0.02654867256637151,
+      "competences" : {
+        "C1" : {
+          "baselineMae" : 13.333333333333334,
+          "candidateMae" : 53.333333333333336,
+          "baselineQwk" : 8.32667268468862E-15,
+          "candidateQwk" : 0.0,
+          "passed" : false
+        },
+        "C2" : {
+          "baselineMae" : 26.666666666666668,
+          "candidateMae" : 26.666666666666668,
+          "baselineQwk" : 2.0816681711721638E-15,
+          "candidateQwk" : 2.0816681711721638E-15,
+          "passed" : true
+        },
+        "C3" : {
+          "baselineMae" : 66.66666666666667,
+          "candidateMae" : 66.66666666666667,
+          "baselineQwk" : -0.1818181818181814,
+          "candidateQwk" : -0.1818181818181814,
+          "passed" : true
+        },
+        "C4" : {
+          "baselineMae" : 13.333333333333334,
+          "candidateMae" : 26.666666666666668,
+          "baselineQwk" : 8.32667268468862E-15,
+          "candidateQwk" : 4.16333634234431E-15,
+          "passed" : false
+        },
+        "C5" : {
+          "baselineMae" : 80.0,
+          "candidateMae" : 93.33333333333333,
+          "baselineQwk" : -0.03846153846153774,
+          "candidateQwk" : 0.12307692307692344,
+          "passed" : false
+        }
+      },
+      "failures" : [ "C1 regrediu MAE de 13.333333333333334 para 53.333333333333336", "C4 regrediu MAE de 13.333333333333334 para 26.666666666666668", "C5 regrediu MAE de 80.0 para 93.33333333333333" ]
+    }
+  },
+  "humanAgreement" : {
+    "count" : 15,
+    "mae" : 16.0,
+    "rmse" : 29.21186973360886,
+    "exactAgreement" : 0.6666666666666666,
+    "adjacentAgreement" : 0.9333333333333333,
+    "meanBias" : -16.0,
+    "qwk" : 0.8032786885245905
+  },
+  "humanAgreementByCompetence" : {
+    "C1" : {
+      "count" : 3,
+      "mae" : 53.333333333333336,
+      "rmse" : 56.568542494923804,
+      "exactAgreement" : 0.0,
+      "adjacentAgreement" : 0.6666666666666666,
+      "meanBias" : -53.333333333333336,
+      "qwk" : 0.0
+    },
+    "C2" : {
+      "count" : 3,
+      "mae" : 0.0,
+      "rmse" : 0.0,
+      "exactAgreement" : 1.0,
+      "adjacentAgreement" : 1.0,
+      "meanBias" : 0.0,
+      "qwk" : 1.0
+    },
+    "C3" : {
+      "count" : 3,
+      "mae" : 13.333333333333334,
+      "rmse" : 23.094010767585033,
+      "exactAgreement" : 0.6666666666666666,
+      "adjacentAgreement" : 1.0,
+      "meanBias" : -13.333333333333334,
+      "qwk" : 0.8000000000000007
+    },
+    "C4" : {
+      "count" : 3,
+      "mae" : 13.333333333333334,
+      "rmse" : 23.094010767585033,
+      "exactAgreement" : 0.6666666666666666,
+      "adjacentAgreement" : 1.0,
+      "meanBias" : -13.333333333333334,
+      "qwk" : 8.32667268468862E-15
+    },
+    "C5" : {
+      "count" : 3,
+      "mae" : 0.0,
+      "rmse" : 0.0,
+      "exactAgreement" : 1.0,
+      "adjacentAgreement" : 1.0,
+      "meanBias" : 0.0,
+      "qwk" : 1.0
+    }
+  },
+  "qualityGate" : {
+    "datasetFingerprint" : "4457c42e3a57cd0513435dfff6ffd3cc5de6e5c16584340b51258a9ec3a9e60d",
+    "passed" : false,
+    "baselineQwk" : -0.14709085085939827,
+    "candidateQwk" : 0.08827433628318536,
+    "competences" : {
+      "C1" : {
+        "baselineMae" : 26.666666666666668,
+        "candidateMae" : 26.666666666666668,
+        "baselineQwk" : 4.16333634234431E-15,
+        "candidateQwk" : "NaN",
+        "passed" : true
+      },
+      "C2" : {
+        "baselineMae" : 26.666666666666668,
+        "candidateMae" : 26.666666666666668,
+        "baselineQwk" : 2.0816681711721638E-15,
+        "candidateQwk" : 2.0816681711721638E-15,
+        "passed" : true
+      },
+      "C3" : {
+        "baselineMae" : 60.0,
+        "candidateMae" : 60.0,
+        "baselineQwk" : -0.1678321678321671,
+        "candidateQwk" : -0.1678321678321671,
+        "passed" : true
+      },
+      "C4" : {
+        "baselineMae" : 20.0,
+        "candidateMae" : 20.0,
+        "baselineQwk" : -0.2500000000000021,
+        "candidateQwk" : 0.2000000000000031,
+        "passed" : true
+      },
+      "C5" : {
+        "baselineMae" : 80.0,
+        "candidateMae" : 93.33333333333333,
+        "baselineQwk" : -0.03846153846153774,
+        "candidateQwk" : 0.12307692307692344,
+        "passed" : false
+      }
+    },
+    "failures" : [ "C5 regrediu MAE médio de 80.0 para 93.33333333333333" ]
+  },
+  "passed" : false
+}
